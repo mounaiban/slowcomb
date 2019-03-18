@@ -56,11 +56,14 @@ superior if:
 2. The combinatorial process is a performance-critical part of your 
    workflow. While detailed performance studies have not been conducted at
    this stage, the rate of operations is expected to be significantly
-   inferior to alternatives (and competitors!). This is due to the fact
-   combinatorial operations in this library are multi-stage processes that
-   involve rebuilding every combinatorial result. This involves multiple
-   memory accesses per result. A fast library is one that can derive
-   combinatorial results with a minimum of memory accesses.
+   inferior to alternatives (and competitors!).
+   
+   * This is due to the fact that combinatorial operations in this library
+     are multi-stage processes that involve rebuilding every combinatorial
+     result. This involves multiple memory accesses per result.
+   
+   * A fast library is one that can derive combinatorial results with a minimum
+     of memory accesses.
 
 3. The combinatorial process is a space-critical part of your workflow.
    Despite efforts in attempting to minimise memory use, the 
@@ -99,8 +102,8 @@ right now...
 Short Term (by 2019-12-25)
 **************************
 * Addressability: ``index()``, and ``__contains__()``. This allows you to
-  find out if a sequence is a possible output of one of the combinatorial 
-  operations, and if it is, what the index is.
+  perform a reverse lookup to find out if a sequence is a possible output
+  of a combinatorial class, and if it is, what its index is.
 
 * Reporting Tools, Stage 1: ``__repr__()`` and ``__str__()``, maybe JSON
   export, so that you can export information vital to reproducing setups.

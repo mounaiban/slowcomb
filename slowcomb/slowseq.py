@@ -1140,7 +1140,7 @@ class SNOBSequence(NumberSequence):
     def __len__(self):
         return self._ii_max - self._ii_start
 
-    def __init__(self, n, s):
+    def __init__(self, n, r):
         """Method to create a SNOBSequence instance
     
 	A SNOBSequence (Same Number Of Bits Sequence) is a NumberSequence
@@ -1150,7 +1150,7 @@ class SNOBSequence(NumberSequence):
         Arguments
 	---------
 	n - the total number of bits. Accepts int, n > 0
-        s - the number of bits that are set. Accepts int, 0 < n ≤ s
+        s - the number of bits that are set. Accepts int, 0 < n ≤ r
 
         Examples
         --------
@@ -1183,8 +1183,8 @@ class SNOBSequence(NumberSequence):
         '100011'
 
 	"""
-        if r > s:
-            raise ValueError('n must be ≥ s')
+        if r > n:
+            raise ValueError('n must be ≥ r')
         self._n = n
         self._r = r
             # Sticky internal index

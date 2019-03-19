@@ -118,7 +118,8 @@ Long Term (indefinite schedule)
 *******************************
 * Combinatorics features (subject to change):
 
-  - ChainSequence, addressable version of itertools.chain, with ``__add__()``
+  - ``ChainSequence``, addressable version of ``itertools.chain``, with
+    ``__add__()``
  
   - ``FilteredSNOBSequence``, same number of bits, but with some bits stuck 
     on or off.

@@ -19,7 +19,7 @@ aiming for an *O log(n)* time complexity when looking up a combinatorial
 subset.
 
 *Slowcomb is free software, licensed to you under the Terms of the GNU
-General Public License, Version 3.*
+General Public License, Version 3 or later.*
 
 Also, I Am Not A Mathematician.
 
@@ -91,7 +91,11 @@ Caveats
 The documentation in the code, and this introduction has not been
 thoroughly proof-read, and may contain errors.
 
-Please report all errors by filing issues. As usual, please be specific.
+Please report all errors by filing issues. As usual, please be specific
+about bugs, and include detailed steps to reproduce the bug. Unit tests
+would also be nice. For errors in the documentation, please quote the
+line number (and column number if possible) as well as the file where
+you found the error.
 
 Wishlist
 ========

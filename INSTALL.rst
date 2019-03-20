@@ -193,7 +193,8 @@ and the exact name of the archive changed to match the one that's
 actually on your filesystem.
 
  Note that the backslash (\\) character is only present to allow the
- example to be shown in two lines and still be correct. It may be removed.
+ example to be shown in two lines and still be correct. It may be safely
+ removed, as long as you mend the command back into a single line.
 
 A successful installation will be indicated by a message that looks like:
 

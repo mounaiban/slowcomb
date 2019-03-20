@@ -90,9 +90,9 @@ This runs the built-in ``unittest`` module, which is executable, and
 tells it where the tests are.
 
 Note that some of the tests have been skipped (there are about 18 of
-them at this time for this official version), this is normal. A number
-of the tests are that slow-running and take hours to complete have been
-excluded from the test runner by default.
+them at this time for the master branch). This is normal. A number
+of the tests are slow-running and can take hours to complete. These
+tests have been excluded from the test runner by default.
 
 Step 3: Package
 ===============

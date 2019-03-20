@@ -168,11 +168,12 @@ Long Term (indefinite schedule)
 
 * Testing: even more unit tests, detailed performance tests.
 
-* Refactoring: improve the way dependency injection is used, so that the library
-  is easier to unit-test, and also to make things easier for you, the Hacker, 
-  to (re-)implement your own features.
+* Refactoring: improve the way dependency injection is used, so that the
+  library is easier to unit-test, and also to make things easier for you,
+  the Hacker, to (re-)implement your own features.
 
-* Reporting Tools, Stage 2 and Beyond: visualisations, definite JSON export features.
+* Reporting Tools, Stage 2 and Beyond: visualisations, definite JSON export
+  features.
 
 * More easter eggs??
 

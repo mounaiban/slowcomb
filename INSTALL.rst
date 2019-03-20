@@ -23,29 +23,29 @@ know what you're doing, unless you want to join in the fun.
 
 The installation and usage process endorsed here is basically:
 
-  1. Clone slowcomb using the ``git clone`` command.
+1. Clone slowcomb using the ``git clone`` command.
 
-  2. Run unit tests with ``python3 -m unittest discover -s slowcomb/tests``
-     in the repository root directory (same directory where you see the
-     ``README.rst`` and ``LICENSE`` files.
+2. Run unit tests with ``python3 -m unittest discover -s slowcomb/tests``
+   in the repository root directory (same directory where you see the
+   ``README.rst`` and ``LICENSE`` files.
 
-  3. Prepare a virtual environment, install the package generated in
-     step 3 above in your virtual environment using ``pip``.
+3. Prepare a virtual environment, install the package generated in
+   step 3 above in your virtual environment using ``pip``.
      
-     * Alternatively, the package may be installed system-wide, also
-       using ``pip``.
+   * Alternatively, the package may be installed system-wide, also
+     using ``pip``.
 
-  4. Generate a package by running ``setup.py``.
+4. Generate a package by running ``setup.py``.
 
-  5. Import the ``slowcomb.slowcomb`` module, or parts of it, into the 
-     modules of your project.
+5. Import the ``slowcomb.slowcomb`` module, or parts of it, into the 
+   modules of your project.
 
-     * Alternatively, import ``slowcomb.slowcomb`` while in the
-       interactive Python shell, or ``slowcomb.tests.manual`` if you
-       want to mess around...
+   * Alternatively, import ``slowcomb.slowcomb`` while in the
+     interactive Python shell, or ``slowcomb.tests.manual`` if you
+     want to mess around...
 
-  6. Goto step 4 above to update the slowcomb modules in your project
-     when changes are pushed to the repo.
+6. Goto step 4 above to update the slowcomb modules in your project
+   when changes are pushed to the repo.
 
 Step 1: Clone This Thing
 ========================
@@ -56,7 +56,8 @@ control repositories, such as a ``downloads-github`` directory (or
 this repository there with the usual ``git clone`` command:
 
 ::
-    git clone https://github.com/mounaiban/slowcomb
+
+   git clone https://github.com/mounaiban/slowcomb
     
 A few messages later, you should now have a copy of slowcomb in your
 directory. It should be in a ``slowcomb`` subdirectory from the
@@ -72,7 +73,11 @@ To run the unit tests, stay in the slowcomb repo root (i.e. the same
 folder as the ``README.rst`` and ``LICENSE`` files), and run this command:
 
 ::
+
     python3 -m unittest discover -s slowcomb/tests
+
+The ``python3`` explicitly invokes the default Python 3 interpreter on 
+systems that have both Python 2 and 3 interpreters installed.
 
   PROTIP: On many systems merely running ``python`` invokes a Python 2
   interpreter. However, the Python slowcomb was written is its largely
@@ -107,14 +112,16 @@ package using the setup script in the repo root, where the
 ``setup.py`` file is:
 
 ::
-    python3 -m setup.py sdist
+   
+   python3 -m setup.py sdist
 
 When all goes well, the ready-to-install package should appear in the
 ``dist`` subdirectory of the repo root. There may be multiple files
 of the same prefix with a timestamp, like:
 
 ::
-    ``slowcomb-0.x.dev.2019-09-09T09-09-09.999999.tar.gz
+
+    slowcomb-0.x.dev.2019-09-09T09-09-09.999999.tar.gz
 
 Note the path to the directory.
 
@@ -137,10 +144,10 @@ Each time you run ``setup.py``\*, a new file will be created. Unless you
 are fixing a regression, you would use the archive with the latest
 time stamp.
 
- \* A more accurate description would be 'each time you run ``setup.py``
- within the same microsecond'. I hope to live long enough to see computers 
- get so fast, that the entire package generation can finish in under a
- microsecond.
+  \* A more accurate description would be 'each time you run ``setup.py``
+  within the same microsecond'. I hope to live long enough to see computers 
+  get so fast, that the entire package generation can finish in under a
+  microsecond.
 
 Step 4: Install
 ===============
@@ -150,6 +157,7 @@ getting started with venv's, create one by first navigating to a directory
 which you want to place the venv, and type:
 
 ::
+
     python3 -m venv my-first-venv
 
 Substitute ``my-first-venv`` for a name you find to be more useful. A
@@ -176,6 +184,7 @@ the path to the package generated in Step 3 above. On a ``bash`` terminal
 on a Unix-compatible system, the command may look like:
 
 ::
+
     pip3 install /home/mrtooliteral/downloads-github/slowcomb/dist/\
     slowcomb-0.x.dev.2019-09-09T09-09-09.999999.tar.gz
 
@@ -183,12 +192,13 @@ With the exact path before ``/dist/`` altered to suit your filesystem,
 and the exact name of the archive changed to match the one that's
 actually on your filesystem.
 
- Note that the backslash (\) character is only present to allow the
+ Note that the backslash (\\) character is only present to allow the
  example to be shown in two lines and still be correct. It may be removed.
 
 A successful installation will be indicated by a message that looks like:
 
 ::
+
     Successfully installed slowcomb-0.x.dev.2019-09-09T09-09-09.999999
 
 Pause to smell the victory. It's good for your soul.
@@ -215,6 +225,7 @@ Playing Around With It in the Python Shell
 Once you have started the Python shell, type this to get started:
 
 ::
+
     from slowcomb.slowcomb import *
     from slowcomb.slowseq import *
 
@@ -223,6 +234,7 @@ set up during the course of the development of slowcomb. To get started,
 just type:
 
 ::
+
     from slowcomb.tests.manual import *
 
 If you see a welcome message, you are all set! For your convenience

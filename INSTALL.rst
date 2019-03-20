@@ -135,19 +135,19 @@ What's In That Name?
 The first part of the filename tells you that it's a slowcomb package
 and what version it is, while the ``dev`` means 'development', to
 indicate that it's a package that you have generated on your system.
-The last parts of the filename is the exact time ``setup.py`` was
-invoked down to the microsecond (plus a few microseconds), and the
-``.tar.gz`` suffix just tells you that the files are Unix Tape Archives
+The numbers after the ``dev`` is the date and time ``setup.py`` was
+invoked (it is actually off by up to a few hundred microseconds), while
+the ``.tar.gz`` suffix just tells you that the files are Unix Tape Archives
 with gzip compression applied.
 
-Each time you run ``setup.py``\*, a new file will be created. Unless you
-are fixing a regression, you would use the archive with the latest
-time stamp.
+Each time you run ``setup.py``, a new file will be created\*. Unless you
+are fixing or working around a regression, you would use the archive with
+the latest time stamp.
 
-  \* A more accurate description would be 'each time you run ``setup.py``
-  within the same microsecond'. I hope to live long enough to see computers 
-  get so fast, that the entire package generation can finish in under a
-  microsecond.
+  \* A more accurate description would be: 'a new file is created for every
+  different microsecond that ``setup.py`` is invoked'. I hope to live long 
+  enough to see computers get so fast, that the entire package generation 
+  can finish in under a microsecond.
 
 Step 4: Install
 ===============

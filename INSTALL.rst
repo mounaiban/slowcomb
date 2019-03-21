@@ -52,8 +52,9 @@ Step 1: Clone This Thing
 Prepare a directory on the file system of your working (virtual) machine.
 If you have a special directory set aside for checkouts from source
 control repositories, such as a ``downloads-github`` directory (or
-*GitHub Downloads* for you Windows folks), just switch to it and clone
-this repository there with the usual ``git clone`` command:
+*GitHub Downloads* for you Windows folks who love spaces in names),
+just switch to it and clone this repository there with the usual 
+``git clone`` command:
 
 ::
 

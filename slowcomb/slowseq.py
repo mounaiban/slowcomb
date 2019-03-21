@@ -122,6 +122,18 @@ class NumberSequence:
         else:
             return i
 
+    def _get_args(self):
+        """Attempt to rebuild a probable equivalent of the arguments
+        used in constructing this sequence
+        """
+        re_arg_fmt = "func={0}, length={1}, ii_start={2}, default={3}"
+        re_args = re_arg_fmt.format(
+            self._func.__code__.co_name,
+            self._len, self._ii_start,
+            self._default
+        )
+        return re_args
+ 
     def _get_member(self, i):
         """Routine to return the first+n'th member of the sequence
 
@@ -336,10 +348,11 @@ class NumberSequence:
         return out
 
     def __repr__(self):
-        """Reserved method for the Reporting Tools, which may be
-        implemented when Moses feels like it.
+        """Supports the reporting of information that can be used
+        to reconstruct this sequence
         """
-        pass
+        out = "{0}({1})".format(self.__class__.__name__, self._get_args())
+        return out
         # TODO: Implement Slowcomb Reporting Tools
 
     def __init__(self, func, length, **kwargs):
@@ -994,6 +1007,14 @@ class SNOBSequence(NumberSequence):
             ncr_temp = int_ncr(n_temp,r_temp)
         return (zeroes, i_temp)
 
+    def _get_args(self):
+        """Attempt to rebuild a probable equivalent of the arguments
+        used in constructing this sequence
+        """
+        re_arg_fmt = "n={0}, r={1}"
+        re_args = re_arg_fmt.format(self._n, self._r)
+        return re_args
+    
     def _get_bits(self, ii):
         """Get the ii'th highest n-bit number with r raised bits.
         
@@ -1139,7 +1160,7 @@ class SNOBSequence(NumberSequence):
 
     def __len__(self):
         return self._ii_max - self._ii_start
-
+    
     def __init__(self, n, r):
         """Method to create a SNOBSequence instance
     
@@ -1196,7 +1217,25 @@ class AccumulateSequence(CacheableSequence):
 
     The AccumulateSequence is intended to be an addressable analogue
     to the ``accumulate`` iterator from Python's itertools.
+
     """
+    def _get_args(self):
+        """Attempt to rebuild a probable equivalent of the arguments
+        used in constructing this sequence
+        """
+        re_arg_fmt_a = "func_ii={0}, func_a={1}, length={2}," 
+        re_arg_fmt_b = "ii_start={0}, default={1}"
+        re_args_a = re_arg_fmt_a.format(
+            self._func_ii.__code__.co_name,
+            self._func_a.__code__.co_name,
+            self._len
+        )
+        re_args_b = re_arg_fmt_b.format(
+            self._ii_start,
+            self._default
+        )
+        return "{0} {1}".format(re_args_a, re_args_b)
+
     def _get_acc(self, i):
         """Get the accumulation of the first+i'th term, and all
         terms before it.

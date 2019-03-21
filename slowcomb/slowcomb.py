@@ -68,6 +68,20 @@ class Combinatorics(CacheableSequence):
         else:
             return False
 
+    def _get_args(self):
+        """Attempt to rebuild a probable equivalent of the arguments
+        used in initialising this sequence
+        """
+        if isinstance(self._seq_src, str) is True:
+            # Add quotes back to str's used as sequences, so that the
+            # repr string is actually accurate
+            seq_shown = "'{0}'".format(self._seq_src)
+        else:
+            seq_shown = self._seq_src
+        re_arg_fmt = "seq={0}, r={1}"
+        re_args = re_arg_fmt.format(seq_shown, self._r)
+        return re_args
+ 
     def _get_subset_count(self):
         """Get the number of subsets the Combinatorics sequence. 
         is able to return. Returns the count as an int.
@@ -660,6 +674,15 @@ class CatCombination(PBTreeCombinatorics):
         temp.extend([seq]*t)
         self._seq_src = tuple(temp)
         self._set_ii_bounds()
+
+    def _get_args(self):
+        """Attempt to rebuild a probable equivalent of the arguments
+        used in initialising a CatCombination sequence
+        """
+        seq_shown = self._seq_src[1:]
+            # Strip leading None from the outer sequence
+        re_arg_fmt = "seq={0}, r={1}"
+        return re_arg_fmt.format(seq_shown, self._r)
 
     def _get_comb(self, ii):
         """Returns the first+i'th subset or term of a Catenation

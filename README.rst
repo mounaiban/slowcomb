@@ -160,7 +160,7 @@ Long Term (indefinite schedule)
 
 * Exceptions: more exception handling, make ``is_valid()`` useful
 
-* Peformance:
+* Performance:
 
   - ``__sizeof__()``, to monitor memory consumption
  

@@ -40,6 +40,7 @@ test_data = {'pokies':('💖', '💎', '🦄', '🍒', '🌴', '💰'),
 # Functions
 #
 def test_all_docs():
+    """Verify examples in main module docstrings """
     doctest.testfile('../slowseq.py')
     doctest.testfile('../slowcomb.py')
 

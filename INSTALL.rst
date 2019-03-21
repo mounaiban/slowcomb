@@ -14,12 +14,12 @@ you can stop reading this file and start coding, as you probably already
 know what you're doing, unless you want to join in the fun.
 
   Note: The advice given herein is rather Unix-focused, as the author
-  uses this library mostly on Linux and macOS systems. The procedures
-  on Windows should not be too different, apart from differences in 
-  path formats (e.g. ``/home`` vs ``C:\Users``) and command line
-  interfaces (e.g. ``ls`` vs ``dir``).  Windows 10 users have the
-  rather compelling *Windows Subsystem for Linux* option, which supports
-  a legit Linux system.
+  uses this library mostly on GNU/Linux and macOS systems. The procedures
+  on Windows should not be too different, apart from differences in path
+  formats (e.g. ``/home`` vs ``C:\Users``) and command line interfaces 
+  (e.g. ``ls`` vs ``dir``).  Windows 10 users have the rather compelling
+  *Windows Subsystem for Linux* option, which supports a legit GNU/Linux
+  system.
 
 The installation and usage process endorsed here is basically:
 

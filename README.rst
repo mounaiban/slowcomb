@@ -130,9 +130,6 @@ Short Term (by 2019-12-25)
   perform a reverse lookup to find out if a sequence is a possible output
   of a combinatorial class, and if it is, what its index is.
 
-* Reporting Tools, Stage 1: ``__repr__()`` and ``__str__()``, maybe JSON
-  export, so that you can export information vital to reproducing setups.
-
 * Documentation: reviews and cleanups
 
 * Testing: Cleanup of ``plan.py``, slowcomb vs. ``itertools`` performance

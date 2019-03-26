@@ -1711,21 +1711,8 @@ class Combination(Combinatorics):
         may report the length of the sequence correctly.
 
         """
-        self._set_addr_gen()
-        self._ii_max = len(self._addr_gen)
-
-    def _get_seq_addresses(self, ii):
-        """
-        Find out the addresses required to re-construct the i'th term
-        of the combination. Returns a bitmask as an int.
-
-        Arguments
-        ---------
-        ii - The internal index of the term. Accepts int,
-        0 ≤ ii ≤ _ii_max.
-
-        """
-        return self._addr_gen[ii]
+        self._set_bitmap_src()
+        self._ii_max = len(self._bitmap_src)
 
     def _get_comb(self, ii):
         """
@@ -1794,25 +1781,24 @@ class Combination(Combinatorics):
 
         """
         out = []
-        mask = (self._get_seq_addresses(ii))
+        bitmap = (self._bitmap_src[ii])
+            # The ii'th bitmap from the bitmap source should
+            #  contain the correct bitmap to derive the
+            #  first+ii'th combination
         probe = 1 << len(self._seq_src)-1
         for i in range(len(self._seq_src)):
-            if probe & mask != 0:
+            if probe & bitmap != 0:
                 out.append(self._seq_src[i])
             probe >>= 1 
         return tuple(out)
     
-    def _set_addr_gen(self):
-        """Set up the address generator in order to map out items
+    def _set_bitmap_src(self):
+        """Set up the selection bitmap source in order to map out items
         to be selected from the source sequence in order to perform
         the combinations.
 
-        The address generator is so-called because it _generates_
-        addresses. It is not a ``generator`` in the Python sense,
-        and is in fact a sequence.
-
         """
-        self._addr_gen = SNOBSequence(len(self._seq_src), self._r)
+        self._bitmap_src = SNOBSequence(len(self._seq_src), self._r)
 
     def __init__(self, seq, r):
         """Create an Addressable Combination sequence
@@ -1934,28 +1920,24 @@ class CombinationWithRepeats(Combination):
         out = []
         iii_seq = 0
         mask_width = len(self._seq_src)-1 + self._r
-        mask = self._get_seq_addresses(ii)
+        bitmap = self._bitmap_src[ii]
         probe = 1 << mask_width - 1
         while (probe > 0):
-            if probe & mask == 0:
+            if probe & bitmap == 0:
                 iii_seq += 1
             else:
                 out.append(self._seq_src[iii_seq])
             probe >>= 1 
         return tuple(out)
 
-    def _set_addr_gen(self):
-        """Set up the address generator in order to map out items
+    def _set_bitmap_src(self):
+        """Set up the selection bitmap source in order to map out items
         to be selected from the source sequence in order to perform
         the combinations.
 
-        In Python-ese, the address generator is not a ``generator``,
-        but a sequence. It's called a '_gen only because it generates
-        addresses
-
         """
         seq_len = len(self._seq_src)
-        self._addr_gen = SNOBSequence(seq_len-1 + self._r, self._r)
+        self._bitmap_src = SNOBSequence(seq_len-1 + self._r, self._r)
 
     def __init__(self, seq, r):
         """Create an Addressable Repeats-Permitted Combination sequence

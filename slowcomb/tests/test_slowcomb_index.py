@@ -52,6 +52,17 @@ class PermutationIndexTest(unittest.TestCase):
             with self.subTest(i=i, out=out):
                 self.assertEqual(i, self.cand_seq.index(out))
 
+    def test_index_no_i_no_j_no_r(self):
+        """Verifies the results of using index() without a specified
+        start, stop or fixed term length (r).
+
+        """
+        cand_seq_no_r = self.cand_class(TestData.seq)
+        for i in range(len(self.cand_seq)-1):
+            out = cand_seq_no_r[i]
+            with self.subTest(i=i, out=out):
+                self.assertEqual(i, cand_seq_no_r.index(out))
+
     def test_index_none_term(self):
         """Verifies that using None as a search term raises a ValueError
         """
@@ -59,18 +70,34 @@ class PermutationIndexTest(unittest.TestCase):
             self.cand_seq.index(None)
 
     def test_index_excess_len_term(self):
-        """Verifies search terms of excess length raise a ValueError
+        """Verifies that search terms that are too long raise a
+        ValueError when r is set
         """
         with self.assertRaises(ValueError):
             term = TestData.seq*10
             self.cand_seq.index(term)
             
+    def test_index_inadeq_len_term(self):
+        """Verifies that search terms that are too short raise a
+        ValueError when r is set
+        """
+        with self.assertRaises(ValueError):
+            term = TestData.seq[0]
+            self.cand_seq.index(term)
             
 class PermutationWithRepeatsIndexTest(PermutationIndexTest):
     """Repeat Permutation Index tests with the
     PermutationsWithRepeats class
     """
     cand_class = PermutationWithRepeats
+
+    def test_index_no_i_no_j_no_r(self):
+        """Exempt PermutationWithRepeats class from the no-r test.
+        This is because the repeats-permitted permutation requires
+        a fixed term length r.
+
+        """
+        pass
 
 class CatCombinationIndexTest(unittest.TestCase):
     """Verifies the result of slowcomb.CatCombination.index(), the

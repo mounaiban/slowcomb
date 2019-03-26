@@ -82,8 +82,8 @@ class Combinatorics(CacheableSequence):
         if x is None:
             raise ValueError('Search term cannot be None')
         if self._r is not None:
-            if len(x) > self._r:
-                msg = '{0} is too long to be a member'.format(x)
+            if len(x) != self._r:
+                msg = "term must have a length of {0}".format(self._r)
                 raise ValueError(msg)
 
     def _get_args(self):

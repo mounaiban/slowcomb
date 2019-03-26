@@ -68,6 +68,24 @@ class Combinatorics(CacheableSequence):
         else:
             return False
 
+    def _prescreen_index_search_term(self, x):
+        """Rejects search terms unsuitable for use with the index()
+        method on various combinatorial sequence classes.
+
+        Raises ValueError when a search term is rejected.
+
+        Arguments
+        ---------
+        x - search term to be used with index()
+
+        """
+        if x is None:
+            raise ValueError('Search term cannot be None')
+        if self._r is not None:
+            if len(x) > self._r:
+                msg = '{0} is too long to be a member'.format(x)
+                raise ValueError(msg)
+
     def _get_args(self):
         """Attempt to rebuild a probable equivalent of the arguments
         used in initialising this sequence
@@ -379,10 +397,10 @@ class PBTreeCombinatorics(Combinatorics):
         sibling.
         
         This actually the last element of the path, 0. Recall that
-        we are resolving the address from the furthest to the closest.
+        we are resolving the path from the furthest to the closest.
 
-        Deriving the Next Elements of the Address
-        =========================================
+        Deriving the Next Elements of the Path
+        ======================================
         To navigate from Node 16 back to Node 7, simply select the
         corresponding node in the next lower level, which is Level 2.
         To find this node, keep in mind the left distance of Node 16
@@ -391,7 +409,7 @@ class PBTreeCombinatorics(Combinatorics):
 
         * In Level 3, we found that the Node 16 had distance of six
         nodes from the left. Each node had 2 siblings on this Level,
-        and Node 16 had an address value of zero.
+        and Node 16 had path value of zero.
 
         * In Level 2, the parent of Node 16 will have a distance of three
         (i.e. 6/2) from the left. Keeping in mind that node indices on
@@ -401,7 +419,7 @@ class PBTreeCombinatorics(Combinatorics):
         * In Level 2, nodes have two siblings. Therefore, Node 7 is the 
         second sibling because (a distance of 3) % (2 siblings per node)
         is equal to 1, the second sibling from zero. This is also the
-        second-last element of our address. Therefore, our address so far
+        second-last element of our path. Therefore, our path so far
         is (1,0).
 
         * In Level 1, the parent of Node 7 will have a distance of one,
@@ -411,12 +429,12 @@ class PBTreeCombinatorics(Combinatorics):
         * In Level 1, Node 2 is the the second sibling because (a distance
         of 1) % (3 siblings per node) is equal to 1, making it the second
         sibling, recalling that sibling indices start from zero. Therefore,
-        we find the third-last element of the address: 1. This makes our
-        address so far (1,1,0).
+        we find the third-last element of the path: 1. This makes our
+        path so far (1,1,0).
 
         * Finally in Level 0, all left distances resolve to zero. This
-        makes the address at Level 0 always zero, consistent with the
-        properties of a traditional tree structure. Our address becomes
+        makes the path at Level 0 always zero, consistent with the
+        properties of a traditional tree structure. Our path becomes
         (0,1,1,0).
 
         See Also
@@ -454,6 +472,29 @@ class PBTreeCombinatorics(Combinatorics):
         the last node index level threshold.
         """
         return self._thresholds[len(self._thresholds)-1]
+
+    def _get_child_iidxs(self, ii):
+        """
+        Return a slice covering the internal index range for the
+        immediate child nodes of a particular node
+
+        Arguments
+        ---------
+        ii - integer index of the internal index of a node on the
+            combinatorial tree.
+
+        """
+        lvl = self._get_ii_level(ii)
+        lvl_start = self._thresholds[lvl]
+        lvl_d = ii - lvl_start
+            # Distance from beginning of current tree level
+        lvl_siblings = self._func_len_siblings(lvl)
+        next_lvl = lvl+1
+        next_lvl_start = self._thresholds[next_lvl]
+        next_lvl_siblings = self._func_len_siblings(next_lvl)
+        sub_start = next_lvl_start + lvl_d*next_lvl_siblings
+        sub_stop = sub_start + next_lvl_siblings
+        return slice(sub_start, sub_stop)
     
     def _set_node_counts(self):
         """Placeholder method for setting node counts per level
@@ -674,6 +715,35 @@ class CatCombination(PBTreeCombinatorics):
         temp.extend([seq]*t)
         self._seq_src = tuple(temp)
         self._set_ii_bounds()
+
+    def index(self, x):
+        """
+        Return the first index of a term, if it is a member of this 
+        combinatorial sequence.
+
+        Arguments
+        ---------
+        x - The term to be searched for. Accepts any Python iterator type.
+
+        """
+        self._prescreen_index_search_term(x)
+        temp_ii = 0
+        temp_src = self._seq_src[1:]
+            # Strip the leading second-level sequence representing 
+            # Level 0 (root with origin node) of the combinatorial tree
+        levels = len(x)
+        for lvl in range(levels):
+            # Traverse the combinatorial tree
+            try:
+                iii_elem = temp_src[lvl].index(x[lvl])
+            except ValueError:
+                msg = '{0} not an output of this sequence'.format(x)
+                raise ValueError(msg)
+            child_nodes = self._get_child_iidxs(temp_ii)
+            temp_ii = child_nodes.start + iii_elem
+                # Advance the temp_ii index further into the subtree
+        return temp_ii - self._ii_start
+            # Return the external index resolved from internal index
 
     def _get_args(self):
         """Attempt to rebuild a probable equivalent of the arguments
@@ -991,6 +1061,35 @@ class Permutation(PBTreeCombinatorics):
     This is due to the element elimination of the permutation process.
 
     """
+    def index(self, x):
+        """
+        Return the first index of a term, if it is a member of this 
+        combinatorial sequence.
+
+        Arguments
+        ---------
+        x - The term to be searched for. Accepts any Python iterator type.
+
+        """
+        self._prescreen_index_search_term(x)
+        temp_x = list(x)
+        temp_src = list(self._seq_src)
+        temp_ii = 0
+        levels = len(temp_x)
+        for lvl in range(levels):
+            elem = temp_x.pop(0)
+            try:
+                iii_elem = temp_src.index(elem)
+            except ValueError:
+                msg = '{0} not an output of this sequence'.format(x)
+                raise ValueError(msg)
+            temp_src.pop(temp_src.index(elem))
+                # Exclude elements that have been found from next search
+            subtree_slice = self._get_child_iidxs(temp_ii)
+            temp_ii = subtree_slice.start + iii_elem
+        return temp_ii - self._ii_start
+            # Return the external index resolved from internal index
+
     def set_src(self, seq):
         """Changes the source sequence.
 
@@ -1379,6 +1478,33 @@ class PermutationWithRepeats(Permutation):
     gambling machines.
 
     """
+    def index(self, x):
+        """
+        Return the first index of a term, if it is a member of this 
+        combinatorial sequence.
+
+        Arguments
+        ---------
+        x - The term to be searched for. Accepts any Python iterator type.
+
+        """
+        self._prescreen_index_search_term(x)
+        temp_ii = 0
+        levels = len(x)
+        for i in range(levels):
+            elem = x[i]
+            try:
+                iii_elem = self._seq_src.index(elem)
+            except ValueError:
+                msg = '{0} not an output of this sequence'.format(x)
+                raise ValueError(msg)
+            child_nodes = self._get_child_iidxs(temp_ii)
+            temp_ii = child_nodes.start + iii_elem
+                # Advance the temp_ii index further into the combinatorial
+                # tree
+        return temp_ii - self._ii_start
+            # Return the external index resolved from internal index
+            
     def _set_node_counts(self):
         """Sets up the node count embedded sequence, _node_counts, to
         enable the combinatorics tree's addressing method to function.

@@ -929,6 +929,61 @@ class SNOBSequence(NumberSequence):
     creating an instance of this class, and for generating the numbers.
 
     """
+    def index(self, x):
+        """Look up the index of a bitmap of this sequence, if it is
+        a member.
+
+        This method is made possible by the fact that the bitmaps, when
+        expressed as decimal or binary numbers, are ordered in the sequence
+        by value from highest to the lowest.
+        
+        Arguments
+        ---------
+        x - Bitmap in decimal form.
+
+        Exceptions
+        ----------
+        ValueError - when the bitmap is not found in the sequence
+
+        """
+        i_last = len(self)-1
+
+        # Reject out-of-range bitmaps
+        if x > self[0] or x < self[i_last]:
+            msg = 'bitmap: {0} is not part of this sequence'.format(x)
+            raise ValueError(msg)
+        
+        # Perform a binary search for the bitmap
+        i_peg_a = 0
+        i_peg_b = i_last
+        while i_peg_b - i_peg_a > 1:
+            i_target = (i_peg_b + i_peg_a)//2
+            val = self[i_target]
+            if val < x:
+                i_peg_b = i_target
+            elif val > x:
+                i_peg_a = i_target
+            elif val == x:
+                return i_target
+        
+        # FIXME: This is a workaround for a problem with the binary
+        #  search algorithm above in which it routinely misses the
+        #  bitmaps at the very beginning (i == 0) or end (i == len(self)-1).
+        #  The pegs are sometimes unable to close in and become the same
+        #  value to allow i_target to lock onto the bitmap being sought.
+        #
+        #  The current (hopefully temporary) fix is to perform a linear
+        #  search on the space between the two pegs before calling off 
+        #  the search.
+        for iii in range(i_peg_a, i_peg_b+1):
+            if self[iii] == x:
+                return iii
+
+        # Finally call off the search when all attempts fail
+        msg = 'bitmap {0} not in sequence'.format(x)
+        raise ValueError(msg)
+
+
     def _get_leading_z_with_i(self, n, r, i):
         """Get the binary number of leading zeroes on the i'th number
         of length n, with r bits raised, along with the ordinality of

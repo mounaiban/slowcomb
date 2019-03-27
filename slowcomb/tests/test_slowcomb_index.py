@@ -94,7 +94,33 @@ class PermutationWithRepeatsIndexTest(PermutationIndexTest):
     def test_index_no_i_no_j_no_r(self):
         """Exempt PermutationWithRepeats class from the no-r test.
         This is because the repeats-permitted permutation requires
-        a fixed term length r.
+        a fixed term length (set r-value)
+
+        """
+        pass
+
+class CombinationIndexTest(PermutationIndexTest):
+    """
+    Repeat Permutation Index tests with the Combination class
+    """
+    cand_class = Combination
+
+    def test_index_no_i_no_j_no_r(self):
+        """Exempt Combination class from the no-r test.
+        This is because the bitmap-based combinators require an r-value
+
+        """
+        pass
+
+class CombinationWithRepeatsIndexTest(PermutationIndexTest):
+    """
+    Repeat Permutation Index tests with the CombinationWithRepeats class
+    """
+    cand_class = CombinationWithRepeats
+
+    def test_index_no_i_no_j_no_r(self):
+        """Exempt CombinationWithRepeats class from the no-r test.
+        This is because the bitmap-based combinators require an r-value
 
         """
         pass

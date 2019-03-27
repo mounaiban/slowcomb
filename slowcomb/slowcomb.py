@@ -80,7 +80,7 @@ class Combinatorics(CacheableSequence):
 
         """
         if x is None:
-            raise ValueError('Search term cannot be None')
+            raise TypeError('Search term cannot be None')
         if self._r is not None:
             if len(x) != self._r:
                 msg = "term must have a length of {0}".format(self._r)
@@ -1706,6 +1706,56 @@ class Combination(Combinatorics):
     from Python's itertools.
 
     """
+    def index(self, x):
+        """
+        Return the first index of a term, if it is a member of this 
+        combinatorial sequence.
+
+        Arguments
+        ---------
+        x - The term whose index is being sought after. Accepts any 
+            Python iterator type.
+
+        """
+        self._prescreen_index_search_term(x)
+
+        # Reconstruct the bitmap from the sequence
+        #
+        i_last = 0
+        bitmap = 0
+        for e in x:
+            try:
+                # Expect element e in x to be found in source...
+                i_current = self._seq_src.index(e, i_last)
+                bitmap <<= (i_current-i_last)
+                    # A jump in the index by more than one
+                    # means that there are items that have
+                    # not been selected in the combination.
+                    # In this case, zeroes will be added to
+                    # the bitmap.
+                bitmap <<= 1
+                bitmap |= 1
+                    # Add a raised bit to to mark presence
+                    # of a copy the current item in x
+                i_last = i_current+1
+                    # Advance last source index to prevent
+                    # lookups from reaching touched items in
+                    # the source sequence. This has a side-effect
+                    # of rejecting combinations in which the items
+                    # are in a different order from the source
+                    # sequence.
+                
+            except ValueError:
+                # Expected exception when item is not found in source
+                # sequence
+                msg = '{0} is not a member of this sequence'.format(x)
+                raise ValueError(msg)
+
+        bitmap <<= (len(self._seq_src) - i_last)
+            # Pad the bitmap with zeroes if combination does not include
+            # the last item in the source sequence
+        return self._bitmap_src.index(bitmap)
+ 
     def _set_ii_bounds(self):
         """Sets appropriate limits for the internal index, so that it
         may report the length of the sequence correctly.
@@ -1857,6 +1907,50 @@ class CombinationWithRepeats(Combination):
     from Python's itertools.
 
     """
+           
+    def index(self, x):
+        """
+        Return the first index of a term, if it is a member of this 
+        combinatorial sequence.
+
+        Arguments
+        ---------
+        x - The term whose index is being sought after. Accepts any 
+            Python iterator type.
+
+        """
+        self._prescreen_index_search_term(x)
+        # Reconstruct the bitmap from the sequence
+        #
+        elem_last = x[0]
+        i_last = self._seq_src.index(x[0])
+        bitmap = 0
+        for e in x:
+            try:
+                # Expect element e in x to be in the source...
+                if elem_last != e:
+                    # Add a zero bit for each change of item in x
+                    elem_last = e
+                    i_current = self._seq_src.index(e, i_last)
+                    bitmap <<= (i_current - i_last)
+                    i_last = i_current
+                # Add a raised bit for every item of a particular
+                # type found
+                bitmap <<= 1
+                bitmap |= 1
+                
+            except ValueError:
+                # Exception expected when an element in x is not found
+                # in the source sequence
+                msg = '{0} is not a member of this sequence'.format(x)
+                raise ValueError(msg)
+
+        bitmap <<= (len(self._seq_src)-1 - i_last)
+            # Add remaining zero bits if there are no items in x
+            # of the same type as the last element in the source
+        return self._bitmap_src.index(bitmap)
+ 
+
     def _get_comb(self, ii):
         """
         Return the first+ii'th term of the Repeats-Permitted

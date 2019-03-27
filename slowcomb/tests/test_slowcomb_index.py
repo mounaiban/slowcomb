@@ -66,7 +66,7 @@ class PermutationIndexTest(unittest.TestCase):
     def test_index_none_term(self):
         """Verifies that using None as a search term raises a ValueError
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cand_seq.index(None)
 
     def test_index_excess_len_term(self):

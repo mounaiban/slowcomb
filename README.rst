@@ -126,16 +126,12 @@ right now...
 
 Short Term (by 2019-12-25)
 **************************
-* Addressability: ``index()``, and ``__contains__()``. This allows you to
-  perform a reverse lookup to find out if a sequence is a possible output
-  of a combinatorial class, and if it is, what its index is.
+* API Stability: Make up my mind about argument, attribute and method names.
 
 * Documentation: reviews and cleanups
 
 * Testing: Cleanup of ``plan.py``, slowcomb vs. ``itertools`` performance
   tests.
-
-* API Stability: Make up my mind about argument, attribute and method names.
 
 The version number will be bumped to 1.0 upon completion of most of these
 goals.
@@ -143,6 +139,9 @@ goals.
 Long Term (indefinite schedule)
 *******************************
 * Combinatorics features (subject to change):
+
+  - The ``__contains__()`` method, which finds out if a combinatorics
+    sequence is completely covered by another.
 
   - ``ChainSequence``, addressable version of ``itertools.chain``, with
     ``__add__()``

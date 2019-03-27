@@ -124,17 +124,48 @@ While the basic concept is pretty much done, I still think there is
 some more work to be done to make slowcomb much more useful than it is
 right now...
 
-Short Term (by 2019-12-25)
-**************************
-* API Stability: Make up my mind about argument, attribute and method names.
+Short Term (by 2019-12-25🎄)
+****************************
+These goals aim to make Slowcomb usable for small-scale projects, with a
+codebase clear enough to be used as a teaching aid for beginners to Python
+and object-oriented programming.
 
-* Documentation: reviews and cleanups
-
-* Testing: Cleanup of ``plan.py``, slowcomb vs. ``itertools`` performance
-  tests.
-
-The version number will be bumped to 1.0 upon completion of most of these
+The version number will be bumped to **1.0** upon completion of most of these
 goals.
+
+API
+###
+* Decide on final argument, attribute and method names. Names should be as 
+  intuitive and clear as possible. Using names borrowed from other famous 
+  projects or Python built-ins for completely different purposes is to be
+  avoided.
+
+Documentation
+#############
+* Review and reduce word count in docstrings in ``slowcomb`` and ``slowseq``.
+
+* Reorganise docstrings for easier reading when using ``help()`` from the
+  Python interpreter in interactive mode.
+  
+* Use correct reStructuredText formatting for easier reading for those who
+  prefer to use generated HTML versions of docstrings.
+
+* Improve consistency in use of terminology, choose terms in order to avoid
+  confusion with similar or identical words used in Python and other famous
+  projects.
+
+Testing
+#######
+* Create a more user-friendly Test Planner. The current ``plan.py`` isn't
+  exactly *Fit for Public Use*.
+
+* Consolidate test data, so the same specimens may be used in both manual
+  and automatic testing.
+
+* Performance Tests, Second Edition: implement comparative performance
+  tests to compare Slowcomb with ``itertools`` combinatorics across
+  different source sequence (n-values) and selection sizes (r-values),
+  as well as cache-based mitigations against slowness.
 
 Long Term (indefinite schedule)
 *******************************

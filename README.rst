@@ -60,7 +60,7 @@ unit supports it, the index of a combinatorial result can be recalled:
     >>> perm_abcd.index( ('D','C','B','A') )
     23
 
-The source sequence used in this example is a tuples, which supports index
+The source sequence used in this example is a tuple, which supports index
 reverse lookups. Some sources may not support this; in such cases, the 
 ``index()`` method will not succeed.
 

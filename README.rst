@@ -153,7 +153,18 @@ Documentation
 * Improve consistency in use of terminology, choose terms in order to avoid
   confusion with similar or identical words used in Python and other famous
   projects. The aim is to stick with a tenth-year school vocabulary while
-  reserving more advanced and technical terms for the most appropriate contexts. 
+  reserving more advanced and technical terms for the most appropriate
+  contexts. 
+
+Management
+##########
+* Provide a graceful way of indicating if ``index()`` is available on a
+  combinatorial sequence or not. The ``index()`` method is only supported
+  on sequences that implement it. Complex setups which involve multiple
+  levels of combinatorial sequences (e.g. permutation of combinations)
+  may include sources that do not support ``index()``. A method to find
+  out the parts of a combinatorial chain that do not support ``index()``
+  will be useful.
 
 Testing
 #######
@@ -199,7 +210,17 @@ Combinatorics, Sequences and Supporting Features
 * ``FilteredSNOBSequence``, same number of bits, but with the ability to set
   specific bits to stay on or off.
 
-* Testing: even more unit tests, detailed performance tests.
+* Testing: even more unit tests, detailed performance and exception handling
+  tests.
+
+  - Detailed unit tests, to account for edge cases, corner cases and
+    circular recursion errors.
+
+  - Detailed performance tests based on access patterns to investigate
+    potential optimisations to reduce the time needed to generate terms.
+
+  - Exception handling tests, to ensure users get the right error messages,
+    and appropriate fallback paths are available.
 
 Management
 ##########
@@ -230,6 +251,17 @@ Performance
 * Implement ``__sizeof__()`` in combinatorics and sequence classes, to provide
   accurate feedback on memory consumption
  
+* Explore optimisations which can speed up combinatorial operations where:
+
+  - The resulting terms are similar to the source sequence (e.g. permutations
+    with minor differences).
+
+  - Results of small-n, big-r operations (e.g. repeats-permitted combinations
+    with large blocks of repeated elements).
+
+* Investigate if using ``__slots__`` improves performance.
+
+Even in Slowcomb, speed matters!
 
 Reliability
 ###########

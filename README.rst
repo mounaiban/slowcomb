@@ -188,7 +188,8 @@ Combinatorics, Sequences and Supporting Features
   patterns excluded (e.g. Drug A and Drug C should never appear in the same
   prescription)
  
-  - This may require a supporting class in the same vein as ``FilteredSNOBSequence``
+  - This may require a supporting class in the same vein as
+    ``FilteredSNOBSequence``
 
 * ``ChainSequence``, addressable version of ``itertools.chain``.
   
@@ -196,7 +197,7 @@ Combinatorics, Sequences and Supporting Features
     modification of ``ChainSequences``
  
 * ``FilteredSNOBSequence``, same number of bits, but with the ability to set
-  specific bits to always stay on or off.
+  specific bits to stay on or off.
 
 * Testing: even more unit tests, detailed performance tests.
 
@@ -205,16 +206,16 @@ Management
 * Inclusion and intersect tests, which can help in consolidating combinatorial
   sequences.
 
-  - The ``__contains__()`` method, which finds out if a combinatorics sequence is 
-    completely covered by another.
+  - The ``__contains__()`` method, which finds out if a combinatorics sequence
+    is completely covered by another.
   
-  - A method to find out which terms are present in both of two ``Combinatorics``
-    sequences being compared.
+  - A method to find out which terms are present in both of two
+  ``Combinatorics`` sequences being compared.
 
-* Reporting Tools, Stage 2 and Beyond -- these features are intended to aid with
-  the replication of combinatorial setups, but it remains to be seen if this
-  responsibility is better handled by a separate project or the application using
-  Slowcomb.
+* Reporting Tools, Stage 2 and Beyond -- these features are intended to aid
+  with the replication of combinatorial setups, but it remains to be seen if
+  this responsibility is better handled by a separate project or the 
+  application using Slowcomb.
   
   * JSON export
 
@@ -223,23 +224,23 @@ Management
 
 Performance
 ###########
-* ``DequeCacheableSequence``, a cache that keeps a fixed number of the most recent 
-  results.
+* ``DequeCacheableSequence``, a cache that keeps a fixed number of the most
+  recent results.
 
-* Implement ``__sizeof__()`` in combinatorics and sequence classes , to provide
+* Implement ``__sizeof__()`` in combinatorics and sequence classes, to provide
   accurate feedback on memory consumption
  
 
 Reliability
 ###########
-* Implement Exception memory in combinatorics and supporting sequences, in order
-  to help isolate and diagnose problematic sequences.
+* Implement Exception memory in combinatorics and supporting sequences, in
+  order to help isolate and diagnose problematic sequences.
 
 Architecture
 ############
-* Refactor the codebase to improve the way dependency injection is used, in order
-  to make unit testing easier, which in turn should make testing and implementation
-  of new ideas and features quicker and easier. 
+* Refactor the codebase to improve the way dependency injection is used,
+  in order to make unit testing easier, which in turn should make testing
+  and implementation of new ideas and features quicker and easier. 
 
 * Investigate the potential benefits (or lack of thereof) of basing the
   combinatorial classes on a Set Type instead.
@@ -247,3 +248,4 @@ Architecture
 Miscellaneous
 #############
 * More easter eggs??
+

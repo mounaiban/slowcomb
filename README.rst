@@ -1,22 +1,85 @@
 Slow Combinatorics in Python (slowcomb)
 ---------------------------------------
 
-A Mounaiban mini-project.
+*A Mounaiban mini-project*
 
-What is slowcomb?
+What is Slowcomb?
 =================
-Slowcomb is a mini-library of combinatorics classes, each one attempting
-to implement the two major combinatorics operations, permutations and
-combinations, and their variations, using an approach which makes the
-results of these operations addressable.
+Slowcomb is a mini-library of combinatorics classes for the Python programming
+language and platform, implementing two of the most common combinatorics 
+operations: permutations and combinations (and their variations).
 
-These classes are implemented as sequences, allowing the results to be
-systematically enumerated and instantly accessed with integer and slice
-indices, just as seen on tuples, lists or arrays.
+Slowcomb implements its classes as sequences, allowing the results of these
+operations to be recalled instantly with integer indices, as shown in this
+example:  
 
-Its aim is to make combinations and permutations instantly repeatable,
-aiming for an *O log(n)* time complexity when looking up a combinatorial
-subset.
+::
+
+    >>> source = ('A', 'B', 'C', 'D')
+    >>> perm_abcd = Permutation(source, r=4)
+    >>> perm_abcd[11]
+    ('B', 'D', 'C', 'A')
+
+The 12th (or first+11'th) possible way of rearranging the letters
+``A, B, C, D`` is ``B, D, C, A``, when using the canoncial method of
+permutation seen in school mathematics textbooks, that is, considering all 
+possible ways of switching the letters in order, from right to left.
+
+Slowcomb's combinatorial operations work only with qualified sequence types,
+or any container with elements addressable with integer indices, such as 
+tuples and lists.
+
+Slicing on the combinatorial unit is also supported:
+
+::
+
+    >>> perm_abcd[5:9]
+    (('A', 'D', 'C', 'B'), ('B', 'A', 'C', 'D'), ('B', 'A', 'D', 'C'),
+    ('B', 'C', 'A', 'D'))
+
+The terms returned in an outer tuple are the sixth, seventh, eighth and ninth
+permutations respectively
+
+  PROTIP: first index of a sequence is 0.
+
+You can find out the number of permutations using the ``len()`` function:
+
+::
+
+    >>> len(perm_abcd)
+    24
+
+As indicated, there are twenty-four possible ways four elements may be
+arranged.
+
+Where it may be useful, and where the source sequence of the combinatorial
+unit supports it, the index of a combinatorial result can be recalled:
+
+::
+
+    >>> perm_abcd.index( ('D','C','B','A') )
+    23
+
+The source sequence used in this example is a tuples, which supports index
+reverse lookups. Some sources may not support this; in such cases, the 
+``index()`` method will not succeed.
+
+  PROTIP: When working with strings, remember to separate its characters
+  into individual elements of a tuple (or any other sequence).
+
+As expected, ``D, C, B, A`` is reported to be the twenty-fourth and last
+permutation of ``A, B, C, D``.
+
+  PROTIP: Recall from maths class that the final permutation of a sequence
+  is the sequence in reverse order.
+
+All combinatorial operations in Slowcomb are 'lazy'; results are only
+evaluated when requested.
+
+At time of publication, this way of using permutations and combinations
+are not supported by Python's built-in classes in ``itertools``. The 
+creation of Slowcomb was motivated by the need for such functionality
+in another unpublished game engine project.
 
 *Slowcomb is free software, licensed to you under the Terms of the GNU
 General Public License, Version 3 or later. Please view the LICENSE file
@@ -24,88 +87,78 @@ for full terms and conditions.*
 
 Also, I Am Not A Mathematician.
 
-How To Use It
-=============
+How Do I Get Started Using It?
+==============================
 Please see the ``INSTALL.rst`` file in the repository root directory.
 
 When To Use It
 ==============
+The expected benefits of using Slowcomb for combinatorial operations include
+repeatibility and reproducibility, short access time to specific results,
+and reduced memory requirements.
+
 Slowcomb is intended for use in applications which make extensive use
 of combinatorics where:
 
-1. You need to address and repeat combinatorial results and operations
-   (e.g. repeating a problematic or favoured configuration, or retaining
-   a specific game world state).
+1. You need to be able to reproduce combinatorial operations (e.g. testing),
 
-2. Your combinatorial results are not easily named by its literal form
-   (e.g. colour schemes, other graphic or fashion design variations,
-   scenario variations in games and visual novels).
+2. Your combinatorial results cannot be expressed easily in their literal
+   forms (e.g. design variations),
 
-3. You have a big-n, small-r situation where you have to make a
-   comparatively small selection from a large pool of elements.
+3. You need fast access to just a few different combinatorial results at
+   a time from a source with a very large number of elements, yet cannot
+   predict ahead of time which ones you need, or
 
-4. The combinatorial results take up significant amounts of memory,
-   yet can be deterinistically rebuilt from scratch when needed in a
-   reasonable amount of time.
+4. You are working with combinatorial operations whose results take up 
+   unreasonable amounts of memory, but can be deterministically reproduced
+   in a reasonable amount of time (e.g. some games that feature procedurally-
+   created content).
+
 
 When Not To Use It
 ==================
-Other solutions, such as Python's itertools may be sufficient or even
-superior if:
+Slowcomb has several identified weaknesses, namely its slowness in generating
+successive results (hence its name), lack of proven reliability and performance
+in massively parallel workflows, and inability to work on so-called 
+*non-subscriptable* sources whose elements cannot be individually addressed
+(such as generators and iterators).
 
-1. The combinatorial results are better represented by their literal
-   form, such as passwords and brand names. For example, it is more useful
-   to refer to ``cant_break_this_123`` or *iSointoyou* than say, "password
-   #471" or "brand 2 variation A".
+Here are some circumstances where there is no expected benefit using Slowcomb:
 
-2. The combinatorial process is a performance-critical part of your 
-   workflow. While detailed performance studies have not been conducted at
-   this stage, the rate of operations is expected to be significantly
-   inferior to alternatives (and competitors!).
+1. The combinatorial results are conveniently represented by their literal
+   form (e.g. generated passwords and brand names). It may be more practical
+   to store the results.
+
+2. You need to work with a large number of successive combinatorial results
+   (e.g. first 10 million combinations). Python's ``itertools`` are a lot
+   more adept in this type of operation.
   
-3. The combinatorial process is a space-critical part of your workflow.
-   Despite efforts in attempting to minimise memory use, the 
-   addressability features will always incur a memory overhead.
+3. Your workflow involves a large number of combinatorial units working
+   in parallel (e.g. 50,000 simultaneous permutators). Slowcomb was not
+   really tested for use in the inner parts of a massively-parallel
+   workflow. You may need a more specialised library or framework for
+   better performance.
 
-4. You have a combinatorial operation where the n and r factors are
-   most of the time either:
+4. You work with combinatorial operations that involve small selections
+   from a source with a small number of items. Using tuples or 
+   ``frozensets`` containing precomputed results generated using
+   ``itertools`` may be much faster.
 
-   a. Very small. It may be faster to expand them onto a list,
-      dictionary, or even a tuple, while still not using much more
-      memory.
+5. You work with combinatorial operations which involve a lot of 
+   repetitions of elements in the source. Slowcomb reconstructs every term
+   from scratch, element-by-element, missing many opportunities for
+   optimisation in this type of operation. Improving performance for such
+   operations is part of the Long Term goals in Slowcomb's development.
 
-   b. Such that r is much larger than n. This means the combinatorial
-      results involve a lot of repetition of the source elements, which
-      is arguably more efficiently done using block memory copies, which
-      slowcomb doesn't use.
+6. Your combinatorial results tend to be mostly minor variations of the
+   source sequence. The weaknesses identified in circumstance 5 above,
+   and the plans to address them, also apply.
 
-5. Your combinatorial results tend to be mostly minor variations of the
-   source sequence. In these cases, targeted deletions and in-memory swaps
-   of elements are probably more efficient, but slowcomb doesn't use them.
+7. You need to work on sources that do not have a practical way of
+   supporting addressing of its contents by numerical indices.
 
-Is It Really Slow?
-==================
-This library was branded as being slow, based on the expectation that
-someone out there has a faster alternative, and also on the project's
-initial focus on repeatability of results over speed.
-
-Combinatorial operations in slowcomb are multi-stage processes that
-involve figuring out the read order of a source sequence, then rebuilding
-a new sequence using the said order to achieve the combinatorial result.
-As you may already notice, this involves a lot of memory read and write
-operations per result.
-
-The performance penalty may not be great when you are making a small
-selection from a big source pool of elements, or if the permutation is
-remarkably different from the original pool. However, there is a lot of
-opportunity for optimisation for other cases, of which slowcomb is not
-made to take advantage of for the time being.
- 
-A fast library is one that can derive combinatorial results with highly-
-optimised memory accesses. At the moment, slowcomb is not one of them.
-
- Note from Moses: Even if slowcomb ends up being much faster in the
- future, the name would likely remain unchanged, for nostalgic purposes.
+Other solutions, such as Python's ``itertools`` may be sufficient or even
+superior under these circumstances.
 
 Caveats
 =======

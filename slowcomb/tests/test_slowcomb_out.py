@@ -33,38 +33,6 @@ class TestData:
         # The tests are currently reasonably fast up to a length of
         #  7 letters.
 
-class SCCTestData:
-    """
-    Contains Test Data for CatCombination. The Combinator is
-    checked to verify that it is able to reconstruct all possible
-    sentences from a word combination table, similar to those
-    seen in language instruction materials.
-
-    The following combination table shall be used in all tests
-    in this suite:
-
-    CatCombination Test, 1st Ed, 2019 February (SCCT1)
-    a.k.a. the Kerpal Test
-
-    ========  ======  ====  ====
-    1st Word  2nd     3rd   4th
-    ========  ======  ====  ====
-    He        kicked  my    dog
-    She       punted        cat 
-    You
-    =======   ======  ====  ====
-
-    max_r is defined as 4
-    median_r is defined as 2
-    min_r is defined as 1
-    """
-
-    c1 = ('He', 'She', 'You')
-    c2 = ('kicked', 'punted')
-    c3 = ('my',)
-    c4 = ('dog','cat')
-    seqs = [c1, c2, c3, c4]
-
 class IterComparativeTest(unittest.TestCase):
     """Verifies the result of a sequence class against the
     contents of an iterator, when the sequence is accessed both

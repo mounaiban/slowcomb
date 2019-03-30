@@ -37,10 +37,22 @@ src_colonel = (('I',),('need', 'want'), ('sugar', 'spice', 'scissors'))
 #
 def get_latin_upper_alphas(n):
     """Get the first n uppercase letters of the Latin Alphabet
-    (also called the Roman Alphabet)
-    """
+    (also called the Roman Alphabet) in a tuple.
 
+    """
     if n<1 or n>26:
         raise ValueError('Latin alphabet test seqs are 1-26 letters')
-    return [chr(65+x) for x in range(n+1)]
+    return tuple([chr(65+x) for x in range(n)])
+
+def get_hindu_arabic_digits(n):
+    """Get the first n uppercase letters of the Hindu-Arabic numerals
+    (better known as the '0123456789') in a tuple.
+
+      PROTIP: A one-digit sequence contains the digit zero ('0'),
+      and not '1'.
+
+    """
+    if n<1 or n>10:
+        raise ValueError('Hindu-Arabic numeral test seqs are 1-10 digits')
+    return tuple([chr(0x30+x) for x in range(n)])
 

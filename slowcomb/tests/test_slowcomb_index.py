@@ -1,6 +1,6 @@
 
 """
-test_slowcomb_index — Slow Addressable Combinatorics Addressing Test Module
+test_slowcomb_index — Addressing Integration Tests
 """
 
 # Copyright © 2019 Moses Chong
@@ -21,122 +21,293 @@ test_slowcomb_index — Slow Addressable Combinatorics Addressing Test Module
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 import itertools, unittest
 from slowcomb.slowcomb import CatCombination, Combination, \
     CombinationWithRepeats, Permutation, PermutationWithRepeats
+from slowcomb.tests import examples
 
-class TestData:
-    pref_r = 5
-    seq = tuple([chr(65+i) for i in range(5)])
-        # First few Capital Letters
-        # The tests are currently reasonably fast up to a length of
-        #  7 letters.
+# Test Settings
+#
+TEST_MIN_N = 1
+TEST_MAX_N = 5
 
 class PermutationIndexTest(unittest.TestCase):
-    """Verifies the result of slowcomb.Permutation.index(), the
-    method which returns the external index of a term if it is
-    a member of a Permutator sequence
+    """Verifies the result of slowcomb.Permutation.index(), by informal
+    proofs, where r (the permutation size) is set.
+
+    Glossary
+    --------
+    * combu: A combinatorial unit being tested.
+
+    * i : The first index *from* which to start searching.
+
+    * j : The last index *before* which to stop searching.
+
+    * n : The size of the source sequence. 
+
+    * r : The requested size of the combinatorial result. Optional for
+        some combinatorial units, mandatory for others.
+
     """
-    cand_class = Permutation
+    # Test Case Settings
+    #
+    combu_class = Permutation
 
-    def setUp(self):
-        self.cand_seq = self.cand_class(TestData.seq, TestData.pref_r)
-
+    # Tests
+    #
     def test_index_no_i_no_j(self):
-        """Verifies the results of using index() without a specified
-        value of i (search start index) or j (search stop index)
-        """
-        for i in range(len(self.cand_seq)-1):
-            out = self.cand_seq[i]
-            with self.subTest(i=i, out=out):
-                self.assertEqual(i, self.cand_seq.index(out))
+        """Result of index() with no i and no j.
 
-    def test_index_no_i_no_j_no_r(self):
-        """Verifies the results of using index() without a specified
-        start, stop or fixed term length (r).
+        Verification is done by requesting every item of the sequence,
+        and then checking the index used in requesting the item with the
+        result of index().
 
+        This verification is repeated for different values of n and r.
         """
-        cand_seq_no_r = self.cand_class(TestData.seq)
-        for i in range(len(self.cand_seq)-1):
-            out = cand_seq_no_r[i]
-            with self.subTest(i=i, out=out):
-                self.assertEqual(i, cand_seq_no_r.index(out))
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(n+1):
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                for i in range(len(combu)):
+                    out = combu[i]
+                    with self.subTest(n=n, r=r, i=i, out=out):
+                        self.assertEqual(i, combu.index(out))
+
+    def test_index_empty_term(self):
+        """ValueError when an empty sequence is used as search term
+        
+        Verifies that using the empty sequence as a search term on a valid
+        combinatorial unit raises a ValueError.
+
+        This verification is repeated for different values of n and r.
+        """
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(1,n+1):
+                # Skip r=0, because CUs with a zero r-value are
+                # not valid and will not raise ValueError when
+                # an attempt is made to find the index the empty
+                # sequence.
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                with self.subTest(n=n, r=r):
+                    with self.assertRaises(ValueError):
+                        combu.index(())
+
+    def test_index_empty_term(self):
+        """ValueError when an the default value is used as search term
+        
+        Verifies that using the default value as a search term on a valid
+        combinatorial unit raises a ValueError.
+
+        This verification is repeated for different values of n and r.
+        """
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(1,n+1):
+                # Skip r=0, because CUs with a zero r-value are
+                # not valid and will not raise ValueError when
+                # an attempt is made to find the index of the
+                # default value
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                with self.subTest(n=n, r=r):
+                    with self.assertRaises(ValueError):
+                        combu.index(combu._default)
+
 
     def test_index_none_term(self):
-        """Verifies that using None as a search term raises a ValueError
-        """
-        with self.assertRaises(TypeError):
-            self.cand_seq.index(None)
+        """ValueError when None is used as a search term.
 
-    def test_index_excess_len_term(self):
-        """Verifies that search terms that are too long raise a
-        ValueError when r is set
+        Verifies that using None as a search term raises a TypeError.
+
+        This verification is repeated for different values of n and r.
+
         """
-        with self.assertRaises(ValueError):
-            term = TestData.seq*10
-            self.cand_seq.index(term)
-            
-    def test_index_inadeq_len_term(self):
-        """Verifies that search terms that are too short raise a
-        ValueError when r is set
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(n+1):
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                with self.subTest(n=n, r=r):
+                    with self.assertRaises(TypeError):
+                        combu.index(None)
+
+    def test_index_too_long_term(self):
+        """ValueError on excessively long search terms
+        
+        Verifies that using search terms that are longer than a
+        combinatorial unit's r-value (when set) raises a ValueError.
+        Setting an r-value should cause the CU to produce results of
+        length r only.
+
+        This verification is repeated for different values of n and r.
+
         """
-        with self.assertRaises(ValueError):
-            term = TestData.seq[0]
-            self.cand_seq.index(term)
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(n+1):
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                with self.subTest(n=n, r=r):
+                    with self.assertRaises(ValueError):
+                        term = src*10
+                        combu.index(term)
             
-class PermutationWithRepeatsIndexTest(PermutationIndexTest):
-    """Repeat Permutation Index tests with the
-    PermutationsWithRepeats class
+    def test_index_too_short_term(self):
+        """ValueError on excessively short search terms
+
+        Verifies that using search terms that are shorter than a
+        combinatorial unit's r-value (when set) raises a ValueError.
+        Setting an r-value should cause the CU to produce results of
+        length r only.
+
+        This verification is repeated for different values of n and r.
+
+        """
+
+        # NOTE: For this test, the minimum values for r and n have been 
+        # been set to 2, as r <= n and when r=1 the only shorter search
+        # term would be an empty sequence. 
+        # 
+        # Testing for empty search terms is handled by 
+        # test_index_empty_term()
+        #
+        for n in range(2, TEST_MAX_N+1):
+            for r in range(2, n+1):
+                src = examples.get_latin_upper_alphas(n)
+                combu = self.combu_class(src, r)
+                with self.subTest(n=n, r=r):
+                    with self.assertRaises(ValueError):
+                        term = src[0]
+                        combu.index(term)
+ 
+
+class PermutationNoRIndexTest(unittest.TestCase):
+    """Verifies the result of slowcomb.Permutation.index(), by informal
+    proofs, where r (permutation size) is not set.
+
+    Glossary
+    --------
+    Please see the Glossary under PermutationIndexTest above
+
     """
-    cand_class = PermutationWithRepeats
+    # Test Case Settings
+    #
+    combu_class = Permutation
 
+    # Tests
+    #
     def test_index_no_i_no_j_no_r(self):
-        """Exempt PermutationWithRepeats class from the no-r test.
-        This is because the repeats-permitted permutation requires
-        a fixed term length (set r-value)
+        """Result of index() with no i, no j and no r.
+
+        Verifies the result of reverse lookups of valid combinatorial
+        results.
+
+        Verification is done by requesting every item of the sequence,
+        and then checking the index used in requesting the item with the
+        result of index().
+
+        This verification is repeated for different values of n.
+        """
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            src = examples.get_latin_upper_alphas(n)
+            combu = self.combu_class(src)
+            for i in range(len(combu)-1):
+                out = combu[i]
+                with self.subTest(n=n, i=i, out=out):
+                    self.assertEqual(i, combu.index(out))
+
+    def test_index_none_term_no_r(self):
+        """ValueError when None is used as a search term.
+
+        Verifies that using None as a search term raises a ValueError.
+
+        This verification is repeated for different values of n.
 
         """
-        pass
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            src = examples.get_latin_upper_alphas(n)
+            combu = self.combu_class(src)
+            with self.subTest(n=n):
+                with self.assertRaises(TypeError):
+                    combu.index(None)
+
+    def test_index_too_long_term_no_r(self):
+        """ValueError on excessively long search terms
+        
+        Verifies that using search terms that are longer than a
+        combinatorial unit's r-value (when set) raises a ValueError.
+
+        This verification is repeated for different values of n.
+
+        """
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            src = examples.get_latin_upper_alphas(n)
+            combu = self.combu_class(src)
+            with self.subTest(n=n):
+                with self.assertRaises(ValueError):
+                    term = src*10
+                    combu.index(term)
+
+class PermutationWithRepeatsIndexTest(PermutationIndexTest):
+    """Repeat Permutation Index Tests with slowcomb.PermutationsWithRepeats.index()
+    """
+    # Test Case Settings
+    combu_class = PermutationWithRepeats
 
 class CombinationIndexTest(PermutationIndexTest):
     """
-    Repeat Permutation Index tests with the Combination class
+    Repeat Permutation Index Tests with the slowcomb.Combination.index()
+
     """
-    cand_class = Combination
-
-    def test_index_no_i_no_j_no_r(self):
-        """Exempt Combination class from the no-r test.
-        This is because the bitmap-based combinators require an r-value
-
-        """
-        pass
+    # Test Case Settings
+    combu_class = Combination
 
 class CombinationWithRepeatsIndexTest(PermutationIndexTest):
     """
     Repeat Permutation Index tests with the CombinationWithRepeats class
     """
-    cand_class = CombinationWithRepeats
-
-    def test_index_no_i_no_j_no_r(self):
-        """Exempt CombinationWithRepeats class from the no-r test.
-        This is because the bitmap-based combinators require an r-value
-
-        """
-        pass
+    # Test Case Settings
+    combu_class = CombinationWithRepeats
 
 class CatCombinationIndexTest(unittest.TestCase):
-    """Verifies the result of slowcomb.CatCombination.index(), the
-    method which returns the external index of a term if it is
-    a member of a Permutator sequence
+    """Verifies the result of slowcomb.CatCombination.index(), by 
+    informal proofs.
     """
     
     def test_index_no_i_no_j(self):
-        src = (('I'),('need','want'),('scissors','sugar','spice'))
-        cand_seq = CatCombination(src, r=len(src))
+        """Result of index() with no i and no j
+        
+        Verifies the result of reverse lookups of valid combinatorial
+        results.
 
-        for i in range(len(cand_seq)-1):
-            out = cand_seq[i]
+        Verification is done by requesting every possible result using all
+        valid indices, then comparing the the indices returned by index()
+        with the original index used in the original request.
+
+        This test is repeated for all accepted values of r
+        
+        """
+        src = examples.src_colonel
+        combu = CatCombination(src, r=len(src))
+        for i in range(len(combu)-1):
+            out = combu[i]
             with self.subTest(i=i, out=out):
-                self.assertEqual(i, cand_seq.index(out))
+                self.assertEqual(i, combu.index(out))
+
+    def test_index_no_i_no_j_no_r(self):
+        """Result of index() with no i, no j and no r.
+        
+        Verifies the result of reverse lookups of valid combinatorial
+        results on the CatCombination class when an r-value is not set.
+
+        Verification is done by requesting every possible result using all
+        valid indices, then comparing the the indices returned by index()
+        with the original index used in the original request.
+        
+        """
+        src = examples.src_colonel
+        combu = CatCombination(src)
+        for i in range(len(combu)-1):
+            out = combu[i]
+            with self.subTest(i=i, out=out):
+                self.assertEqual(i, combu.index(out))
+
 

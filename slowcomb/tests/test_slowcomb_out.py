@@ -26,12 +26,10 @@ from slowcomb.slowcomb import CatCombination, Combination, \
     CombinationWithRepeats, Permutation, PermutationWithRepeats
 from slowcomb.tests import examples
 
-class TestData:
-    pref_r = 4
-    seq = tuple([chr(65+i) for i in range(5)])
-        # First few Capital Letters
-        # The tests are currently reasonably fast up to a length of
-        #  7 letters.
+# Test Settings
+#
+TEST_MIN_N = 1
+TEST_MAX_N = 5
 
 class IterComparativeTest(unittest.TestCase):
     """Verifies the result of a sequence class against the
@@ -167,11 +165,13 @@ class CombinationOutputTests(IterComparativeTest):
     """
 
     def test_out_seq(self):
-        for r in range(0, len(TestData.seq)):
-            ref_iter = itertools.combinations(TestData.seq, r)
-            cand_seq = Combination(TestData.seq, r=r)
-            with self.subTest(r=r):
-                self.verify_output(cand_seq, ref_iter)
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(0, n+1):
+                seq = examples.get_latin_upper_alphas(n)
+                ref_iter = itertools.combinations(seq, r)
+                cand_seq = Combination(seq, r=r)
+                with self.subTest(r=r):
+                    self.verify_output(cand_seq, ref_iter)
 
 class CombinationWithRepeatsOutputTests(IterComparativeTest):
     """
@@ -181,11 +181,13 @@ class CombinationWithRepeatsOutputTests(IterComparativeTest):
     """
 
     def test_out_seq(self):
-        for r in range(0, len(TestData.seq)):
-            ref_iter=itertools.combinations_with_replacement(TestData.seq, r)
-            cand_seq=CombinationWithRepeats(TestData.seq, r=r)
-            with self.subTest(r=r):
-                self.verify_output(cand_seq, ref_iter)
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(0, n+1):
+                seq = examples.get_latin_upper_alphas(n)
+                ref_iter=itertools.combinations_with_replacement(seq, r)
+                cand_seq=CombinationWithRepeats(seq, r=r)
+                with self.subTest(r=r):
+                    self.verify_output(cand_seq, ref_iter)
 
 class PermutationOutputTests(IterComparativeTest):
     """
@@ -194,12 +196,14 @@ class PermutationOutputTests(IterComparativeTest):
     """
     
     def test_out_seq(self):
-        for r in range(0, len(TestData.seq)):
-            # Prepare reference test data
-            ref_iter = itertools.permutations(TestData.seq, r)
-            cand_seq= Permutation(TestData.seq, r=r)
-            with self.subTest(r=r):
-                self.verify_output(cand_seq, ref_iter)
+        for n in range(TEST_MIN_N, TEST_MAX_N+1):
+            for r in range(0, n+1):
+                # Prepare reference test data
+                seq = examples.get_latin_upper_alphas(n)
+                ref_iter = itertools.permutations(seq, r)
+                cand_seq= Permutation(seq, r=r)
+                with self.subTest(r=r):
+                    self.verify_output(cand_seq, ref_iter)
 
 class PermutationWithRepeatsOutputTests(unittest.TestCase):
     """
@@ -208,21 +212,21 @@ class PermutationWithRepeatsOutputTests(unittest.TestCase):
     """
 
     def test_out_seq(self):
-        r = TestData.pref_r
-        test_len = 10**r
-        dec_digits = '0123456789'
-        perm = PermutationWithRepeats(dec_digits,r)
-            # This is functionally a fixed-length decimal number
-            #  counter.
-            # Calling perm[n] returns the number n with its
-            #  digits as separate str's in a tuple
-        for i in range(test_len):
-            expected = ("{:0"+str(r)+"d}").format(i)
+        for r in range(TEST_MIN_N, TEST_MAX_N+1):
+            dec_digits = examples.get_hindu_arabic_digits(10)
+            perm = PermutationWithRepeats(dec_digits,r)
+                # This is functionally a fixed-length decimal number
+                #  counter.
+                # Calling perm[n] returns the number n with its
+                #  digits as separate str's in a tuple
+            times = (10**r) - 1
+            for i in range(times+1):
                 # The test number i padded with leading zeroes
                 #  until it is r digits long, converted to a
                 #  string
-            out_expected = tuple(expected)
-            out = perm[i]
-            self.assertEqual(out, out_expected)
-            
+                expected = ("{:0"+str(r)+"d}").format(i)
+                out_expected = tuple(expected)
+                out = perm[i]
+                self.assertEqual(out, out_expected)
+                
 

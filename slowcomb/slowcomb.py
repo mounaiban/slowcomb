@@ -38,6 +38,31 @@ class Combinatorics(CacheableSequence):
     Cacheable variants.
     """
 
+    def index(self, x):
+        """Get the index of a combinatorial result.
+
+        This method merely initiates the reverse lookup process. The actual
+        lookup process is defined in _get_index().
+
+        Returns the index of the combinatorial result as an integer.
+
+        Arguments
+        ---------
+        x - A sequence matching an output of the combinatorial unit 
+        to be looked up.
+
+        """
+        self._prescreen_index_search_term(x)
+        if self.is_valid() is False:
+            if x == self._default:
+                return 0
+        else:
+            if x == self._default:
+                raise ValueError('default value not accepted as search term')
+            if x == ():
+                raise ValueError('empty sequence not accepted as search term')
+            return self._get_index(x)
+ 
     def is_valid(self):
         """
         Check if a Combinatroics sequence is ready to return any
@@ -56,6 +81,10 @@ class Combinatorics(CacheableSequence):
         """
         # Return False if the sequence is set to work on itself
         if self._seq_src is self:
+            return False
+
+        # Zero-length sources invalidate the combinatorial unit
+        if len(self._seq_src) <= 0:
             return False
 
         if self._r is not None:
@@ -81,6 +110,7 @@ class Combinatorics(CacheableSequence):
         """
         if x is None:
             raise TypeError('Search term cannot be None')
+
         if self._r is not None:
             if len(x) != self._r:
                 msg = "term must have a length of {0}".format(self._r)
@@ -716,7 +746,7 @@ class CatCombination(PBTreeCombinatorics):
         self._seq_src = tuple(temp)
         self._set_ii_bounds()
 
-    def index(self, x):
+    def _get_index(self, x):
         """
         Return the first index of a term, if it is a member of this 
         combinatorial sequence.
@@ -726,7 +756,6 @@ class CatCombination(PBTreeCombinatorics):
         x - The term to be searched for. Accepts any Python iterator type.
 
         """
-        self._prescreen_index_search_term(x)
         temp_ii = 0
         temp_src = self._seq_src[1:]
             # Strip the leading second-level sequence representing 
@@ -1061,7 +1090,7 @@ class Permutation(PBTreeCombinatorics):
     This is due to the element elimination of the permutation process.
 
     """
-    def index(self, x):
+    def _get_index(self, x):
         """
         Return the first index of a term, if it is a member of this 
         combinatorial sequence.
@@ -1071,7 +1100,6 @@ class Permutation(PBTreeCombinatorics):
         x - The term to be searched for. Accepts any Python iterator type.
 
         """
-        self._prescreen_index_search_term(x)
         temp_x = list(x)
         temp_src = list(self._seq_src)
         temp_ii = 0
@@ -1478,7 +1506,7 @@ class PermutationWithRepeats(Permutation):
     gambling machines.
 
     """
-    def index(self, x):
+    def _get_index(self, x):
         """
         Return the first index of a term, if it is a member of this 
         combinatorial sequence.
@@ -1488,7 +1516,6 @@ class PermutationWithRepeats(Permutation):
         x - The term to be searched for. Accepts any Python iterator type.
 
         """
-        self._prescreen_index_search_term(x)
         temp_ii = 0
         levels = len(x)
         for i in range(levels):
@@ -1706,7 +1733,7 @@ class Combination(Combinatorics):
     from Python's itertools.
 
     """
-    def index(self, x):
+    def _get_index(self, x):
         """
         Return the first index of a term, if it is a member of this 
         combinatorial sequence.
@@ -1717,7 +1744,6 @@ class Combination(Combinatorics):
             Python iterator type.
 
         """
-        self._prescreen_index_search_term(x)
 
         # Reconstruct the bitmap from the sequence
         #
@@ -1908,7 +1934,7 @@ class CombinationWithRepeats(Combination):
 
     """
            
-    def index(self, x):
+    def _get_index(self, x):
         """
         Return the first index of a term, if it is a member of this 
         combinatorial sequence.

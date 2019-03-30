@@ -59,37 +59,8 @@ class FasterPrimeOutputTests(unittest.TestCase):
 
     func = lambda self,x:faster_prime(x)
 
-    def test_i_100(self):
-        self.assertEqual(self.func(100),541)
-
-    def test_i_500(self):
-        self.assertEqual(self.func(500),3571)
-    
     def test_i_1000(self):
         self.assertEqual(self.func(1000),7919)
-
-    def test_i_2000(self):
-        # This took ~21s on an AMD A4-7210 in Fedora 29
-        self.assertEqual(self.func(2000),17389)
-
-    def test_i_5000(self):
-        self.assertEqual(self.func(5000),48611)
-    
-    @unittest.skip('Slow test skipped, edit test_slowprime to run')
-    def test_i_16384(self):
-        self.assertEqual(self.func(16384),180503)
-
-    @unittest.skip('Slow test skipped, edit test_slowprime to run')
-    def test_i_32767(self):
-        self.assertEqual(self.func(32767),386083)
-        
-    @unittest.skip('Slow test skipped, edit test_slowprime to run')
-    def test_i_65536(self):
-        self.assertEqual(self.func(65536),821641)
-
-    @unittest.skip('Slow test skipped, edit test_slowprime to run')
-    def test_i_100k(self):
-        self.assertEqual(self.func(100_000),1299709)
 
 class FasterPrimeSyncTests(unittest.TestCase):
     """
@@ -129,7 +100,6 @@ class FastererPrimeOutputTests(FasterPrimeOutputTests):
     """
     func = lambda self,x:fasterer_prime(x)
 
-@unittest.skip('Slow test suite skipped, edit test_slowprime to run')
 class SlowPrimeOutputTests(FasterPrimeOutputTests):
     """Repeat output tests for Slow Primes Finder, slow_prime()"""
     func = lambda self,x:faster_prime(x)

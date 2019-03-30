@@ -24,9 +24,10 @@ test_slowcomb_out — Slow Addressable Combinatorics Output Test Module
 import itertools, unittest
 from slowcomb.slowcomb import CatCombination, Combination, \
     CombinationWithRepeats, Permutation, PermutationWithRepeats
+from slowcomb.tests import examples
 
 class TestData:
-    pref_r = 5
+    pref_r = 4
     seq = tuple([chr(65+i) for i in range(5)])
         # First few Capital Letters
         # The tests are currently reasonably fast up to a length of
@@ -106,41 +107,37 @@ class IterComparativeTest(unittest.TestCase):
 
 class CatCombinationOutputTests(unittest.TestCase):
     """
-    Verify that the CatCombination returns the correct data,
-    and that the process of generating the data works correctly.
+    Verifies the output of the CatCombination combinatorial unit.
+
+    This test case verifies results explicitly; it uses manually
+    prepared, hard-coded data seen below as an indication of correct
+    operation
+
     """
+    seq = examples.src_colonel
+        # See examples.py for exact content of this source 
 
     def setUp(self):
-        self.comb = CatCombination(SCCTestData.seqs)
-        self.comb_min_r = CatCombination(SCCTestData.seqs,1)
-        self.comb_median_r = CatCombination(SCCTestData.seqs,2)
-        self.comb_max_r = CatCombination(SCCTestData.seqs,4)
+        self.comb = CatCombination(self.seq)
+        self.comb_min_r = CatCombination(self.seq,1)
+        self.comb_median_r = CatCombination(self.seq,2)
+        self.comb_max_r = CatCombination(self.seq,3)
 
         # Expected Results
         self.expected_addr_min_r = ((0,),(0,),(0,))
 
-        self.expected_data_min_r = (('He',), ('She',), ('You',))
+        self.expected_data_min_r = (('I',),)
         self.expected_data_median_r =(
-            ('He','kicked'),
-            ('He','punted'),
-            ('She','kicked'),
-            ('She','punted'),
-            ('You','kicked'),
-            ('You','punted'),
+            ('I','need'),
+            ('I','want'),
         )
         self.expected_data_max_r = (
-            ('He','kicked','my','dog'),
-            ('He','kicked','my','cat'),
-            ('He','punted','my','dog'),
-            ('He','punted','my','cat'),
-            ('She','kicked','my','dog'),
-            ('She','kicked','my','cat'),
-            ('She','punted','my','dog'),
-            ('She','punted','my','cat'),
-            ('You','kicked','my','dog'),
-            ('You','kicked','my','cat'),
-            ('You','punted','my','dog'),
-            ('You','punted','my','cat'),
+            ('I','need','sugar'),
+            ('I','need','spice'),
+            ('I','need','scissors'),
+            ('I','want','sugar'),
+            ('I','want','spice'),
+            ('I','want','scissors'),
         )
 
     def test_iter_max_r(self):

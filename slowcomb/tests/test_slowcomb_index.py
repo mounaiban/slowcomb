@@ -1,6 +1,5 @@
-
 """
-test_slowcomb_index — Addressing Integration Tests
+test_slowcomb_index — Combinatorial Unit index() reverse-lookup tests
 """
 
 # Copyright © 2019 Moses Chong

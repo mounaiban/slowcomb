@@ -152,16 +152,6 @@ seq_dict_cache.enable_cache()
     # (e.g. the 10000th) to be returned when it is first requested,
     # and when it is requested again.
     #
-seq_snob = SNOBSequence(8,4)
-    # A Same Number of Bits (SNOB) sequence which includes all
-    # 8-bit binary numbers with four bits active. The numbers are
-    # ordered from the largest to the smallest.
-    # All outputs from the sequence are in decimal by default.
-    # To see them in binary, try the "{:b}" format with print
-    # or str():
-    #
-    # "{:b}".format(seq_snob[0])
-    #
 seq_sum = SumSequence(lambda x:x**2, length=65536)
     # A Sum Sequence which includes the first 65,536 stages of
     # 'the sum of squares to x'.
@@ -177,6 +167,20 @@ seq_accu_2 = AccumulateSequence(lambda x:x, lambda x,a:x+(-a),
     # subtracting the value of all previous terms from the latest
     # term. The net effect is a sequence where every consecutive
     # natural number appears twice. Can you figure this one out?
+
+
+# Ready-made Number Sequences Supporting index()
+#
+seq_snob = SNOBSequence(8,4)
+    # A Same Number of Bits (SNOB) sequence which includes all
+    # 8-bit binary numbers with four bits active. The numbers are
+    # ordered from the largest to the smallest.
+    # All outputs from the sequence are in decimal by default.
+    # To see them in binary, try the "{:b}" format with print
+    # or str():
+    #
+    # "{:b}".format(seq_snob[0])
+    #
 
 
 # Ready-made Combinatorial Units

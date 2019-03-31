@@ -224,9 +224,6 @@ Testing
 * Create a more user-friendly Test Planner. The current ``plan.py`` isn't
   exactly *Fit for Public Use*.
 
-* Consolidate test data, so the same specimens may be used in both manual
-  and automatic testing.
-
 * Performance Tests, Second Edition: implement comparative performance
   tests to compare Slowcomb with ``itertools`` combinatorics across
   different source sequence (n-values) and selection sizes (r-values),

@@ -28,24 +28,12 @@ from slowcomb.tests import examples
 
 # Functions
 #
-def pretty_print_iter(it):
-    for i in it:
-        print("◆ " + i)
-
 def test_all_docs():
-    """Verify examples in main module docstrings """
+    """Verify examples in main module docstrings"""
+
     doctest.testfile('../slowseq.py')
     doctest.testfile('../slowcomb.py')
 
-def test_get_test_seq(name):
-    """Return a test sequence of a specific name k"""
-    item = test_cand[name]
-    if issubclass(item.__class__, Combinatorics) is True:
-        return CombrTest(item)
-    elif issubclass(item.__class__, NumberSequence) is True:
-        return SeqTest(item)
-    else:
-        return "This is not a Slowcomb sequence"
 
 # Classes
 # 

@@ -24,52 +24,7 @@ import datetime
 import doctest
 import pdb
 import timeit
-from slowcomb.slowcomb import *
-from slowcomb.slowseq import *
-from slowcomb.tests.examples import *
-
-# Test Data
-#
-#   Special thanks to the contributors at Emojipedia!
-test_data = {
-            'abcd':('a','B','c','D'),
-            'abcdef':('a','B','c','D','e','F'),
-            'atoz_upper':[chr(65+x) for x in range(26)],
-            'colonel':(('I',),('need','want'),('sugar', 'spice', 'scissors')),
-            'pokies':('💖', '💎', '🦄', '🍒', '🌴', '💰'),
-            'pokies_short':('💖', '💎', '🦄', '🍒'),
-}
-
-# Test Sequences
-#
-#   Please place test candidates for Permutators, Combinators, or all
-#   other support sequence inside the test_cand dictionary.
-#
-#   This makes it easier to automate the manual tests (contradictory,
-#   but helpful!)
-test_cand = {'test_c_abcdef' : Combination(test_data['abcdef'],r=3),
-        'test_c_pokies_short' : Combination(test_data['pokies_short'],r=2),
-        'test_cc_colonel' : CatCombination(test_data['colonel'], r=3),
-        'test_cc_colonel_no_r' : CatCombination(test_data['colonel']),
-        'test_cc_complex' : CatCombination(
-            (
-                Permutation(test_data['atoz_upper'], r=6),
-                CatCombination(test_data['colonel'], r=3),
-            ),
-            r=2),
-        'test_cr_abcd' : CombinationWithRepeats(test_data['abcd'],r=4),
-        'test_cr_pokies_short' : CombinationWithRepeats(
-            test_data['pokies_short'],r=4),
-        'test_p_abcd' : Permutation(test_data['abcd']),
-        'test_p_pokies_no_r' : Permutation(test_data['pokies']),
-        'test_p_pokies_short_no_r' : Permutation(test_data['pokies_short']),
-        'test_pr_pokies' : PermutationWithRepeats(test_data['pokies'],r=6),
-        'test_pr_pokies_short' : PermutationWithRepeats(
-             test_data['pokies_short'],r=4),
-        'test_seq_snob' : SNOBSequence(6,4),
-        'test_seq_node_counts' : CacheableSequence(lambda x:4**x, length=4),
-        'test_sseq_thresholds' : SumSequence(lambda x:4**x, length=4), 
-}
+from slowcomb.tests import examples
 
 # Functions
 #
@@ -81,21 +36,6 @@ def test_all_docs():
     """Verify examples in main module docstrings """
     doctest.testfile('../slowseq.py')
     doctest.testfile('../slowcomb.py')
-
-def test_class_repr():
-    """
-    Return the output of __repr__() of all test sequences in test_cand
-    """
-    for k in test_cand.keys():
-        print("{0}: {1}".format(k, repr(test_cand[k])) )
-
-def test_get_test_data_names():
-    """Return the names of all test data items in test_data"""
-    pretty_print_iter(test_data.keys())
-
-def test_get_test_seq_names():
-    """Return the names of all test sequences in test_cand"""
-    pretty_print_iter(test_cand.keys())
 
 def test_get_test_seq(name):
     """Return a test sequence of a specific name k"""
@@ -158,24 +98,6 @@ class CombrTest(SeqTest):
     def __init__(self, seq):
         super().__init__(seq)
 
-# Manual Testing Environment Preparation
-# 
-#  Prepare test items for easy access
-test_cc_colonel = test_get_test_seq('test_cc_colonel')
-test_cc_colonel_no_r = test_get_test_seq('test_cc_colonel_no_r')
-test_cc_complex = test_get_test_seq('test_cc_complex')
-test_c_abcdef = test_get_test_seq('test_c_abcdef')
-test_c_pokies_short = test_get_test_seq('test_c_pokies_short')
-test_cr_abcd = test_get_test_seq('test_cr_abcd')
-test_cr_pokies_short = test_get_test_seq('test_cr_pokies_short')
-test_p_abcd = test_get_test_seq('test_p_abcd')
-test_p_pokies_no_r = test_get_test_seq('test_p_pokies_no_r')
-test_p_pokies_short_no_r = test_get_test_seq('test_p_pokies_short_no_r')
-test_pr_pokies = test_get_test_seq('test_pr_pokies')
-test_pr_pokies_short = test_get_test_seq('test_pr_pokies_short')
-test_seq_snob = test_get_test_seq('test_seq_snob')
-test_seq_node_counts = test_get_test_seq('test_seq_node_counts')
-test_sseq_thresholds = test_get_test_seq('test_sseq_thresholds')
 
 # Python Interactive Prompt Welcome Message
 #
@@ -183,14 +105,6 @@ if __name__ != '__main__':
     print((('hey babe...','Hey, brother!')\
         [datetime.datetime.now().microsecond%2]))
     print('This is the Slowcomb Manual Testing Environment')
-    print("Test items available from dict test_data:")
-    test_get_test_data_names()
-    print("Test candidates available from dict test_cand:")
-    test_get_test_seq_names()
-    print("To get a test data item, type: x = test_data['name']")
-    print("To get a test sequence, type: x = test_cand['name']")
-    print("Substitute 'name', with a name above, retain the quotes.")
-    print("Substitute x with anything you want, then play with it!")
     print("For a list of ready-to-play test items, try typing")
-    print("'test_' and press the tab key twice.")
+    print("'examples' and press the tab key twice.")
 

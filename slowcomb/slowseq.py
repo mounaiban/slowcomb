@@ -1,6 +1,5 @@
 """
-slowseq — Slow Combinatorics supporting sequence classes
-and more.
+Number Sequence classes for supporting Combinatorial Units
 """
 
 # Copyright © 2019 Moses Chong
@@ -74,46 +73,383 @@ def int_ncr(n,r):
 # Classes
 #
 class NumberSequence:
-    """Addressable finite number sequence.
-
-    A class for a numeric sequence with a finite number of terms,
-    which supports slicing in order to directly address members of the 
-    sequence. This class may also be used as an iterator.
-
-    For further instructions on its use, see __init__() and
-    __getitem__() below.
     """
+    Subscriptable Lazily-Evaluated Numerical Sequence
 
+    A class for creating a numerical sequence where individual terms
+    of the sequence may be requested in any order with numbered indices,
+    or slices.
+
+    This class is the basis for most of the main classes of slowcomb, 
+    including the CombinatorialUnit classes.
+
+    For examples on how to use the NumberSequence, see the section
+    More Examples on Using NumberSequence below.
+            
+
+    Required Arguments
+    ------------------
+    * func - The function to derive a term of the sequence. Both 
+      block and lambda functions are accepted.
+
+      * If func is defined at module or method scope, the
+          arguments should be like:
+
+        ::
+
+          func(ii)
+
+        The internal index value will be used as the value of ii.
+
+      * If func is defined at class scope, please use the following
+        argument format instead:
+      
+        ::
+        
+          func(self, ii)
+       
+      Please note that the NumberSequence uses the internal index
+      to derive its terms. Please see the section Term Indexing
+      below.
+
+    * length - Number of terms in the sequence. Accepts int,
+      where length ≥ 0.
+
+
+    Optional Arguments
+    ------------------
+    * ii_start - The first position of the internal index. Accepts int,
+      where ii_start ≥ 0. Default is 0. For details on its use, see
+      the section Term Indexing below.
+
+    * default - The default value or object returned in the event the
+      sequence has a zero length, or is unable to otherwise derive
+      a term from a valid index. Any object is accepted. The default
+      default is None.
+
+
+    Term Indexing
+    -------------
+    NumberSequence uses a two-level addressing system to map integer
+    indices supplied by the consumer to a term of the sequence.
+
+    *External Indices* are supplied to the NumberSequence by consumer
+    code, by way of subscripting as seen in expressions like
+    ``seq[1]``; the number 1 is the external index.
+
+    *Internal Indices* are the indices used by only the NumberSequence
+    to keep track of the terms. Internal Indices are resolved from
+    external indices with the ``_resolve_i()`` method.
+    
+    By default, the Internal Index points to the same term as the
+    External Index, but this can be altered with the ``ii_start``
+    keyword argument when creating a new NumberSequence.
+
+    At time of writing, the relationship between external and internal
+    indices is a constant. The external index is always a fixed number
+    ahead or behind the internal index. In maths speak:
+
+    ::
+       
+       ii = i + ii_start,
+
+    Where ``_ii_start`` is an integer.
+
+    Example
+    =======
+    Consider the following sequence:
+
+      "All powers of two from zero to 100."
+
+    In code, you could express it like:
+
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> pow_twos = NumberSequence(lambda x:2**x, length=101)
+    >>> # PROTIP: There are a hundred *and one* numbers
+    >>> # between zero to 100 *inclusive*.
+
+    To get the fifth power of two, you would call
+
+    >>> pow_twos[5]
+    32
+
+    But what if the sequence was defined like this instead:
+
+      "All powers of two -50 to 50."
+
+    You have two options, either rewrite the equation as:
+
+    >>> pow_twos_nfa = NumberSequence(lambda x:2**(x-50), length=101)
+
+    Or use internal index mapping:
+
+    >>> pow_twos_nfb = NumberSequence(lambda x:2**x, length=101,
+    ... ii_start=-50)
+
+    When you want to recall two to the power of minus 5, which works
+    out to be the term behind the 45th external index (as ``2**0`` is
+    mapped to the 50th) do this:
+    
+    >>> pow_twos_nfa[45]
+    0.03125
+
+    >>> pow_twos_nfb[45]
+    0.03125
+
+    You may encounter non-trivial examples where using internal index
+    remapping is more advantageous than rewriting the equation.
+
+
+    More Examples of Using NumberSequence
+    -------------------------------------
+    Quadratic Curve 
+    ===============
+    This example uses ``ii_start``.
+
+    Consider this sequence -- all positive values of y in:
+
+        y = -(x/40)**2 + 100 
+
+    Where x is an integer.
+
+    After working it out, we come to the conclusion that -40 ≤ x ≤ 40.
+    This also means we have eighty-one terms, when we include x=0.
+
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> func_funk = lambda x: -(x/4)**2 + 100
+    >>> seq_quadr = NumberSequence(func_funk, ii_start=-40, length=81)
+
+    The result of x=-40 is thus mapped to:
+
+    >>> seq_quadr[0]
+    0.0
+
+    As the external index of 0 is mapped to internal index -40, which
+    the NumberSequence uses as the x-value.
+
+    We can recall the maximum value of y:
+
+    >>> seq_quadr[40]
+    100.0
+
+    The value x=0 is mapped to the 40th External Index, which resolves
+    to Internal Index zero, which in turn is used as the x-value of
+    func_funk to derive the term.
+
+    Try other indices, like:
+
+    >>> seq_quadr[80]
+    0.0
+
+    >>> seq_quadr[20]
+    75.0
+
+    >>> seq_quadr[60]
+    75.0
+
+    >>> seq_quadr[10]
+    43.75
+
+    >>> seq_quadr[70]
+    43.75
+
+    Powers of Two, Part II
+    ======================
+    This example demonstrates slice addressing to request multiple
+    terms in a single call
+
+    The sequence is expressed as:
+    
+      "All powers of two from 0 to 10"
+
+    This can be coded as:
+
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> func_pow2 = lambda x:2**x
+    >>> seq_pow2 = NumberSequence(func_pow2,length=11)
+
+    The 10th term of the sequence, 2**10, can be addressed as such:
+
+    >>> seq_pow2[10]
+    1024
+
+    The 2nd to 5th terms inclusive can be addressed with a slice like:
+
+    >>> seq_pow2[2:6] 
+    (4, 8, 16, 32)
+
+    You can also get all even powers of two from the sequence:
+
+    >>> seq_pow2[2:11:2]
+    (4, 16, 64, 256, 1024)
+
+    Python sequence slicing conventions are also in use here, with
+    respect to how the stop value is interpreted: [2:5] means
+    '2nd to before the 5th'. Likewise, [5:2:-1] means '5th back to
+    after the 2nd'.
+
+    Powers of Two, Part III
+    =======================
+    This example demonstrates the use of negative indices for getting
+    multiple terms in reverse order, or for addressing terms by position
+    relative to the end (right side) of the sequence.
+
+    While we're still with our power-of-two sequence:
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> seq_pow2 = NumberSequence(lambda x:2**x,length=11)
+
+    Multiple terms in reverse order with negative step values:
+    
+    >>> seq_pow2[5:1:-1]
+    (32, 16, 8, 4)
+        
+    Negative addressing to get a term by its position from the
+    right end, as seen with Python's built-in sequence types:
+
+    Get the first item from the right:
+
+    >>> seq_pow2[-1]
+    1024
+
+    Or the second from the right:
+
+    >>> seq_pow2[-2]
+    512
+
+    To get the second to second-last (9th) term in reverse order:
+
+    >>> seq_pow2[-2:1:-2]
+    (512, 128, 32, 8)
+
+    To get the first to the fifth term in reverse order:
+
+    >>> seq_pow2[5:0:-1]
+    (32, 16, 8, 4, 2)
+
+    NOTE: Due to limitations, it is not possible to include the
+    zeroth term of a sequence in a slice when a negative step value
+    is used.
+
+    Warm and Cool Colours
+    =====================
+    This example demonstrates the use of block functions with the
+    NumberSequence, and a possiblitiy of using non-decimal output.
+
+    Consider a sequence 100 colours. Every other colour is an 
+    opposite colour of the last. The first colour is a warm colour,
+    and second a cool colour, and so on.
+
+    Also, Python does American spelling, but I don't :P
+
+    >>> import colorsys  
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> def get_hue(i):
+    ...     # Step between warm and cool colours
+    ...     # In Python HSV, H values start from 0.0
+    ...     # representing red, then to 1/3 representing
+    ...     # green, then to 2/3 representing blue, then
+    ...     # back to red at 1.0.
+    ...     hue = 0
+    ...     if i%2==0 :
+    ...         hue += (0.01*i)%1
+    ...     else:
+    ...         hue += (0.5 + 0.01*i)%1
+    ...     rgb = colorsys.hsv_to_rgb(hue, 1.0, 0.75)
+    ...     # Convert relative values to 8-bit hex absolute values
+    ...     rgb_hex = ['{0:02X}'.format(int(255*i)) for i in rgb]
+    ...     # Convert RGB 8-bit hexadecimal to W3C 24-bit spec
+    ...     out = '#'
+    ...     for i in rgb_hex:
+    ...         out+=i
+    ...     return out
+    >>> seq_hue = NumberSequence(get_hue,100)
+
+    Note the omission of the ``length`` keyword.
+
+    Get the first colour (a passionate red)!
+    All colours are in W3C 24-bit format, seen in HTML, CSS, SVG...
+
+    >>> seq_hue[0]
+    '#BF0000'
+    
+    Get the second (first+1'th) colour (a calming aqua)!
+
+    >>> seq_hue[1]
+    '#00B3BF'
+
+    Get the 34th colour (an alluring violet)!
+    
+    >>> seq_hue[33]
+    '#BB00BF'
+
+    Get the 66th colour (some olive oil-like colour)!
+    
+    >>> seq_hue[67]
+    '#BBBF00'
+
+    Guess what these colours are:
+
+    >>> seq_hue[80]
+    '#9900BF'
+
+    >>> seq_hue[83]
+    '#03BF00'
+
+    >>> seq_hue[90]
+    '#BF0072'
+
+    Use As An Iterator
+    ------------------
+    As with all sequence types, you can use a NumberSequence, and
+    all of its subclasses, as an iterator:
+
+    >>> from slowcomb.slowseq import NumberSequence
+    >>> seq_sq = NumberSequence(lambda x:x**2, length=10, ii_start=1)
+    >>> for i in seq_sq:
+    ...     print(i,end=',')
+    1,4,9,16,25,36,49,64,81,100,
+
+    """
     # Private Methods
     # 
     def _check_i(self, i):
-        """Checks if an external index is out of bounds.
-        
-        Raise an IndexError if the external index requested is deemed
-        to be out of range.
-
-        Arguments:
-        i - External index, as requested by square-bracket addressing
         """
+        Checks if an external index is out of bounds.
+        
+        Raises an IndexError when index is deemed to be out of range.
 
+        Arguments
+        ---------
+        * i - external index, as an int
+
+        Exceptions
+        ----------
+        * IndexError - if i is deemed out of range.
+
+        """
         len_self = len(self)
         if i >= len_self or i < -len_self:
             raise IndexError('Sequence index out of bounds')
     
     def _clamp_i(self, i, i_min, i_max):
-        """Limits a value to a set range.
+        """
+        Limits a value to a set range.
 
         If a value i is found to exceed a nominated maximum, the
         maximum is returned. Likewise, if i is lower than a minimum
         value, the minimum value is returned.
 
-        Arguments:
-        i - the value to be checked
-        i_min - minimum value to be returned
-        i_max - maximum value which may be returned
+        Arguments
+        ---------
+        * i - the value to be checked
+
+        * i_min - minimum value to be returned
+
+        * i_max - maximum value which may be returned
 
         All arguments may be of any type which supports comparisons by
         the less than (<) and greater than (>) operators.
+
         """
         if i >= i_max:
             return i_max
@@ -123,8 +459,10 @@ class NumberSequence:
             return i
 
     def _get_args(self):
-        """Attempt to rebuild a probable equivalent of the arguments
-        used in constructing this sequence
+        """
+        Attempt to rebuild a probable equivalent of the arguments
+        used in constructing this sequence, as a ``str``.
+
         """
         re_arg_fmt = "func={0}, length={1}, ii_start={2}, default={3}"
         re_args = re_arg_fmt.format(
@@ -135,22 +473,29 @@ class NumberSequence:
         return re_args
  
     def _get_member(self, i):
-        """Routine to return the first+n'th member of the sequence
-
-        Arguments:
-        i - External index of the member
         """
+        Return the first+n'th member of this sequence.
+        See the class documentation on how to get members from the
+        sequence.
 
+        Arguments
+        ---------
+        * i - External index of the member. Accepts int, i ≥ 0.
+
+        """
         self._check_i(i)
         return self._func(self._resolve_i(i))
 
     def _get_members(self, s):
-        """Routine to return multiple members in response to a slice
+        """
+        Routine to return multiple members in response to a slice
         
-        Arguments:
-        s - External start, stop and step indices in a Python ``slice``
-        """ 
+        Arguments
+        ---------
+        * s - Python ``slice`` containing external indices for start,
+          stop and step values.
 
+        """ 
         out = []
         s = self._resolve_slice(s)
         for ii in range(s.start, s.stop, s.step):
@@ -158,20 +503,17 @@ class NumberSequence:
         return tuple(out)
 
     def _resolve_i(self, i):
-        """Remaps external indices to internal indices, and supports
-        the use of negative indices.
-
-        This dual index system in use by NumberSequence is intended to
-        reconcile the nature of numerical sequences, which may not 
-        begin at zero or one, with the nature of Python's data sequences,
-        which always begin at index zero for the first item and end at
-        the number of items in the sequence. For further information,
-        refer to the usage notes in __init__().
-
-        Arguments:
-        i - External index, as requested by square-bracket addressing
         """
+        Remaps external indices to internal indices, and supports
+        the use of negative indices. See the class documentation for
+        NumberSequence for details on how it works, and why it is
+        in use.
 
+        Arguments
+        ---------
+        * i - External index, accepts int, i ≥ 0.
+
+        """
         if i < 0:
             return self._ii_max + i
             # PROTIP: Add with a negative to subtract from
@@ -181,14 +523,14 @@ class NumberSequence:
 
     def _resolve_slice(self, s):
         """
-        Resolves a slice of external indices to a slice of internal
-        indices.
+        Resolves a slice containing external indices to a slice 
+        of internal indices. Calls _clamp_i() and _resolve_i().
 
-        Arguments:
-        s - External indices, as requested by a Python ``slice``
+        Arguments
+        ---------
+        * s - Python ``slice`` containing external indices.
 
         """
-
         len_self = len(self)
         stop = self._clamp_i(s.stop, -len_self+1, len_self)
         stop_res = self._resolve_i(stop)
@@ -202,7 +544,8 @@ class NumberSequence:
         return slice(start_res, stop_res, step)
 
     def _set_ii_bounds(self):
-        """Sets the upper limit of the internal index.
+        """
+        Sets the upper limit of the internal index.
 
         Always returns None.
         """
@@ -212,96 +555,19 @@ class NumberSequence:
     # Special Methods and Constructor
     #
     def __getitem__(self, key):
-        """Supports addressing of single or multiple individual terms
-        of a NumberSequence using Python's square-bracket notation.
-
-        As with Python's built-in sequence types, both integer and 
-        slice addressing may be used. Negative indices to address terms
-        from the farthest end of the sequence are also supported.
-
-        As with Python's sequences, Indices address the _first+n'th_
-        sequence, and thus begin at zero. The zero'th index therefore
-        references the first term of the sequence.
-        
-        Returns numeric types for single terms, and tuples for multiple
-        terms.
-
-        Examples:
-        ---------
-        Given a NumberSequence of powers of two from 0 to 10:
-
-        >>> from slowcomb.slowseq import NumberSequence
-        >>> func_pow2 = lambda x:2**x
-        >>> seq_pow2 = NumberSequence(func_pow2,length=11)
-
-        Please remember that there are eleven terms from i=0 to ii=10
-        inclusive. By default, sequences start from zero.
-
-        Single Term Addressing
-        ======================
-        The 10th term of the sequence, 2**10, can be addressed as such:
-
-        >>> seq_pow2[10]
-        1024
-
-        Slicing
-        =======
-        Get all terms from the 2nd to 5th inclusive of the sequence 
-        like this:
-
-        >>> seq_pow2[2:6] 
-        (4, 8, 16, 32)
-
-        You can also get all even powers of two from the sequence:
-
-        >>> seq_pow2[2:11:2]
-        (4, 16, 64, 256, 1024)
-
-        Or get multiple terms in reverse order with negative step values:
-        
-        >>> seq_pow2[5:1:-1]
-        (32, 16, 8, 4)
-        
-        Recall that by Python slicing conventions: 2nd to 5th must be
-        written as '2nd to before the 6th', while reverse order slices
-        such as 5th to 2nd must be written as '5th to after the 1st'.
-
-        Negative Addressing
-        ===================
-        Negative addressing to get a term by its position from the farthest
-        end, as seen with Python's own sequences, are also supported:
-
-        Get the first item from the farthest end:
-
-        >>> seq_pow2[-1]
-        1024
-
-        Or the second from the farthest end:
-
-        >>> seq_pow2[-2]
-        512
-
-        And so on...
-
-        Mixed Slicing
-        =============
-        Feel free to mix negative and positive indices and steps!
-
-        To get the second to second-last (9th) term in reverse order:
-
-        >>> seq_pow2[-2:1:-2]
-        (512, 128, 32, 8)
-
-        To get the first to the fifth term in reverse order:
-
-        >>> seq_pow2[5:0:-1]
-        (32, 16, 8, 4, 2)
-
-        Sorry, due to limitations, it is not possible to include the
-        zeroth term of a sequence in a slice when a negative step value
-        is used.
         """
+        Supports getting single or multiple individual terms from 
+        a NumberSequence using Python's subscript notation.
 
+        For details on how this works on this class, please refer
+        to the class documentation above.
+
+        Exceptions
+        ----------
+        * TypeError - when an object that is not an ``int``or a
+          ``slice`` is used in place of ``key``.
+
+        """
         if isinstance(key, int) is True:
             return self._get_member_method(key)
         elif isinstance(key, slice) is True:
@@ -311,35 +577,25 @@ class NumberSequence:
 
 
     def __iter__(self):
-        """Special method just to enable use as an iterator.
-        
-        Example
-        -------
-        This iterator yields all values for the sequence containing
-        all squares from 1 to 10:
-
-        >>> from slowcomb.slowseq import NumberSequence
-        >>> seq_sq = NumberSequence(lambda x:x**2, length=10, ii_start=1)
-        
-        You can print all the terms from 1 to 10 like this:
-
-        >>> for i in seq_sq:
-        ...     print(i,end=',')
-        1,4,9,16,25,36,49,64,81,100,
+        """
+        Special method just to enable use of this class as an iterator.
+        See the class documentation above for details.
 
         """
         return self
 
 
     def __len__(self):
-        """Returns the number of terms available in a NumberSequence"""
+        """
+        Return the number of terms available, as an ``int``.
+        """
 
         # NOTE: This works also when _ii_start is negative
         return self._len
 
     def __next__(self):
-        """Supports the use of this class as an iterator.
-        See __iter___().
+        """
+        Supports the use of this class as an iterator.
         """
         if (self._ii_max is None) or (self._i >= len(self)):
             raise StopIteration
@@ -348,225 +604,28 @@ class NumberSequence:
         return out
 
     def __repr__(self):
-        """Supports the reporting of information that can be used
-        to reconstruct this sequence
+        """
+        Supports the reporting of information that can be used to 
+        reconstruct this sequence. The information is returned as a
+        string when the name an instance is referenced, without any
+        reference to its members or without any parentheses.
+
         """
         out = "{0}({1})".format(self.__class__.__name__, self._get_args())
         return out
         # TODO: Implement Slowcomb Reporting Tools
 
     def __init__(self, func, length, **kwargs):
-        """Method to create a NumberSequence instance
-        
-        Options for creating a NumberSequence
-        -------------------------------------
-
-        Arguments
-        =========
-        func - The function to derive a term of the sequence. Accepts
-            'full-bodied' functions or lambdas.
-
-            * If the function is defined outside a class or inside
-            a method then it must only have one argument for the 
-            internal index of the term. For more info on internal
-            and external indices, see NumberSequence.__init__().
-
-            * If the function is defined inside a class, it is 
-            classified as a method by Python conventions, and must
-            have two arguments, one for ``self`` and another for
-            the index of the term.
-
-        n - The number of terms in the sequence. Accepts int.
-
-        Optional Arguments
-        ==================
-        ii_start - The first position of the internal index. For 
-            more information about them, please see the section
-            on Internal Indices below. Accepts int.
-
-        default - The default value or object returned in the event the
-            sequence has a zero length, or is unable to otherwise derive
-            a term from a valid index. May be of any class.
-
-        Examples
-        --------
-
-        Trivial Example: Power of Two Sequence
-        ======================================
-        This sequence has 101 terms, and thus contains all powers
-        of two from zero to 100.
-        >>> from slowcomb.slowseq import NumberSequence
-        >>> seq_pow2 = NumberSequence(lambda x:2**x,101)
-
-        Get the result of 2**0
-
-        >>> seq_pow2[0]
-        1
-
-        Get the result of 2*100
-        
-        >>> seq_pow2[100]
-        1267650600228229401496703205376
-
-        Slightly More Complex Example: Warm and Cool Colours
-        ====================================================
-        This sequence has 100 terms, and alternates between opposite
-        HSV hues, stepping around the hue circle in increments of
-        one percent.
-
-        Also, Python does American spelling, but I don't :P
-
-        >>> import colorsys  
-        >>> from slowcomb.slowseq import NumberSequence
-        >>> def get_hue(i):
-        ...     # Step between warm and cool colours
-        ...     # In Python HSV, H values start from 0.0
-        ...     # representing red, then to 1/3 representing
-        ...     # green, then to 2/3 representing blue, then
-        ...     # back to red at 1.0.
-        ...     hue = 0
-        ...     if i%2==0 :
-        ...         hue += (0.01*i)%1
-        ...     else:
-        ...         hue += (0.5 + 0.01*i)%1
-        ...     rgb = colorsys.hsv_to_rgb(hue, 1.0, 0.75)
-        ...     # Convert relative values to 8-bit hex absolute values
-        ...     rgb_hex = ['{0:02X}'.format(int(255*i)) for i in rgb]
-        ...     # Convert RGB 8-bit hexadecimal to W3C 24-bit spec
-        ...     out = '#'
-        ...     for i in rgb_hex:
-        ...         out+=i
-        ...     return out
-        >>> seq_hue = NumberSequence(get_hue,100)
-
-        Get the first colour (a passionate red)!
-        All colours are in W3C 24-bit format, seen in HTML, CSS, SVG...
-
-        >>> seq_hue[0]
-        '#BF0000'
-        
-        Get the second (first+1'th) colour (a calming aqua)!
-
-        >>> seq_hue[1]
-        '#00B3BF'
-
-        Get the 34th colour (an alluring violet)!
-        
-        >>> seq_hue[33]
-        '#BB00BF'
-
-        Get the 66th colour (some olive oil-like colour)!
-        
-        >>> seq_hue[67]
-        '#BBBF00'
-
-        Fun Activity: Guess what these colours are:
-
-        >>> seq_hue[80]
-        '#9900BF'
-
-        >>> seq_hue[83]
-        '#03BF00'
-
-        >>> seq_hue[90]
-        '#BF0072'
-
-
-        Internal Indices
-        ----------------
-        Internal Indices are an important part of the NumericSequence
-        class, which is intended to map suitable mathematical numeric
-        sequences into a class which resemble Python's data sequences,
-        allowing numerical sequences to be used like tuples, lists,
-        arrays and the like.
-
-        External Indices are the values given to a NumericSequence
-        to retrieve the first+n'th term from a sequence. These are mapped
-        to Internal Indices (ii's), the actual key of the term in the
-        sequence, by the method `_resolve_i()`.
-
-        An Example of Internal Indices
-        ==============================
-        Consider the following sequence:
-        
-        All values of y in
-
-            y = -(x/40)**2 + 100 
-
-        where -40 ≤ x ≤ 40 and x is an integer.
-
-        This sequence is based on a problem in which one is to find all
-        values of x in a quadratic equation that would yield a positive
-        integer value as a result. It can be visualised on a 2D graph
-        as a selection of the x-axis (representing values of x) where 
-        the curve (representing values of y) are above the x-axis.
-
-        Our equation here may be expressed as a Python lambda like:
-
-        >>> func_funk = lambda x: -(x/4)**2 + 100
-
-        Luckily for us, the values of x are integers, and thus may be
-        directly used as indices for values of y. However, let's 
-        assume in our situation that only positive integers can be used
-        as indices, as they have to be addressed ordinally (i.e. 1st for
-        x=-40, 2nd for x=-39...), and we are not allowed to rewrite our
-        equation.
-
-        We can use a NumberSequence to express this:
-
-        >>> from slowcomb.slowseq import NumberSequence
-        >>> seq_quadr = NumberSequence(func_funk, ii_start=-40, length=81)
-
-        This sequence will have 81 terms, yielded by indices -40 to 40
-        inclusive, not forgetting about the zero. The first term may
-        be returned by accessing the zeroth (short for "first+zeroth")
-        index:
-
-        >>> seq_quadr[0]
-        0.0
-
-        This first term in turn will reference internal index -40, as
-        indicated by the ``ii_start=-40`` argument in the original
-        statement to create the NumberSequence.
-
-        Each time we use index 0 on the NumberSequence, it will map it
-        to index -40 internally and fetch the corresponding value of y.
-
-        Likewise, we can find the median y-value, which is the 40th value,
-        with:
-
-        >>> seq_quadr[40]
-        100.0
-
-        This 40th "external" index was mapped to the internal index 0
-        corresponding to x=0 of our quadratic equation.
-
-        The index at the other end of the sequence can be referenced
-        by the last external index:
-
-        >>> seq_quadr[80]
-        0.0
-
-        Try other indices, like:
-
-        >>> seq_quadr[20]
-        75.0
-
-        >>> seq_quadr[60]
-        75.0
-
-        >>> seq_quadr[10]
-        43.75
-
-        >>> seq_quadr[70]
-        43.75
-
-        Fun Activity: Think of some other equations worthy of being used 
-        as a basis for a NumberSequence, preferably one involving both
-        negative and positive input values.
         """
+        This is the constructor for creating an instance of this class.
 
-        # Instance Attributes
+        For details on using this class, please refer to the class
+        documentation above.
+
+        """
+        # Class Constructor
+        # 
+        # Set Instance Attributes
         #
         self._default = kwargs.get('default', None)
             # The default value returned if the member cannot be derived
@@ -594,7 +653,7 @@ class NumberSequence:
         self._name = ''
             # TODO: Reserved attribute for reporting tools
 
-        # Init Routine
+        # Perform Init Routine
         #
         if self._len < 0:
             raise ValueError('sequence length must be zero or more')
@@ -1267,11 +1326,68 @@ class SNOBSequence(NumberSequence):
         super().__init__(self._get_bits, length=int_ncr(n,r), ii_start=1)
 
 class AccumulateSequence(CacheableSequence):
-    """A number sequence in which each term is the result of running
-    a function on the requested term and all previous terms.
+    """
+    A NumberSequence in which each term is the result of running
+    a function on the requested term with a cumulative result of 
+    all previous terms.
 
-    The AccumulateSequence is intended to be an addressable analogue
-    to the ``accumulate`` iterator from Python's itertools.
+    The AccumulateSequence is intended to be a subscriptable analogue
+    to the Python's built-in ``itertools.accumulate`` class.
+    
+    Required Arguments
+    ------------------
+    * func_ii - The function which derives a single term of the
+      sequence. Accepts 'full-bodied' functions or lambdas. 
+
+      * If the function is defined at module or method scope,
+        the function should have one argument like:
+
+        ::
+          
+          func(ii)
+        
+        The function will be called to derive the first+ii'th term.
+
+      * If the function is defined at class scope, the function
+        should have two arguments including ``self``:
+
+        ::
+
+          func(self, ii)
+
+    * func_a - The function which derives the cumulative result of
+      every term before the requested term. Accepts 'full-bodied'
+      functions or lambdas.
+
+
+      * If the function is defined at module or method scope,
+        the function should have two arguments like:
+
+        ::
+          
+          func(x_ii, a)
+        
+        After func_ii() is called to derive the result, func_a()
+        evaluates x_ii into the accumulator.
+
+      * If the function is defined at class scope, the function
+        should have three arguments including ``self``:
+
+        ::
+
+          func(self, x_ii, a)
+.
+    Optional Arguments
+    ------------------
+    * init_val - Initial value of the accumulator in the sequence.
+
+    See Also
+    --------
+    * itertools.accumulate, Python's built-in accumulate iterator
+      class
+
+    * slowcomb.SumSequence, a sequence where each term is the result
+      of all terms added together.
 
     """
     def _get_args(self):
@@ -1306,63 +1422,7 @@ class AccumulateSequence(CacheableSequence):
         return self._a 
 
     def __init__(self, func_ii, func_a, **kwargs):
-        """Create an AccumulateSequence
-        
-        Options for Creating an AccumulateSequence
-        ------------------------------------------
-
-        Arguments
-        =========
-        func_ii - The function to derive a term of the sequence. Accepts
-            'full-bodied' functions or lambdas. The function has either
-            one or two arguments depending where it is defined:
-
-            * If the function is defined outside a class or inside
-            a method then it must only have one argument for the 
-            internal index of the term. For more info on internal
-            and external indices, see NumberSequence.__init__().
-
-            * If the function is defined inside a class, it is 
-            classified as a method by Python conventions, and must
-            have two arguments, one for ``self`` and another for
-            the index of the term.
-
-        func_a - Function to run on all previous terms of the sequence.
-            The result of func_ii for the requested term is then combined
-            into the total result with this function.
-
-            Accepts 'full-bodied' functions or lambdas. The function
-            has either two or three arguments depending on where it is
-            defined:
-
-            * If the function is defined outside a class: Two arguments.
-            First argument: index of the current term.
-            Second argument: total result of all previous terms.
-            Indices begin from zero for the first term.
-            * If the function is defined inside a class:
-            First argument: the ``self`` argument[1].
-            Second argument: index of the current term.
-            Third argument: total result of all previous terms.
-
-        [1] According to the Python specs, the ``self`` argument does not
-         have to be the first, but this is preferred in nearly all projects.
-.
-        Optional Arguments
-        ==================
-        
-        init_val - Initial value of the accumulator in the sequence.
-
-        Other Optional arguments are passed back to superclasses
-        CacheableSequence and NumberSequence as **kwargs.
-        For these options, please see __init__() in these superclasses
-        above.
-
-        See Also
-        --------
-        SumSequence, a sequence where each term is the result of all
-        terms added together.
-        """
-        # Instance Attributes
+       # Instance Attributes
         self._a = kwargs.get('init_val',0)
             # Accumulator
         self._func_ii = func_ii

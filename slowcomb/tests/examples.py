@@ -36,6 +36,10 @@ from slowcomb.tests import slowprime
 src_colonel = (('I',),('need', 'want'), ('sugar', 'spice', 'scissors'))
     # A sequence of sequences for use with the CatCombination
     # combinatorial unit
+src_rpg_chars = ('🤵','🤶','🦝','🧛','🤹','🦄','🧝','🤖','🤡','🧔','🧟')
+src_rpg_items = ('🧲','🔮','🥢','📿','🧸','🎲','💣','🧭','🧻','🧷','🧿')
+    # Sequences of Emoji representing characters and items
+    # featured in a rather silly role-playing game.
 
 
 # Test Data Helper Functions
@@ -191,6 +195,54 @@ cc_no_r = CatCombination(src_colonel)
     # Catenating Combination with no defined r-size.
     # Includes all combinations of length 1 to the longest 
     # possible length (i.e. 3, see src_colonel above).
+cc_complex = CatCombination((
+        Combination(src_rpg_chars,r=4),
+        Combination(src_rpg_items,r=5),
+        ('🧠','💰','💪',),
+    ),
+    r=3
+)
+    # Complex Complex Catenating Combination which outputs
+    # combinations of two embedded Combinations and one tuple.
+    # The output is a selection of characters and items in a
+    # hypothetical role-playing game:
+    # * 4 out of eleven characters are chosen for the team
+    #   (this makes up the left tuple),
+    # * 6 out of eleven items are chosen for the team's
+    #   toolkit (this makes up the middle tuple),
+    # * 1 out of three special abilities (this makes up
+    #   the right tuple).
+cc_complex_no_idxs = CatCombination((
+        CatCombination((
+                Permutation(get_latin_upper_alphas(4),r=4),
+                NumberSequence(slowprime.fasterer_prime,length=255,ii_start=1)
+            ),
+            r=2
+        ),
+        Permutation(get_fruits(6),r=3),
+    ),
+    r=2,
+)
+    # Complex Catenating Combination, non-trivial index()
+    # scenario. The index() method is currently not supported
+    # under such circumstances.
+    # This is a three-tier complex combinatorial unit, with
+    # a nested unit that does not support reverse lookups
+    # using index(). The diagram of the CU is as follows:
+    #
+    #         .—— CC ——.——— Pa
+    #        /          \__ NS (!)
+    #   CC —.
+    #        \
+    #         .—— Pf
+    #
+    #   Legend: CC: CatCombination, Pa: ABCD Permutator, 
+    #           Pf: Fruits Permutator, NS: NumberSequence
+    #
+    #   Note: The NS does not support index()
+    #
+    # This CU is intended to test index() handling routines.
+    #
 comb = Combination(get_latin_upper_alphas(8), r=4)
     # Combination: including selections of four Latin alphabets
     # out of the first 8, (A, B, C, D, E, F, G, H).

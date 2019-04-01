@@ -472,7 +472,7 @@ class NumberSequence:
         )
         return re_args
  
-    def _get_member(self, i):
+    def _get_term(self, i):
         """
         Return the first+n'th member of this sequence.
         See the class documentation on how to get members from the
@@ -483,10 +483,13 @@ class NumberSequence:
         * i - External index of the member. Accepts int, i ≥ 0.
 
         """
+        # TODO: Write up on how term derivation function ``_func``
+        #       is called, and why this pattern is used.
+        #       
         self._check_i(i)
         return self._func(self._resolve_i(i))
 
-    def _get_members(self, s):
+    def _get_terms(self, s):
         """
         Routine to return multiple members in response to a slice
         
@@ -569,9 +572,9 @@ class NumberSequence:
 
         """
         if isinstance(key, int) is True:
-            return self._get_member_method(key)
+            return self._get_term_method(key)
         elif isinstance(key, slice) is True:
-            return self._get_multi_member_method(key)
+            return self._get_multi_term_method(key)
         else:
             raise TypeError('indices must be int or slice')
 
@@ -631,11 +634,11 @@ class NumberSequence:
             # The default value returned if the member cannot be derived
         self._func = func
             # The function to get the value of a term in a sequence.
-        self._get_member_method = self._get_member
+        self._get_term_method = self._get_term
             # Intermediate method to call _func.
             #  May be swapped out with an alternate method to enable 
             #  caching, or alternative lookup methods.
-        self._get_multi_member_method = self._get_members
+        self._get_multi_term_method = self._get_terms
             # Intermediate method to call _func for multiple terms,
             #  and return them in an appropriate data type.
             #  May be swapped out with an alternate method to enable 
@@ -700,7 +703,7 @@ class CacheableSequence(NumberSequence):
     with sequences with a large number of terms.
     How It Works
     ------------
-    Please see _get_member_with_cache() and _add_member_to_cache() below.
+    Please see _get_term_with_cache() and _add_term_to_cache() below.
     """
     # Public Methods
     #
@@ -712,14 +715,14 @@ class CacheableSequence(NumberSequence):
         also clears it.
         """
         self._cache = None
-        self._get_member_method = self._get_member
+        self._get_term_method = self._get_term
         self._cache_method = self._skip_caching
 
     def enable_cache(self):
         """Set up and enable the dictionary cache."""
         self._cache = {} 
-        self._get_member_method = self._get_member_with_cache
-        self._cache_multi_method = self._add_member_to_cache
+        self._get_term_method = self._get_term_with_cache
+        self._cache_multi_method = self._add_term_to_cache
     
     # Private Methods
     #
@@ -727,7 +730,7 @@ class CacheableSequence(NumberSequence):
         """Removes all saved results from cache to free up memory"""
         self._cache.clear()
 
-    def _add_member_to_cache(self, data, i, **kwargs):
+    def _add_term_to_cache(self, data, i, **kwargs):
         """Save an item into the dictionary cache.
 
         Arguments
@@ -752,7 +755,7 @@ class CacheableSequence(NumberSequence):
         else:
             raise TypeError('Only int may be used as cache dict key')
     
-    def _get_member_with_cache(self, i):
+    def _get_term_with_cache(self, i):
         """Return the first+i'th member of the sequence from the
         dictionary cache.
 
@@ -771,9 +774,9 @@ class CacheableSequence(NumberSequence):
             return self._cache[i]
         except KeyError:
             # On cache miss, fallback to normal path...
-            out = self._get_member(i)
+            out = self._get_term(i)
             # And save the result
-            self._add_member_to_cache(out, i)
+            self._add_term_to_cache(out, i)
             return out
 
     def _skip_caching(self, data, **kwargs):
@@ -845,13 +848,13 @@ class BlockCacheableSequence(CacheableSequence):
     How It Works
     ------------
     For more information, see __init__(), __getitem__() and
-    _add_members_to_cache() below.
+    _add_terms_to_cache() below.
     """
 
     def disable_cache(self):
         """Disable the block cache and clear it"""
         self._cache = None
-        self._get_member_method = self._get_member
+        self._get_term_method = self._get_term
         self._cache_method = self._skip_caching
 
     def enable_cache(self):
@@ -860,10 +863,10 @@ class BlockCacheableSequence(CacheableSequence):
         self._cache_start_i = 0
         self._cache_step_i = 1
         self._cache_stop_i = 0
-        self._get_member_method = self._get_member_with_cache
-        self._cache_method = self._add_members_to_cache
+        self._get_term_method = self._get_term_with_cache
+        self._cache_method = self._add_terms_to_cache
 
-    def _add_members_to_cache(self, data, **kwargs):
+    def _add_terms_to_cache(self, data, **kwargs):
         """Save looked up members to the BlockCacheableSequence.
 
         This is a simple operation in which the results of a multi-lookup
@@ -892,7 +895,7 @@ class BlockCacheableSequence(CacheableSequence):
         self._cache_stop_i = kwargs.get('stop',0)
         self._cache = data
 
-    def _get_members(self, s):
+    def _get_terms(self, s):
         """Routine to return multiple members in response to a slice
         
         Arguments:
@@ -902,11 +905,11 @@ class BlockCacheableSequence(CacheableSequence):
         s = self._resolve_slice(s)
         for ii in range(s.start, s.stop, s.step):
             out.append(self._func(ii))
-        self._add_members_to_cache(out,
+        self._add_terms_to_cache(out,
             start=s.start, stop=s.stop, step=s.step)
         return tuple(out)
 
-    def _get_member_with_cache(self, i):
+    def _get_term_with_cache(self, i):
         """Get the first+i'th member of the sequence from the cache.
 
         In the event that the member cannot be found in the cache (cache
@@ -915,7 +918,7 @@ class BlockCacheableSequence(CacheableSequence):
         of a cached multi-item lookup using a slice.
 
         For more information on how this cache works, see
-        _add_members_to_cache().
+        _add_terms_to_cache().
         """
         out = None
         if self._cache is None:
@@ -931,7 +934,7 @@ class BlockCacheableSequence(CacheableSequence):
             out = self._cache[cache_i]
         if out is None:
             # On cache miss, fallback to normal path
-            out = self._get_member(i)
+            out = self._get_term(i)
         return out
 
     def __init__(self, func, **kwargs):

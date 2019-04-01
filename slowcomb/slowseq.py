@@ -716,7 +716,6 @@ class CacheableSequence(NumberSequence):
         """
         self._cache = None
         self._get_term_method = self._get_term
-        self._cache_method = self._skip_caching
 
     def enable_cache(self):
         """Set up and enable the dictionary cache."""
@@ -779,30 +778,11 @@ class CacheableSequence(NumberSequence):
             self._add_term_to_cache(out, i)
             return out
 
-    def _skip_caching(self, data, **kwargs):
-        """Dummy method to skip the caching process
-        
-        In order to avoid excessive checks, the CacheableSequence will
-        always run the caching method for every member lookup. When the
-        cache is disabled, this dummy method is run in place of the
-        usual cache check.
-
-        This method, along with the use of switchable methods was used
-        in anticipation that some caching schemes would involve an
-        expensive operation to check if the cache is in use.
-
-        Please see disable_cache() method above and the design of the
-        NumberSequence class (which the CacheableSequence derives from)
-        for specific details on how this method is switched in.
-        """
-        pass
-
     # Special Methods and Constructor
     # 
     def __init__(self, func, **kwargs):
         super().__init__(func, **kwargs)
         self._cache = None
-        self._cache_method = self._skip_caching
 
 class BlockCacheableSequence(CacheableSequence):
     """Cacheable alternative to NumberSequence using a block cache.
@@ -855,7 +835,6 @@ class BlockCacheableSequence(CacheableSequence):
         """Disable the block cache and clear it"""
         self._cache = None
         self._get_term_method = self._get_term
-        self._cache_method = self._skip_caching
 
     def enable_cache(self):
         """Set up the block cache"""

@@ -664,61 +664,178 @@ class NumberSequence:
 
 
 class CacheableSequence(NumberSequence):
-    """Cacheable alternative to NumberSequence using a dictionary cache.
+    """
+    Cacheable alternative to NumberSequence, the Subscriptable
+    Lazily-Evaluated Numberical Sequence
 
-    The CacheableSequence is intended as an alternative class for 
-    number sequences whose members may take a long time to derive. The
-    dictionary cache remembers every member lookup in its dictionary
-    until it is cleared.
+    The CacheableSequence for use with number sequences whose terms
+    may be slow or memory-intensive to derive. The dictionary cache
+    every member lookup in its dictionary until it is cleared.
 
-    How to Use It
-    -------------
-    The CacheableSequence is used exactly like a NumberSequence. Caching
-    is automatic and performed during every time a member that is not 
-    previously cached is derived (this includes multi-lookups by slicing).
+    The CacheableSequence is used exactly the same way as
+    NumberSequence, with the added option of switching on and off
+    the cache, as well as clearing it.
 
-    The cache is disbled by default.
+
+    Required Arguments
+    ------------------
+    Operation of CacheableSequence exactly the same as with
+    NumberSequence. For full details, please refer to NumberSequence's
+    class documentation.
     
-    Call enable_cache() to start caching members.
-    Call disable_cache() to disable the cache. This also clears the cache.
-    Call clear_cache to clear the cache without disabling it.
+    * func - The function to derive a term of the sequence. Both 
+      block and lambda functions are accepted.
 
-    When to Use It
+      * Example function defined at module or method scope:
+        ``func(ii)``.
+
+      * Example function defined at class scope:
+        ``func(self, ii)``.
+       
+    * length - Number of terms in the sequence. Accepts int,
+      where length ≥ 0.
+
+
+    Optional Arguments
+    ------------------
+    * ii_start - The first position of the internal index. Accepts int,
+      where ii_start ≥ 0. Default is 0. 
+
+    * default - The default value or object returned in the event the
+      sequence has a zero length, or is unable to otherwise derive
+      a term from a valid index. Any object is accepted. The default
+      default is None.
+    
+         
+    Caching
+    -------
+    The cache is disbled by default. Call enable_cache() to start
+    using it, and call disable_cache() to stop using the cache an
+    to clear it. When enabled, caching is automatic and performed
+    for every term, requested by a single index, that has not been
+    previously requested or cached.
+
+    Call clear_cache() to clear the cache without disabling it.
+
+    For more details on how the cache is enabled or disabled,
+    see enable_cache() and disable_cache() below.
+
+    Limitations
+    ===========
+    Caching is not available for multiple lookups using slices.
+    When getting terms using slices, the cache is bypassed and the
+    terms not cached.
+
+    Considerations
     --------------
-    Speed advantages are achieveable if the time taken to derive the
-    terms is significantly longer than entering an exception block
+    When to Use It
+    ==============
+    Speed advantages are achieveable if the time taken to derive a 
+    term is significantly longer than entering an exception block
     and performing a Python ``dict`` lookup.
     
     The method of caching used herein is recommended for scenarios
     where the same terms from the sequence will be looked up very
-    frequently, but the terms are not part of a contiguous block,
-    and are subject to infrequent, random change during the course of
-    a program running.
+    frequently, yet the terms are not easy to predict ahead of time.
 
+    In compsci parlance, we would refer to this as a read pattern
+    with strong temporal locality.
+    
     When Not to Use It
-    ------------------
+    ==================
     As with many conventional methods of caching, scenarios with 
-    random lookups within a wide range are likely to cause excessive
-    memory usage while greatly reducing any speed advantage, especially
-    with sequences with a large number of terms.
-    How It Works
-    ------------
-    Please see _get_term_with_cache() and _add_term_to_cache() below.
+    frequent reads that are unpredictable, random lookups (having
+    weak temporal locality) and within a wide range (weak spatial
+    locality) are not likely to benefit from the dictionary cache.
+
+
+    Examples
+    --------
+    This is a demonstration on a sequence of the first 100,000th
+    prime numbers or so. An extermely slow method of deriving the prime
+    numbers to increase casual observability of the cache's action:
+
+    ::
+
+      # Please increase the numbers until the uncached lookups are
+      # noticeably slow if you find no observable difference between
+      # cached and uncached lookups.
+
+      from slowcomb.tests.slowprime import slow_prime
+      from slowcomb.slowseq import CacheableSequence
+      cache_d = CacheableSeqeuence(slow_prime, length=999999999)
+
+      # This term lookup should be noticeably slow even on
+      # a high-performance machine. 
+      print("First time lookup")
+      cache_d[1500]
+
+      # Enable the cache
+      print("Cache enabled")
+      cache_d.enable_cache()
+
+      # This term lookup should be much faster
+      print("Second-time lookup")
+      cached[1500]
+
+      # First-time lookups should be slow
+      print("First time lookup")
+      cached[1520]
+
+      # Second-time lookups should be fast again
+      print("Second time lookup")
+      cached[1520]
+        
+      # Multiple lookups are not cached. This request will be
+      # always slow
+      print("First time multiple lookup")
+      cached[500:504]
+      print("Second time multiple lookup")
+      cached[500:504]
+
+      # This could not even finish in an hour on a 2016-vintage
+      # system, but the second lookup onwards should be faster :P
+      print("First time lookup")
+      cached[-1]
+
+      print("Second time lookup")
+      cached[-1]
+
+      print("Third time lookup")
+      cached[-1]
+
+
+    References
+    ----------
+    * Wikipedia. Locality of Reference.
+      en.wikipedia.org/wiki/Locality_of_reference
+
     """
     # Public Methods
     #
     def disable_cache(self):
-        """Disable the dictionary cache.
+        """
+        Disable the dictionary cache.
         
-        The CacheableSequence will function like a normal sequence
-        until the enable_cache() method is called. Disabling the cache
-        also clears it.
+        The cache will be re-enabled when enable_cache() called.
+        Disabling the cache also clears it.
+
+        The default method for requesting single terms, ``_get_term()``
+        is switched back in and bound to ``_get_term_method``.
+
         """
         self._cache = None
         self._get_term_method = self._get_term
 
     def enable_cache(self):
-        """Set up and enable the dictionary cache."""
+        """
+        Set up and enable the dictionary cache.
+
+        The default method for requesting single terms is switched
+        out for ``_get_term_with_cache()``, by binding said method
+        to ``_get_term_method``.
+        
+        """
         self._cache = {} 
         self._get_term_method = self._get_term_with_cache
         self._cache_multi_method = self._add_term_to_cache
@@ -726,23 +843,34 @@ class CacheableSequence(NumberSequence):
     # Private Methods
     #
     def clear_cache(self):
-        """Removes all saved results from cache to free up memory"""
+        """
+        Removes all saved results from cache to free up memory
+        
+        """
         self._cache.clear()
 
     def _add_term_to_cache(self, data, i, **kwargs):
-        """Save an item into the dictionary cache.
+        """
+        Save a term into the dictionary cache.
+
+        This method always returns None.
+
 
         Arguments
         ---------
-        data - result of the member lookup to save to cache.
-            Accepts any object, even None.
-        i - index to recall a data item with. Accepts int, i ≥ 0
+        * data - a term of this sequence to save to cache.
+          Accepts any Python object.
 
+        * i - index to recall a data item with.
+          Accepts int, i ≥ 0
+
+
+        Notes
+        -----
         The **kwargs argument is for compatibility purposes, to
         allow for implementions of new features in the
         CacheableSequence.
         
-        This method always returns None.
         """
         if self._cache is None:
             # TODO: Is an AttributeError appropriate here?
@@ -755,17 +883,18 @@ class CacheableSequence(NumberSequence):
             raise TypeError('Only int may be used as cache dict key')
     
     def _get_term_with_cache(self, i):
-        """Return the first+i'th member of the sequence from the
+        """
+        Return the term of external index i of the sequence from the
         dictionary cache.
 
-        If the member cannot be found in the cache, the full routine
-        to get the member will be run. The member will then be
-        saved to the cache for subsequent requests of the same
-        member.
+        If the term cannot be found in the cache, the cache is
+        bypassed for the lookup. When the term has been derived, it
+        is added to the cache.
 
         Arguments
         ---------
-        i - The index of the member of the sequence. Accepts int, i ≥ 0.
+        * i - The index of the member of the sequence.
+          Accepts int, i ≥ 0.
         
         """
         cache_enabled = self._cache is not None

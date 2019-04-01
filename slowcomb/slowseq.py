@@ -1502,8 +1502,10 @@ class AccumulateSequence(CacheableSequence):
 
     """
     def _get_args(self):
-        """Attempt to rebuild a probable equivalent of the arguments
+        """
+        Attempt to rebuild a probable equivalent of the arguments
         used in constructing this sequence
+
         """
         re_arg_fmt_a = "func_ii={0}, func_a={1}, length={2}," 
         re_arg_fmt_b = "ii_start={0}, default={1}"
@@ -1533,7 +1535,7 @@ class AccumulateSequence(CacheableSequence):
         return self._a 
 
     def __init__(self, func_ii, func_a, **kwargs):
-       # Instance Attributes
+        # Instance Attributes
         self._a = kwargs.get('init_val',0)
             # Accumulator
         self._func_ii = func_ii

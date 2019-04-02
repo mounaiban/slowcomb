@@ -658,7 +658,7 @@ class NumberSequence:
 class CacheableSequence(NumberSequence):
     """
     Cacheable alternative to NumberSequence, the Subscriptable
-    Lazily-Evaluated Numberical Sequence
+    Lazily-Evaluated Numerical Sequence
 
     The CacheableSequence for use with number sequences whose terms
     may be slow or memory-intensive to derive. The dictionary caches
@@ -908,7 +908,7 @@ class CacheableSequence(NumberSequence):
 class BlockCacheableSequence(CacheableSequence):
     """
     Cacheable alternative to NumberSequence, the Subscriptable
-    Lazily-Evaluated Numberical Sequence
+    Lazily-Evaluated Numerical Sequence
 
     The BlockCacheableSequence for use with number sequences whose
     terms may be slow or memory-intensive to derive. A tuple is used
@@ -949,7 +949,6 @@ class BlockCacheableSequence(CacheableSequence):
       a term from a valid index. Any object is accepted. The default
       default is None.
          
-    The BlockCacheableSequence is used exactly like a normal NumberSequence.
     Members are only cached when they are looked or derived up as part
     of a multiple-item operation using slices.
 

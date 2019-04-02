@@ -139,7 +139,7 @@ class Combinatorics(CacheableSequence):
         these values depends on the type of combinatorics operation
         involved.
         """
-        return self._ii_max - self._ii_start
+        return self._ii_stop - self._ii_start
 
     def __getitem__(self, key):
         """
@@ -307,7 +307,7 @@ class PBTreeCombinatorics(Combinatorics):
     locked to indices of nodes of a particular depth. In our example
     above, to allow only the selection of subsets of three elements,
     simply set the internal index starting point, _ii_start, to 4 and
-    the highest interal index, _ii_max, to 9.
+    the highest interal index, _ii_stop, to 9.
 
     The external index (i=0) is therefore mapped to the node 4.
     There will be six nodes, making the last index of the sequence
@@ -349,7 +349,7 @@ class PBTreeCombinatorics(Combinatorics):
         Arguments
         ---------
         ii - The internal index of the term of the sequence. Accepts int,
-            0 ≤ i < self._ii_max
+            0 ≤ i < self._ii_stop
 
         Example
         -------
@@ -358,9 +358,6 @@ class PBTreeCombinatorics(Combinatorics):
         (1, 4, 10).
 
         """
-        # TODO: Is _ii_max actually confusing, as ii cannot actually
-        #  reach it? It might be wiser to call it ii_stop, to emphasise
-        #  its similarity in purpose to the stop value of a slice.
 
         for t in range(len(self._thresholds)):
             if(ii < self._thresholds[t]):
@@ -604,13 +601,13 @@ class PBTreeCombinatorics(Combinatorics):
         if isinstance(self._r, int):
             if self._r <= 0:
                 self._ii_start = 1
-                self._ii_max = 1
+                self._ii_stop = 1
             else:
                 self._ii_start = self._thresholds[self._r-1]
-                self._ii_max = self._thresholds[self._r]
+                self._ii_stop = self._thresholds[self._r]
         else:
             i_last_threshold = len(self._thresholds) - 1
-            self._ii_max = self._thresholds[i_last_threshold]
+            self._ii_stop = self._thresholds[i_last_threshold]
             self._ii_start = 1
 
     def __init__(self, func, func_len_siblings, seq, r=None):
@@ -789,7 +786,7 @@ class CatCombination(PBTreeCombinatorics):
 
         Arguments
         ---------
-        ii - Internal Index of the term. Accepts int, 0 ≤ i < _ii_max
+        ii - Internal Index of the term. Accepts int, 0 ≤ i < _ii_stop
 
         Treatment of Addresses
         ----------------------
@@ -1176,7 +1173,7 @@ class Permutation(PBTreeCombinatorics):
         Arguments
         ---------
         ii - Internal Index of the permutation. Accepts int, 
-            0 ≤ i < self._ii_max
+            0 ≤ i < self._ii_stop
 
         Treatment of Combinatorial Tree Path
         ------------------------------------
@@ -1568,7 +1565,7 @@ class PermutationWithRepeats(Permutation):
         Arguments
         ---------
         ii - Internal Index of the permutation. Accepts int, 
-            0 ≤ i < self._ii_max
+            0 ≤ i < self._ii_stop
 
         Treatment of Addresses
         ----------------------
@@ -1788,7 +1785,7 @@ class Combination(Combinatorics):
 
         """
         self._set_bitmap_src()
-        self._ii_max = len(self._bitmap_src)
+        self._ii_stop = len(self._bitmap_src)
 
     def _get_comb(self, ii):
         """
@@ -1797,7 +1794,7 @@ class Combination(Combinatorics):
         Arguments
         ---------
         ii - The internal index of the term. Accepts int,
-        0 ≤ ii ≤ _ii_max.
+        0 ≤ ii ≤ _ii_stop.
 
         Treatment of Addresses by the Combination Sequence
         --------------------------------------------------
@@ -1985,7 +1982,7 @@ class CombinationWithRepeats(Combination):
         Arguments
         ---------
         ii - The internal index of the term. Accepts int,
-        0 ≤ ii ≤ _ii_max.
+        0 ≤ ii ≤ _ii_stop.
 
         Treatment of Addresses
         ----------------------

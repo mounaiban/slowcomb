@@ -24,7 +24,8 @@ import datetime
 import doctest
 import pdb
 import timeit
-from slowcomb.tests import examples
+from . import examples
+from slowcomb import slowcomb, slowseq
 
 # Functions
 #

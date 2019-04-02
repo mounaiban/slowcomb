@@ -26,6 +26,7 @@ import pdb
 import timeit
 from . import examples
 from slowcomb import slowcomb, slowseq
+from slowcomb.tests.slowprime import *
 
 # Functions
 #

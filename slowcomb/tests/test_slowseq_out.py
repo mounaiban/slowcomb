@@ -115,6 +115,7 @@ class CacheableSequenceSOTests(NumberSequenceSliceOutputTests):
         # The tests will be performed with the cache on to ensure that
         # the cache does not affect the results
 
+
 class BlockCacheableSequenceSOTests(CacheableSequenceSOTests):
 
     # Class Variables
@@ -138,4 +139,14 @@ class BlockCacheableSequenceSOTests(CacheableSequenceSOTests):
         self.test_item_zero_ii[0:seq_len:2]
         # The tests will be performed with the cache on and primed to
         # check that correct results are returned
+
+    def test_getitem_i_pos_cache_border_repeat_zero_ii_start(self):
+        out = self.test_item_zero_ii[3]
+        expected = 3000
+        self.assertEqual(out, expected)
+
+    def test_getitem_i_pos_cache_border_repeat_neg_ii_start(self):
+        out = self.test_item_neg_ii[-2]
+        expected = -0.02
+        self.assertEqual(out, expected)
 

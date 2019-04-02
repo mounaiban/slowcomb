@@ -1032,12 +1032,8 @@ class BlockCacheableSequence(CacheableSequence):
         if self._cache is None:
             self.enable_cache()
         in_range = (i >= self._cache_start_i) and (i < self._cache_stop_i)
-        on_step_single = (i % self._cache_step_i) == 0
-            # Should only be true when cache_step_i is 1
-        on_step_multi = (i % self._cache_step_i) == 1
-            # Remainder of i and step should be one if i is
-            # on the step of the sequence
-        if in_range and (on_step_single or on_step_multi):
+        on_step = (i % self._cache_step_i) == 0
+        if in_range and (on_step):
             cache_i = (i - self._cache_start_i) // self._cache_step_i
             out = self._cache[cache_i]
         if out is None:

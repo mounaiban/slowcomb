@@ -1185,70 +1185,116 @@ class BlockCacheableSequence(CacheableSequence):
 
 
 class SNOBSequence(NumberSequence):
-    """Same Number Of Bits Number Sequence Class
+    """
+    A Sequence of Numbers With the Same Number Of Bits (SNOB).
 
-    This class is a NumberSequence that address all possible binary
-    numbers of a given length and a set number of bits.
+    This class is a NumberSequence that lazily evaluates all possible
+    binary numbers of a given length and a set number of bits.
 
-    Numbers are arranged from the largest to the smallest, with the
-    first+zero'th index returning the largest number.
+    Numbers are ordered by their value when expressed as a quantity,
+    with the numbers with the highest such value to the smallest.
 
-    The SNOBSequence only returns int's.
+    SNOBSequence returns all numbers as an int.
 
-    Example Sequences
-    -----------------
-    A 4-bit number with 2 bits set:
 
-    i  Binary  Decimal
-    =  ======  =======
-    1  1100    12
-    2  1010    10
-    3  1001    9
-    4  0110    6
-    5  0101    5
-    6  0011    3
+    Required Arguments
+    ------------------
+    * n - The number of bits the number will have. Accepts int,
+      where n > 0.
 
-    A 6-bit number with 3 bits set:
+    * r - The number of bits which will be raised (set to high/1/
+      active...). Accepts int, where r ≤ n. 
 
-    i  Binary  Decimal        i   Binary  Decimal
-    =  ======  =======        ==  ======  =======
-    0  111000  56             10  011100  28
-    1  110100  52             11  011010  26
-    2  110010  50             12  011001  25
-    3  110001  49             13  010110  22
-    4  101100  44             14  010101  21
-    5  101010  42             15  010011  19
-    6  101001  41             16  001110  14
-    7  100110  38             17  001101  13
-    8  100101  37             18  001011  11
-    9  100011  35             19  000111  7
 
-    For more usage information, see __init__() below for instructions on
-    creating an instance of this class, and for generating the numbers.
+    Examples
+    --------
+    Here are all the 4-bit numbers with two bits set.
+
+    ::
+      
+      >>> from slowcomb.slowseq import SNOBSequence
+      >>> ["{:04b}".format(x) for x in SNOBSequence(4,2)]
+      ['1100', '1010', '1001', '0110', '0101', '0011']
+
+    Tell me that you comprehend the above list comprehension.
+
+    These are the equivalent decimal values for 4-bit numbers
+    with two bits set:
+
+    ::
+
+      >>> [x for x in SNOBSequence(4,2)]
+      [12, 10, 9, 6, 5, 3]
+
+    Here are the 6-bit numbers with three bits set, along
+    with their equivalent decimal forms.
+
+    ::
+      
+      >>> snob6_3 = SNOBSequence(6,3)
+      >>> for x in snob6_3:
+      ...   print("{0:06b} == {0}".format(x))
+      111000 == 56
+      110100 == 52
+      110010 == 50
+      110001 == 49
+      101100 == 44
+      101010 == 42
+      101001 == 41
+      100110 == 38
+      100101 == 37
+      100011 == 35
+      011100 == 28
+      011010 == 26
+      011001 == 25
+      010110 == 22
+      010101 == 21
+      010011 == 19
+      001110 == 14
+      001101 == 13
+      001011 == 11
+      000111 == 7
+
+    You can still request each bitmask individually:
+    
+    ::
+      
+      >>> snob6_3[0]
+      56
+
+      >>> snob6_3[4]
+      44
+    
+    Or slice them any which way!
+
+    Further Reading
+    ---------------
+    Please see _get_leading_z_with_i() and _get_bits() below for
+    details on how numbers are derived.
 
     """
     def index(self, x):
-        """Look up the index of a bitmap of this sequence, if it is
-        a member.
+        """
+        Look up the index of a number if it belongs in this SNOBSequence.
 
-        This method is made possible by the fact that the bitmaps, when
-        expressed as decimal or binary numbers, are ordered in the sequence
-        by value from highest to the lowest.
+        This method is made possible by the fact that the numbers, when
+        expressed as decimal or binary numbers, are ordered in the 
+        sequence by value from highest to the lowest.
         
         Arguments
         ---------
-        x - Bitmap in decimal form.
+        * x - SNOB number in decimal form. Accepts int, x > 0
 
         Exceptions
         ----------
-        ValueError - when the bitmap is not found in the sequence
+        * ValueError - when the number is not found in the sequence
 
         """
         i_last = len(self)-1
 
         # Reject out-of-range bitmaps
         if x > self[0] or x < self[i_last]:
-            msg = 'bitmap: {0} is not part of this sequence'.format(x)
+            msg = 'number: {0} is not part of this sequence'.format(x)
             raise ValueError(msg)
         
         # Perform a binary search for the bitmap
@@ -1283,23 +1329,36 @@ class SNOBSequence(NumberSequence):
 
 
     def _get_leading_z_with_i(self, n, r, i):
-        """Get the binary number of leading zeroes on the i'th number
-        of length n, with r bits raised, along with the ordinality of
-        the number among numbers with the same leading zeroes.
+        """
+        Get the number of leading zero bits of i when expressed
+        in binary, along with its ordinality among fellow numbers
+        numbers with:
+        
+        * The same number of leading zero bits,
+
+        * The same number of raised bits, and
+
+        * The same total number of bits 
+
+        Returns a tuple t, where: 
+
+        * t[0] - The number of zeroes given any value of n, r and i
+          above.
+
+        * t[1] - The ordinality/rank of the number among numbers with
+          the same leading zeroes
+
 
         Arguments
         ---------
-        n-Total bits in the number. Accepts int. n > 0.
-        r-Number of raised bits in the number. Accepts int, 0 < r ≤ n.
-        i-The i'th number given n and r above. Accepts int, 0< r ≤ nCr(n,r)
-            [where nCr(n,r) = n! / r! * (n-r)!]
+        * n - Total bits in the number. Accepts int. n > 0.
 
-        Output
-        ------
-        Returns a tuple t, where
-        t[0] - The number of zeroes given any value of n, r and i above.
-        t[1] - The ordinality/rank of the number among numbers with the
-            same leading zeroes
+        * r - Number of raised bits in the number. Accepts int,
+          0 < r ≤ n.
+
+        * i - The subject of this method. Accepts int,
+          0 < r ≤ nCr(n,r), where  nCr(n,r) = n! / r! * (n-r)! 
+
 
         Examples
         --------
@@ -1361,23 +1420,124 @@ class SNOBSequence(NumberSequence):
         return (zeroes, i_temp)
 
     def _get_args(self):
-        """Attempt to rebuild a probable equivalent of the arguments
+        """
+        Attempt to rebuild a probable equivalent of the arguments
         used in constructing this sequence
+
         """
         re_arg_fmt = "n={0}, r={1}"
         re_args = re_arg_fmt.format(self._n, self._r)
         return re_args
     
     def _get_bits(self, ii):
-        """Get the ii'th highest n-bit number with r raised bits.
+        """
+        Construct the first+ii'th binary number with a length specified
+        in self._n, with self._r number of bits raised. This is the
+        default _get_term() function of the SNOBSequence.
         
-        The n and r settings for the SNOBSequence are kept as the _n
-        and _r attributes respectively.
-
         Argument
         --------
-        ii - The i'th highest number. Accepts int, 0 < ii ≤ nCr(n,r)
-            [where nCr(n,r) = n! / r! * (n-r)!]
+        * ii - The i'th highest number. Accepts int, 0 < ii ≤ nCr(n,r)
+          [where nCr(n,r) = n! / r! * (n-r)!]
+
+        Exceptions
+        ----------
+        * ValueError - when self._n ≤ self._r. This should not happen
+          during normal operation.
+
+        How It Works
+        ------------
+        The current method takes advantage of the fact that the number
+        of binary numbers with the same number of leading zeroes,
+        raised bits and total bits can be determined ahead of time.
+        
+        The exact algorithm to determine this can be found in 
+        _get_leading_z_with_i() above. For brevity's sake, the method
+        would be called (somewhat less accurately) the Leading-Z.
+
+        This method used herein is non-recursive and therefore
+        stack-saving.
+
+        Example A
+        =========
+        Find the fourth highest 8-bit number with three raised bits.
+        The short notation n=8, r=3, ii=4 will be used.
+        
+        We start out not knowing a single bit. The number will be
+        constructed from the most significant side (left).
+
+        ????????
+       
+        By Leading-Z, n=8,r=3,ii=4 has no leading zeroes. A raised bit
+        is added to the leftmost bit.
+        
+        1???????
+        
+        Having given up a single raised bit, the process is repeated
+        on the remaining seven bits. The cardinality remains the same,
+        but the number of bits are reduced by one.
+        
+        There are seven bits left to go, with two raised bits left.
+
+        Our number is n=7,r=2,ii=4. By Leading-Z, there are no leading
+        zeroes for this number, the cardinality remains the same.
+
+        11??????
+       
+        The process is repeated with the remaining six bits, with
+        n=6,r=1,ii=4. Leading-Z says that there's three leading zeroes,
+        and the cardinality has changed, as the six-bit number at hand
+        is the first of its kind.
+       
+        11000???
+
+        The process continues with n=3,r=1,ii=1, to which the Leading-Z
+        confirms a suspicion you may have: there are no leading zeroes!
+        Our number is now:
+        
+        110001??
+        
+        Having run out of bits to raise, so we fill the rest of the
+        number with zeroes.
+        
+        11000100
+       
+        Congratulations, we have successfully found our number!
+        This is the fourth-highest 8-bit number with 3 raised bits, better
+        known as 196 in decimal.
+       
+       
+        Example B
+        =========
+        Find the 10th Highest 8-bit number with 5 raised bits.
+
+        10th largest 8-bit number with 5 raised bits has no leading zeroes
+        n=8,r=5,ii=10: Leading-Z reports no leading zeroes. Retain the
+        cardinality and proceed.
+        
+        1???????
+       
+        The 10th largest 7-bit number with 4 raised bits has no leading
+        zeroes n=7,r=4,ii=10. Leading-Z reports no leading zeroes...
+       
+        11??????
+       
+        With n=6,r=3,ii=10, No leading zeroes.
+       
+        111?????
+       
+        With n=5,r=2,ii=10, Three leading zeroes, with the number being
+        the largest/first of its kind.
+       
+        111000??
+        
+        With n=2,r=2,ii=1, there is only one choice. This number is all
+        raised bits, so the number is padded with the remaining raised
+        bits.
+
+        11100011 (dec: 227)
+        
+        Well Done! We have found our number!
 
         """
         if self._r > self._n:
@@ -1386,96 +1546,6 @@ class SNOBSequence(NumberSequence):
         temp_i = ii
         temp_n = self._n
         temp_r = self._r
-
-        # The current method works from the highest bit to the lowest,
-        # using the nCr function to determine between adding a single 
-        # raised bit or the correct number of zeroes.
-        # This method is non-recursive and therefore stack-saving.
-        #
-        # Illustrated Explanation of the Algorithm
-        # ----------------------------------------
-        # 
-        # Example A
-        # =========
-        # Say that we want to find the fourth highest 8-bit number with
-        # three raised bits. Therefore n=8, r=3 and ii=4. Our number
-        # thus far is unknown:
-        # 
-        # ????????
-        #
-        # First, we find out the number of leading zeroes. Using the
-        # method defined in _get_leading_z_with_i(), which we will call
-        # the Leading Z method, the fourth 8-bit number with three raised
-        # bits has no leading zeroes, therefore we add a raised bit:
-        # 
-        # 1???????
-        # 
-        # As we have no leading zeroes we repeat the process on a number
-        # with one less bit, one less raised bit and the same ordinality.
-        # In other words, we look for the fourth highest 7-bit number with
-        # two raised bits. Using the Leading Z, we get no leading zeroes.
-        # 
-        # 11??????
-        #
-        # Continuing with the process the fourth 6-bit number with one raised
-        # bit, we find that, using the Leading Z, there are three leading
-        # zeroes, so we add the three zeroes
-        #
-        # 11000???
-        #
-        # We also find that it is the first and only number with that
-        # number of leading zeroes.
-        #
-        # This time, we continue with the process with the largest number
-        # with three less (i.e. three) and the same number of raised bits
-        # (i.e. one).
-        # 
-        # The Leading Z confirms that the largest binary number of any bit
-        # size with one raised bit is the first, which always has no leading
-        # zeroes, thus bringing our number to:
-        #
-        # 110001??
-        # 
-        # At this point, we have run out of bits to raise, so we fill the
-        # rest of the number with zeroes.
-        # 
-        # 11000100
-        #
-        # Congratulations, we have successfully found our number!
-        # This is the fourth-highest 8-bit number with 3 raised bits, better
-        # known as 196 in decimal.
-        #
-        #
-        # Example B
-        # =========
-        # Now let's try the same process on an 8-bit number with five raised
-        # bits, looking for the 10th largest number.
-        #
-        # 10th largest 8-bit number with 5 raised bits has no leading zeroes
-        # 
-        # 1???????
-        #
-        # 10th largest 7-bit number with 4 raised bits has no leading zeroes
-        #
-        # 11??????
-        #
-        # 10th largest 6-bit number, 3 raised bits, no leading zeroes
-        #
-        # 111?????
-        #
-        # 10th largest 5-bit number, 2 raised bits, three leading zeroes.
-        # This number is also the largest such number.
-        #
-        # 111000??
-        # 
-        # Largest 2-bit number with 2 raised bits, no zeroes at all.
-        # Therefore, we will raise the remaining bits.
-        #
-        # 11100011 (dec: 227)
-        # 
-        # Well Done! We have found our number!
-        #
-
 
         # Add the first and middle bits
         #  Start from the highest bit of the given number
@@ -1509,54 +1579,23 @@ class SNOBSequence(NumberSequence):
         return out_bin
 
     def _set_ii_bounds(self):
+        """Sets the last internal index of this sequence"""
         self._ii_stop = int_ncr(self._n,self._r)+1
 
     def __len__(self):
+        """Get the number of terms in this sequence"""
+
         return self._ii_stop - self._ii_start
     
     def __init__(self, n, r):
-        """Method to create a SNOBSequence instance
-    
-	A SNOBSequence (Same Number Of Bits Sequence) is a NumberSequence
-	of binary numbers of a fixed length (n) and set number of set 
-	bits (r), ordered from largest to smallest.
-    
-        Arguments
-	---------
-	n - the total number of bits. Accepts int, n > 0
-        s - the number of bits that are set. Accepts int, 0 < n ≤ r
+        """
+        This is the constructor for creating an instance of this class.
 
-        Examples
-        --------
-        >>> from slowcomb.slowseq import SNOBSequence
-        >>> seq_snob42 = SNOBSequence(4,2)
+        For details on using this class, please refer to the class
+        documentation above.
 
-        Let's look at the largest (first+zeroth) 4-bit number with two
-        set bits:
-
-        >>> seq_snob42[0]
-        12
-        >>> "{0:b}".format(seq_snob42[0])
-        '1100'
-
-        What about the second (first+first)-largest 4-bit number with two
-        set bits?
-
-        >>> seq_snob42[1]
-        10
-        >>> "{0:b}".format(seq_snob42[1])
-        '1010'
-        
-        Then, what about the tenth-largest 6-bit number with three
-        bits set?
-
-        >>> seq_snob63 = SNOBSequence(6,3)
-        >>> seq_snob63[9]
-        35
-        >>> "{0:b}".format(seq_snob63[9])
-        '100011'
-
-	"""
+        """
+        # Instance Attributes
         if r > n:
             raise ValueError('n must be ≥ r')
         self._n = n

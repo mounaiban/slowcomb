@@ -510,7 +510,7 @@ class NumberSequence:
 
         """
         if i < 0:
-            return self._ii_max + i
+            return self._ii_stop + i
             # PROTIP: Add with a negative to subtract from
             #  its magnitude
         else:
@@ -544,7 +544,7 @@ class NumberSequence:
 
         Always returns None.
         """
-        self._ii_max = self._ii_start + self._len
+        self._ii_stop = self._ii_start + self._len
         
 
     # Special Methods and Constructor
@@ -592,7 +592,7 @@ class NumberSequence:
         """
         Supports the use of this class as an iterator.
         """
-        if (self._ii_max is None) or (self._i >= len(self)):
+        if (self._ii_stop is None) or (self._i >= len(self)):
             raise StopIteration
         out = self[self._i]
         self._i += 1
@@ -640,7 +640,7 @@ class NumberSequence:
             #  start offset.
         self._i = 0
             # Index when used as iterator.
-        self._ii_max = 0
+        self._ii_stop = 0
             # Last internal index.
         self._len = int(length)
             # Expected number of external addresses including the zeroth
@@ -1509,10 +1509,10 @@ class SNOBSequence(NumberSequence):
         return out_bin
 
     def _set_ii_bounds(self):
-        self._ii_max = int_ncr(self._n,self._r)+1
+        self._ii_stop = int_ncr(self._n,self._r)+1
 
     def __len__(self):
-        return self._ii_max - self._ii_start
+        return self._ii_stop - self._ii_start
     
     def __init__(self, n, r):
         """Method to create a SNOBSequence instance

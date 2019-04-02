@@ -23,7 +23,7 @@ individually-addressable terms (subsets).
 #
 
 from math import factorial
-from slowcomb.slowseq import lambda_int_npr, lambda_int_ncr, int_ncr,\
+from slowcomb.slowseq import lambda_int_npr, int_ncr,\
     AccumulateSequence, NumberSequence, CacheableSequence, SNOBSequence
 
 # Classes

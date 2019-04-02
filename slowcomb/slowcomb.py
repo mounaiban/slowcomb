@@ -1,7 +1,5 @@
 """
-slowcomb — Slow Addressable Combinatorics Library main module. Supports
-the use of Combinations, Catenation Combinations and Permutations with
-individually-addressable terms (subsets).
+Slow Addressable Combinatorics Library main module. 
 """
 
 # Copyright © 2019 Moses Chong
@@ -28,13 +26,13 @@ from slowcomb.slowseq import lambda_int_npr, int_ncr,\
 
 # Classes
 #
-class Combinatorics(CacheableSequence):
+class CombinatorialUnit(CacheableSequence):
     """
     Superclass which contains essential methods for implementing
     the first-party Combinatorics sequences in the Slow Combinatorics
     Library.
 
-    Combinatorics sequences may be NumberSequences, or any of its
+    CombinatorialUnit sequences may be NumberSequences, or any of its
     Cacheable variants.
     """
 
@@ -70,7 +68,7 @@ class Combinatorics(CacheableSequence):
         
         Returns True if ready, False otherwise.
 
-        If a Combinatorics sequence is not ready, it should return
+        If a CombinatorialUnit is not ready, it should return
         a length of ``1``, and a default output, which in most cases
         is an empty tuple.
 
@@ -131,7 +129,7 @@ class Combinatorics(CacheableSequence):
         return re_args
  
     def _get_subset_count(self):
-        """Get the number of subsets the Combinatorics sequence. 
+        """Get the number of subsets the CombinatorialUnit. 
         is able to return. Returns the count as an int.
 
         This is simply the distance between the first internal
@@ -143,7 +141,7 @@ class Combinatorics(CacheableSequence):
 
     def __getitem__(self, key):
         """
-        Supports direct lookups of terms in a Combinatorics sequence.
+        Supports direct lookups of terms in a CombinatorialUnit.
 
         Both integer and slices are accepted as keys.
         """
@@ -168,17 +166,17 @@ class Combinatorics(CacheableSequence):
 
     def __init__(self, func, seq, r=None, ii_start=1):
         """Supports the creation of a combinatorics sequence
-        implemented using the Combinatorics class.
+        implemented using the CombinatorialUnit class.
 
         This method is intended to be called from a subclass of
-        the Combinatorics class.
+        the CombinatorialUnit class.
 
         Arguments
         ---------
         
         Required Arguments
         ==================
-        A Combinatorics class should have the following parameters:
+        A CombinatorialUnit class should have the following parameters:
         
         func - function or method to derive the subset.
         seq - a sequence to be set as a source of data to derive
@@ -196,7 +194,7 @@ class Combinatorics(CacheableSequence):
         Examples
         --------
         See Combination, CombinationWithRepeats, CatCombination,
-        PBTreeCombinatorics and its subclasses (Permutation and
+        PBTreeCombinatorialUnit and its subclasses (Permutation and
         PermutationWithRepeats).
 
         """
@@ -211,7 +209,7 @@ class Combinatorics(CacheableSequence):
             #  (or permutations). The simplest examples use strings,
             #  but any sequence may be used. Map it to blobs, 
             #  database records, anything that has a sequence identifier.
-            #  Even other Combinatorics sequences may be used. Think big!
+            #  Even other CombinatorialUnit classes may be used. Think big!
         self._r = r
             # The length of a single term returned by the combinator.
             # Named after the r-arguments used in various classes in
@@ -232,8 +230,8 @@ class Combinatorics(CacheableSequence):
             # This meaning of _n overrides that of NumberSequence.
 
 
-class PBTreeCombinatorics(Combinatorics):
-    """Perfect Balanced Tree Combinatorics Sequence Class
+class PBTreeCombinatorialUnit(CombinatorialUnit):
+    """Perfect Balanced Tree CombinatorialUnit Class
     
     A superclass for supporting the implementations of combinatorial
     algorithms which derive results from a perfectly-balanced tree,
@@ -272,7 +270,7 @@ class PBTreeCombinatorics(Combinatorics):
     
     Indexing
     --------
-    A PBTreeCombinatorics sequence may be accessed with an integer index,
+    A PBTreeCombinatorialUnit sequence may be accessed with an integer index,
     and each node is numbered breadth first; from 'left to right,
     bottom to top', like in this example:
 
@@ -303,7 +301,7 @@ class PBTreeCombinatorics(Combinatorics):
 
     Use of Internal and External Indices
     ====================================
-    With a PBTreeCombinatorics sequence, the internal index can be
+    With a PBTreeCombinatorialUnit sequence, the internal index can be
     locked to indices of nodes of a particular depth. In our example
     above, to allow only the selection of subsets of three elements,
     simply set the internal index starting point, _ii_start, to 4 and
@@ -330,7 +328,7 @@ class PBTreeCombinatorics(Combinatorics):
         as an int.
 
         In a perfectly balanced tree, the level which a node rests on
-        can be determined from its index. The PBTreeCombinatorics
+        can be determined from its index. The PBTreeCombinatorialUnit
         sequence keeps track of these levels, in an embedded sequence,
         _thresholds. 
 
@@ -354,7 +352,7 @@ class PBTreeCombinatorics(Combinatorics):
         Example
         -------
         In the example depicted in the docstring of the 
-        PBTreeCombinatorics class, the thresholds would have been
+        PBTreeCombinatorialUnit class, the thresholds would have been
         (1, 4, 10).
 
         """
@@ -416,7 +414,7 @@ class PBTreeCombinatorics(Combinatorics):
 
         In our example, the distance from the left works out to be 6.
 
-        Recalling trait 2 in the PBTreeCombinatorics class 
+        Recalling trait 2 in the PBTreeCombinatorialUnit class 
         documentation, we can find out which sibling branch it is by
         finding the remainder of the division by the number of
         siblings it has. In this example, there are two siblings per
@@ -492,7 +490,7 @@ class PBTreeCombinatorics(Combinatorics):
     def _get_full_subset_count(self):
         """
         Return the total possible number of subsets with all
-        possible r's for a PBTreeCombinatorics seqence.
+        possible r's for a PBTreeCombinatorialUnit.
 
         The number of total subsets is also the number of nodes
         in the combinatorics tree, which in turn coincides with
@@ -546,7 +544,7 @@ class PBTreeCombinatorics(Combinatorics):
                            0
         
         Referring once again to a truncated version of our example 
-        from the documentation of the PBTreeCombinatorics class:
+        from the documentation of the PBTreeCombinatorialUnit class:
 
         * The threshold of Level 0 is 1.
         * The threshold of Level 1 is 4.
@@ -587,7 +585,7 @@ class PBTreeCombinatorics(Combinatorics):
                            | 
                            0
         
-        Referring to our example tree from the PBTreeCombinatorics class
+        Referring to our example tree from the PBTreeCombinatorialUnit class
         documentation yet again, the bounds are as follows:
 
         If _r = 0, 0 ≤ ii ≤ 0 (iow ii == 0)
@@ -611,14 +609,14 @@ class PBTreeCombinatorics(Combinatorics):
             self._ii_start = 1
 
     def __init__(self, func, func_len_siblings, seq, r=None):
-        """Creates a PBTreeCombinatorics sequence.
+        """Creates a PBTreeCombinatorialUnit sequence.
 
         Please refer to the subclasses CatCombination, Permutation and 
         PermutationWithRepeats in order to make use of this class.
         If you are implementing your own subclass, read on to the next
         section.
     
-        Required Parameters for Subclasses of PBTreeCombinatorics
+        Required Parameters for Subclasses of PBTreeCombinatorialUnit
         ---------------------------------------------------------
         func - The function to derive the subset or term in the sequence.
             The function must have only one argument (excluding self
@@ -641,7 +639,7 @@ class PBTreeCombinatorics(Combinatorics):
         r - The r-value of the combinatorics operations to be run by
             the combinatorics class. This is intended to refer to the 
             length or size of the output of the terms derived.
-            If r is not specified, the PBTreeCombinatorics steps through
+            If r is not specified, the PBTreeCombinatorialUnit steps through
             every node, returning results for every possible value of r.
 
         """
@@ -655,7 +653,7 @@ class PBTreeCombinatorics(Combinatorics):
         super().__init__(func, seq, r, ii_start=0)
  
 
-class CatCombination(PBTreeCombinatorics):
+class CatCombination(PBTreeCombinatorialUnit):
     """Addressable Concatenating Combinator
 
     A sequence of all possible combinations of items from multiple
@@ -663,7 +661,7 @@ class CatCombination(PBTreeCombinatorics):
     only appears on the first element of the combination, and items 
     from the second appear second, and so on...
 
-    Uses PBTreeCombinatorics to generate its combinations.
+    Uses PBTreeCombinatorialUnit to generate its combinations.
     
     Note: It is possible to make the CatCombination class function like
     a permutator, but position-dependent combinations are the main
@@ -867,7 +865,7 @@ class CatCombination(PBTreeCombinatorics):
         """Sets up the node count embedded sequence, _node_counts to
         enable the combinatorics tree's addressing method to function.
         
-        Node Counts for PBTreeCombinatorics
+        Node Counts for PBTreeCombinatorialUnit
         -----------------------------------
         * Level 0 always has 1 node, the root node.
         * The number of nodes for any Level thereafter is the node count
@@ -997,14 +995,14 @@ class CatCombination(PBTreeCombinatorics):
         super().__init__(self._get_comb,self._func_len_siblings,seq_src, r)
 
 
-class Permutation(PBTreeCombinatorics):
+class Permutation(PBTreeCombinatorialUnit):
     """Addressable Permutator
 
     A sequence of all possible re-arranged versions a source sequence,
     or all possible arrangements of a subset of the source sequence given
     a specific subset length.
 
-    Uses PBTreeCombinatorics to generate its combinations.
+    Uses PBTreeCombinatorialUnit to generate its combinations.
 
     Examples
     --------
@@ -1238,7 +1236,7 @@ class Permutation(PBTreeCombinatorics):
         corresponding item on the source references list:
 
         1. The first+zeroth element in addrs, addrs[0] will always be 0,
-        as per PBTreeCombinatorics conventions. This corresponds to the 
+        as per PBTreeCombinatorialUnit conventions. This corresponds to the 
         first element in idxs, -1, the reference to the origin node
         at Level 0. The origin node is not included in output, so 
         this index will be discarded. This item is removed from idxs.
@@ -1437,7 +1435,7 @@ class PermutationWithRepeats(Permutation):
     name was chosen as it was observed to have a very similar effect
     to allowing permutations to have repeating elements.
     
-    Uses PBTreeCombinatorics to generate its combinations.
+    Uses PBTreeCombinatorialUnit to generate its combinations.
 
     Example
     -------
@@ -1719,7 +1717,7 @@ class PermutationWithRepeats(Permutation):
         self._set_thresholds()
 
 
-class Combination(Combinatorics):
+class Combination(CombinatorialUnit):
     """Addressable Combination Sequence
     
     An addressable sequence of all possible selections from a source

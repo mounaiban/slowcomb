@@ -41,15 +41,6 @@ def lambda_int_npr(n):
     """
     return lambda r: int(factorial(n)/factorial(n-r))
 
-def lambda_int_ncr(n):
-    """Return an nCr lambda function, with a fixed value for n, that
-    returns results as integers.
-    """
-
-    # TODO: Remove this function if found to be unneeded in future
-    # versions
-    return lambda r: int(factorial(n)/( factorial(r)*factorial(n-r) ))
-
 def int_ncr(n,r):
     """
     Evaluate nCr, the number of possible combinations given r selections

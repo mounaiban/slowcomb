@@ -150,3 +150,12 @@ class BlockCacheableSequenceSOTests(CacheableSequenceSOTests):
         expected = -0.02
         self.assertEqual(out, expected)
 
+    def test_getitem_i_neg_cache_step_pos_i_neg_ii_start(self):
+        seq_len = OrderOfMagnitudeSequenceFactory.test_len
+        test_item_neg_cs_zero_ii=self.item_factory.get_test_seq_zero_ii()
+        test_item_neg_cs_zero_ii[seq_len-1:0:-2]
+        out_id = id(test_item_neg_cs_zero_ii[1])
+        cache_item_id = id(test_item_neg_cs_zero_ii._cache[-1])
+        self.assertEqual(out_id, cache_item_id)
+        
+

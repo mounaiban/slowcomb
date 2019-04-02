@@ -1443,7 +1443,7 @@ class AccumulateSequence(CacheableSequence):
     all previous terms.
 
     The AccumulateSequence is intended to be a subscriptable analogue
-    to the Python's built-in ``itertools.accumulate`` class.
+    to Python's built-in ``itertools.accumulate`` class.
     
     Required Arguments
     ------------------
@@ -1535,6 +1535,13 @@ class AccumulateSequence(CacheableSequence):
         return self._a 
 
     def __init__(self, func_ii, func_a, **kwargs):
+        """
+        This is the constructor for creating an instance of this class.
+
+        For details on using this class, please refer to the class
+        documentation above.
+
+        """
         # Instance Attributes
         self._a = kwargs.get('init_val',0)
             # Accumulator
@@ -1543,35 +1550,58 @@ class AccumulateSequence(CacheableSequence):
         super().__init__(self._get_acc, **kwargs)
 
 class SumSequence(AccumulateSequence):
-    """An accumulative sequence in which each term is the result of
-    adding the requested term with all previous terms.
+    """
+    A NumberSequence in which each term is the result of adding
+    up all terms before it.
     
     The SumSequence is intended to be an addressable analogue
-    to the ``accumulate`` iterator from Python's itertools, when left
-    to run with the default ``func``, which is a sum function,
-    functionally equivalent to ``lambda a,b : a+b``.
-    """
+    to Python's built-in ``itertools.accumulate`` class.
 
+    It is pretty much equivalent to running AccumulateSequence
+    with ``lambda x,a: x+a``.
+
+
+    Required Arguments
+    ------------------
+    * func_ii - The function which derives a single term of the
+      sequence. Accepts 'full-bodied' functions or lambdas. 
+
+      * If the function is defined at module or method scope,
+        the function should have one argument like:
+
+        ::
+          
+          func(ii)
+        
+        The function will be called to derive the first+ii'th term.
+
+      * If the function is defined at class scope, the function
+        should have two arguments including ``self``:
+
+        ::
+
+          func(self, ii)
+
+
+    Optional Arguments
+    ------------------
+    * init_val - Initial value of the accumulator in the sequence.
+
+    See Also
+    --------
+    * itertools.accumulate, Python's built-in accumulate iterator
+      class
+
+    * slowcomb.AccumulateSequence, a sequence which allows you to
+      use your own accumulative function.
+
+    """
     def __init__(self, func_ii, **kwargs):
         """
-        Options for Creating an AccumulateSequence
-        ------------------------------------------
+        This is the constructor for creating an instance of this class.
 
-        Arguments
-        =========
-        func_ii - The function to derive a term of the sequence. Accepts
-            'full-bodied' functions or lambdas. The function has either
-            one or two arguments depending where it is defined:
-
-            * If the function is defined outside a class or inside
-            a method then it must only have one argument for the 
-            internal index of the term. For more info on internal
-            and external indices, see NumberSequence.__init__().
-
-            * If the function is defined inside a class, it is 
-            classified as a method by Python conventions, and must
-            have two arguments, one for ``self`` and another for
-            the index of the term.
+        For details on using this class, please refer to the class
+        documentation above.
 
         """
         super().__init__(func_ii, lambda a,b:a+b, **kwargs)

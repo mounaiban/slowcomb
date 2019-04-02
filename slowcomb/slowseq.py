@@ -1443,7 +1443,7 @@ class AccumulateSequence(CacheableSequence):
     all previous terms.
 
     The AccumulateSequence is intended to be a subscriptable analogue
-    to Python's built-in ``itertools.accumulate`` class.
+    to Python's built-in itertools.accumulate class.
     
     Required Arguments
     ------------------
@@ -1555,7 +1555,7 @@ class SumSequence(AccumulateSequence):
     up all terms before it.
     
     The SumSequence is intended to be an addressable analogue
-    to Python's built-in ``itertools.accumulate`` class.
+    to Python's built-in itertools.accumulate class.
 
     It is pretty much equivalent to running AccumulateSequence
     with ``lambda x,a: x+a``.
@@ -1576,7 +1576,7 @@ class SumSequence(AccumulateSequence):
         The function will be called to derive the first+ii'th term.
 
       * If the function is defined at class scope, the function
-        should have two arguments including ``self``:
+        should have two arguments including self:
 
         ::
 

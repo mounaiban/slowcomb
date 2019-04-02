@@ -1497,8 +1497,8 @@ class AccumulateSequence(CacheableSequence):
     * itertools.accumulate, Python's built-in accumulate iterator
       class
 
-    * slowcomb.SumSequence, a sequence where each term is the result
-      of all terms added together.
+    * SumSequence, a sequence where each term is the result of all
+      terms added together.
 
     """
     def _get_args(self):
@@ -1592,8 +1592,8 @@ class SumSequence(AccumulateSequence):
     * itertools.accumulate, Python's built-in accumulate iterator
       class
 
-    * slowcomb.AccumulateSequence, a sequence which allows you to
-      use your own accumulative function.
+    * AccumulateSequence, a sequence which allows you to use your own
+      accumulative function.
 
     """
     def __init__(self, func_ii, **kwargs):

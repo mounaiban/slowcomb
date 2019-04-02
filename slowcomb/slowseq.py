@@ -669,7 +669,7 @@ class CacheableSequence(NumberSequence):
     Lazily-Evaluated Numberical Sequence
 
     The CacheableSequence for use with number sequences whose terms
-    may be slow or memory-intensive to derive. The dictionary cache
+    may be slow or memory-intensive to derive. The dictionary caches
     every member lookup in its dictionary until it is cleared.
 
     The CacheableSequence is used exactly the same way as
@@ -710,7 +710,7 @@ class CacheableSequence(NumberSequence):
     Caching
     -------
     The cache is disbled by default. Call enable_cache() to start
-    using it, and call disable_cache() to stop using the cache an
+    using it, and call disable_cache() to stop using the cache and
     to clear it. When enabled, caching is automatic and performed
     for every term, requested by a single index, that has not been
     previously requested or cached.
@@ -751,9 +751,10 @@ class CacheableSequence(NumberSequence):
 
     Examples
     --------
-    This is a demonstration on a sequence of the first 100,000th
+    This is a demonstration on a sequence of the first 999,999,999
     prime numbers or so. An extermely slow method of deriving the prime
-    numbers to increase casual observability of the cache's action:
+    numbers is in use, in order to increase casual observability of
+    the cache's action:
 
     ::
 
@@ -808,7 +809,7 @@ class CacheableSequence(NumberSequence):
     References
     ----------
     * Wikipedia. Locality of Reference.
-      en.wikipedia.org/wiki/Locality_of_reference
+      https://en.wikipedia.org/wiki/Locality_of_reference
 
     """
     # Public Methods
@@ -893,8 +894,7 @@ class CacheableSequence(NumberSequence):
 
         Arguments
         ---------
-        * i - The index of the member of the sequence.
-          Accepts int, i ≥ 0.
+        * i - The index of the term of the sequence. Accepts int, i ≥ 0.
         
         """
         cache_enabled = self._cache is not None
@@ -914,50 +914,178 @@ class CacheableSequence(NumberSequence):
         self._cache = None
 
 class BlockCacheableSequence(CacheableSequence):
-    """Cacheable alternative to NumberSequence using a block cache.
+    """
+    Cacheable alternative to NumberSequence, the Subscriptable
+    Lazily-Evaluated Numberical Sequence
 
-    The BlockCacheableSequence is intended as an alternative class for 
-    number sequences whose members may take a long time to derive.
-    This sequence remembers members that fall within a contiguous block,
-    which by definition includes both adjacent members (e.g. [2],[3],[4]
-    [5]), or members with a constant step between them (e.g. '[1],[4],[7],
-    [10]...'). The cache is a implemented as a list.
+    The BlockCacheableSequence for use with number sequences whose
+    terms may be slow or memory-intensive to derive. A tuple is used
+    as a cache, which stores blocks of either equidistant or adjacent 
+    terms requested with a slice lookup.
+
+    The BlockCacheableSequence is used exactly the same way as
+    NumberSequence, with the added options of switching on and off
+    the cache and saving terms to the cache.
+
+
+    Required Arguments
+    ------------------
+    Operation of CacheableSequence exactly the same as with
+    NumberSequence. For full details, please refer to NumberSequence's
+    class documentation.
     
-    How To Use It
-    -------------
+    * func - The function to derive a term of the sequence. Both 
+      block and lambda functions are accepted.
+
+      * Example function defined at module or method scope:
+        ``func(ii)``.
+
+      * Example function defined at class scope:
+        ``func(self, ii)``.
+       
+    * length - Number of terms in the sequence. Accepts int,
+      where length ≥ 0.
+
+
+    Optional Arguments
+    ------------------
+    * ii_start - The first position of the internal index. Accepts int,
+      where ii_start ≥ 0. Default is 0. 
+
+    * default - The default value or object returned in the event the
+      sequence has a zero length, or is unable to otherwise derive
+      a term from a valid index. Any object is accepted. The default
+      default is None.
+         
     The BlockCacheableSequence is used exactly like a normal NumberSequence.
     Members are only cached when they are looked or derived up as part
     of a multiple-item operation using slices.
 
-    The cache is disbled by default.
+
+    Caching
+    -------
+    The cache is disbled by default. Call enable_cache() to start
+    using it, and call disable_cache() to stop using the cache and
+    to clear it.
     
-    Call enable_cache() to enable the cache.
-    Call disable_cache() to disable the cache. This also clears the cache.
-    There is no separate method to clear the cache. Instead, perform a 
-    dummy lookup with a zero-length slice (e.g. [0:0]) to force caching of
-    a negligbly small slice.
+    When enabled, caching is manual and performed each time multiple
+    terms are requested using a slice.
 
-    When To Use It
+    To clear the cache, without disabling it, perform a dummy lookup
+    using a zero-length slice, like [0:0]. This forces caching of a
+    negligibly small slice.
+
+    For more details on how the cache is enabled or disabled,
+    see enable_cache() and disable_cache() below.
+
+    Limitations
+    ===========
+    Caching is not available for multiple lookups using slices. While
+    slice lookups saves terms into the cache, the cache is effective
+    for for single lookups.
+    
+    Only one slice may be cached at any given time.
+
+    Considerations
     --------------
-    Sequences with frequent lookups exclusively within a small, contiguous
-    range of indices, or consistently equidistant lookups within any range,
-    will benefit most from this cache. In compsci parlance, this would be
-    described as a read pattern with _strong spatial or strong equidistant
-    locality_*.
-
-    *Wikipedia. Locality of Reference.
-    en.wikipedia.org/wiki/Locality_of_reference
+    When To Use It
+    ==============
+    Where there are frequent lookups that are invariably or mostly
+    within a small, contiguous range of indices, or where they are
+    consistently equidistant, the benefits of the block cache will be
+    the most apparent. In compsci parlance, this would be described as
+    having a read pattern with strong spatial or strong equidistant
+    locality.
 
     When Not To Use It
-    ------------------
-    The BlockCacheableSequence is not able to provide any performance benefit
-    to sequences that frequently service lookups within a wide range of
-    non-equidistant indices.
+    ==================
+    The BlockCacheableSequence is not able to provide any performance
+    benefit where lookups are frequently random, non-equidistant and
+    over a large range of indices.
+
+
+    Examples
+    --------
+    This is a demonstration on a sequence of the first 999,999,999
+    prime numbers or so. An extermely slow method of deriving the prime
+    numbers is used, to increase casual observability of the cache's
+    action:
+
+    ::
+
+      # Please increase the numbers until the uncached lookups are
+      # noticeably slow if you find no observable difference between
+      # cached and uncached lookups.
+
+      from slowcomb.tests.slowprime import slow_prime
+      from slowcomb.slowseq import CacheableSequence
+      cache_b = BlockCacheableSeqeuence(slow_prime, length=999999999)
+
+      # This lookup should be slow
+      print("Uncached lookup")
+      cache_b[500]
+
+      # Enable the cache to start using it
+      cache_b.enable_cache()
+
+      # The next couple of lookups should still be slow
+      print("Second lookup not cached")
+      cache_b[500]
+      print("Subsequent lookup still not cached")
+      cache_b[500]
+
+      # Caching Contiguous Lookups 
+      # --------------------------
+      # Prime the cache by performing a slice lookup
+      # Set up the cache for adjacent lookups
+      print("Caching adjacent lookups")
+      cache_b[495:505]
+
+      # These lookups will be fast
+      print("Cached lookups")
+      cache_b[495]
+      cache_b[500]
+      cache_b[497]
+      cache_b[493]
+      cache_b[500]
+
+      # This lookup will be slow
+      print("Uncached lookup")
+      cache_b[460]
+
+      # Caching Equidistant Non-Contiguous Lookups
+      # ------------------------------------------
+      # Re-prime the cache for equidistant lookups
+      # This multi-lookup requests even-index terms between
+      # 482 and 500 in reverse order.
+      print("Caching equidistant non-contiguous lookups)
+      cache_b[498:480:-2]
+
+      # These lookups will be fast
+      print("Cached lookups")
+      cache[482]
+      cache[484]
+      cache[486]
+      cache[488]
+      cache[490]
+      cache[498]
+
+      # These lookups will be slow
+      cache[479] # Out of range of cache
+      cache[480] # Unreachable by negative step slicing
+      cache[481] # Odd index not included in cache
+      cache[483]
+      cache[485]
+      cache[487]
+      cache[500] # Deleted from cache, out of range
+      cache[501] # Out of range of cache
+
     
-    How It Works
-    ------------
-    For more information, see __init__(), __getitem__() and
-    _add_terms_to_cache() below.
+    References
+    ----------
+    * Wikipedia. Locality of Reference.
+      https://en.wikipedia.org/wiki/Locality_of_reference
+
     """
 
     def disable_cache(self):
@@ -975,28 +1103,14 @@ class BlockCacheableSequence(CacheableSequence):
         self._cache_method = self._add_terms_to_cache
 
     def _add_terms_to_cache(self, data, **kwargs):
-        """Save looked up members to the BlockCacheableSequence.
+        """
+        Save data to the BlockCacheableSequence.
 
-        This is a simple operation in which the results of a multi-lookup
-        are kept in cache, along with the details of the that was used for
-        the lookup. This operation also deletes all existing content in
+        This is a simple operation in which the results of a slice
+        multi-lookup is copied to cache, along with the details of the
+        slice.  This operation also deletes all existing content in
         the cache.
 
-        The cache will be effective for any member that was part of 
-        a cached multi-item lookup using a slice.
-
-        Examples
-        --------
-        seq[1:11] -> all members 1 thru 10 are cached
-        seq[0:21:2] -> all even members 0 thru 20 are cached
-        seq[20:0:-1] -> all members 0 thru 20 are cached, albeit in
-            reverse order. This does not affect operation of the cache.
-
-        The sequence ``seq`` in the following examples has a length of 101
-        (with indices 0 to 100):
-        
-        seq[-1:-51:-1] -> the last fifty members are cached
-        seq[-2:-51:-2] -> the last fifty odd members are cached
         """
         self._cache_start_i = kwargs.get('start',0)
         self._cache_step_i = kwargs.get('step',1)
@@ -1004,51 +1118,78 @@ class BlockCacheableSequence(CacheableSequence):
         self._cache = data
 
     def _get_terms(self, s):
-        """Routine to return multiple members in response to a slice
+        """
+        Routine to return multiple terms in response to a slice.
+        The terms are returned in a tuple.
         
-        Arguments:
-        s - External start, stop and step indices in a Python ``slice``
+        Arguments
+        ---------
+        * s - start, stop and step external indices, in a slice.
+
         """ 
         out = []
         s = self._resolve_slice(s)
         for ii in range(s.start, s.stop, s.step):
             out.append(self._func(ii))
-        self._add_terms_to_cache(out,
-            start=s.start, stop=s.stop, step=s.step)
+        self._add_terms_to_cache(out,start=s.start,stop=s.stop,step=s.step)
         return tuple(out)
 
     def _get_term_with_cache(self, i):
-        """Get the first+i'th member of the sequence from the cache.
-
-        In the event that the member cannot be found in the cache (cache
-        miss), the method will resort to looking up the member without
-        the cache. The cache is effective for any member that was part
-        of a cached multi-item lookup using a slice.
-
-        For more information on how this cache works, see
-        _add_terms_to_cache().
         """
-        out = None
-        if self._cache is None:
-            self.enable_cache()
-        in_range = (i >= self._cache_start_i) and (i < self._cache_stop_i)
+        Get the first+i'th term of the sequence from the block cache.
+
+        In the event that the term cannot be found in the cache (cache
+        miss), the method will resort to looking up the term without
+        the cache. The cache is effective for any term that was part
+        of a cached multi-item slice lookup.
+
+        Arguments
+        ---------
+        * i - External index of the term being requested. Accepts int,
+          0 ≤ i ≤ len(self).
+
+        Further Reading
+        ---------------
+        For more information on how this cache works, see the class
+        documentation above, and also _add_terms_to_cache().
+
+        """
+        cache_i = None
         on_step = (i % self._cache_step_i) == 0
-        if in_range and (on_step):
-            cache_i = (i - self._cache_start_i) // self._cache_step_i
-            out = self._cache[cache_i]
-        if out is None:
+        if self._cache_start_i > self._cache_stop_i and self._cache_step_i<0:
+            # Cache is in reverse order
+            in_range=(i <= self._cache_start_i and i > self._cache_stop_i)
+            if in_range and on_step:
+                cache_i = (self._cache_start_i - i) // abs(self._cache_step_i)
+        elif self._cache_start_i < self._cache_stop_i and self._cache_step_i>0:
+            # Cache is in forward order
+            in_range=(i >= self._cache_start_i and i < self._cache_stop_i)
+            if in_range and on_step:
+                cache_i = (i - self._cache_start_i) // self._cache_step_i
+        if cache_i is None:
             # On cache miss, fallback to normal path
             out = self._get_term(i)
+        else:
+            out = self._cache[cache_i]
         return out
 
     def __init__(self, func, **kwargs):
+        """
+        This is the constructor for creating an instance of this class.
+
+        For details on using this class, please refer to the class
+        documentation above.
+
+        """
+        # Instance Attributes
+
         self._cache = None
         self._cache_start_i = 0 
-            # Index of first member to be cached
+            # Index of first term to be cached
         self._cache_step_i = 1
-            # Distance between cached members
+            # Distance between cached terms
         self._cache_stop_i = 0
-            # Index of last member to be cached
+            # Index of last term to be cached
         super().__init__(func, **kwargs)
 
 

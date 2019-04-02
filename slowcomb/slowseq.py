@@ -55,10 +55,11 @@ def int_ncr(n,r):
     
     Arguments
     ---------
-    n - Number of items in the set. Accepts int.
-    r - Number of selections from the set. Accepts int.
-    """
+    * n - Number of items in the set. Accepts int.
 
+    * r - Number of selections from the set. Accepts int.
+
+    """
     return int(factorial(n)/( factorial(r)*factorial(n-r) ))
 
 # Classes

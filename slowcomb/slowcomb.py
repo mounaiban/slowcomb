@@ -28,26 +28,47 @@ from slowcomb.slowseq import lambda_int_npr, int_ncr,\
 #
 class CombinatorialUnit(CacheableSequence):
     """
-    Superclass which contains essential methods for implementing
-    the first-party Combinatorics sequences in the Slow Combinatorics
-    Library.
+    Superclass which supports implementations of Combinatorial Units
+    the Slow Combinatorics Library.
+ 
+    Required Arguments
+    ------------------
+    A combinatorial unit class should have the following:
+    
+    * func - function or method to derive the subset. Accepts a lambda
+      or block function or method.
 
-    CombinatorialUnit sequences may be NumberSequences, or any of its
-    Cacheable variants.
+    * seq - a sequence to be set as the data source from which to derive
+      combinatorial terms. 
+
+    * r - the size of the subset to be derived in this sequence.
+      Optional for some combinatorial units.
+
+    Optional Arguments
+    ------------------
+    * ii_start - the starting internal index of the sequence.
+
+    Examples
+    --------
+    See Combination, CombinationWithRepeats, CatCombination,
+    PBTreeCombinatorialUnit and its subclasses (Permutation and
+    PermutationWithRepeats).
+
     """
-
     def index(self, x):
-        """Get the index of a combinatorial result.
+        """
+        Get the index of a combinatorial result.
 
-        This method merely initiates the reverse lookup process. The actual
-        lookup process is defined in _get_index().
+        This method merely initiates the reverse lookup process. The
+        actual lookup process is defined in _get_index() of the
+        subclass of CombinatorialUnit.
 
-        Returns the index of the combinatorial result as an integer.
+        Returns the index of the combinatorial result as an int.
 
         Arguments
         ---------
-        x - A sequence matching an output of the combinatorial unit 
-        to be looked up.
+        * x - A sequence matching an output of the combinatorial unit 
+          to be looked up.
 
         """
         self._prescreen_index_search_term(x)
@@ -63,19 +84,20 @@ class CombinatorialUnit(CacheableSequence):
  
     def is_valid(self):
         """
-        Check if a Combinatroics sequence is ready to return any
-        results.
+        Check if a Combinatorial Unit is ready to return any results.
         
         Returns True if ready, False otherwise.
 
-        If a CombinatorialUnit is not ready, it should return
-        a length of ``1``, and a default output, which in most cases
+        If the Combinatorial Unit is not ready, it should return
+        a length of 1, and a default output, which in most cases
         is an empty tuple.
 
         This mechanism is intended to prevent a problematic sequence
-        from locking up a complex chain of sequences should an invalid
-        configuration be made by accident, or should the source
-        sequence become unexpectedly unavailable.
+        from interfering with the operation of complex combinatorial
+        unit setups, particularly with source sequences that are 
+        liable to becoming unavailable at runtime, such as external
+        databases.
+
         """
         # Return False if the sequence is set to work on itself
         if self._seq_src is self:
@@ -115,8 +137,10 @@ class CombinatorialUnit(CacheableSequence):
                 raise ValueError(msg)
 
     def _get_args(self):
-        """Attempt to rebuild a probable equivalent of the arguments
+        """
+        Attempt to rebuild a probable equivalent of the arguments
         used in initialising this sequence
+
         """
         if isinstance(self._seq_src, str) is True:
             # Add quotes back to str's used as sequences, so that the
@@ -133,9 +157,9 @@ class CombinatorialUnit(CacheableSequence):
         is able to return. Returns the count as an int.
 
         This is simply the distance between the first internal
-        index and the last internal index, whose method for setting
-        these values depends on the type of combinatorics operation
-        involved.
+        index and the last internal index. These depend on the
+        type of combinatorial unit involved.
+
         """
         return self._ii_stop - self._ii_start
 
@@ -143,7 +167,8 @@ class CombinatorialUnit(CacheableSequence):
         """
         Supports direct lookups of terms in a CombinatorialUnit.
 
-        Both integer and slices are accepted as keys.
+        Both int and slice inputs are accepted as keys.
+
         """
         if self.is_valid() is False:
             return self._default
@@ -152,8 +177,9 @@ class CombinatorialUnit(CacheableSequence):
 
     def __len__(self):
         """
-        The length of a Combinator as returned by len() is equal
-        to the total possible number of outcomes it can return.
+        Gets the total possible number of terms of a combinatorial
+        unit. Returns int.
+
         """
         if self.is_valid() is True:
             # The threshold of the last level is also the 
@@ -165,37 +191,12 @@ class CombinatorialUnit(CacheableSequence):
             return 1
 
     def __init__(self, func, seq, r=None, ii_start=1):
-        """Supports the creation of a combinatorics sequence
-        implemented using the CombinatorialUnit class.
-
-        This method is intended to be called from a subclass of
-        the CombinatorialUnit class.
-
-        Arguments
-        ---------
+        """
+        This is the special constructor method which supports 
+        creation of combinatorial units. 
         
-        Required Arguments
-        ==================
-        A CombinatorialUnit class should have the following parameters:
-        
-        func - function or method to derive the subset.
-        seq - a sequence to be set as a source of data to derive
-            data subsets from. For examples, please check the subclasses,
-            especially Combination and Permutation.
-
-        Optional Arguments
-        ==================
-        r - the size of the subset to be derived in this sequence.
-            Accepts zero and positive integers or None.
-            The behaviour of a Combinatroics sequence when r is set to
-            None is currently undefined.
-        ii_start - the starting internal index of the sequence.
-
-        Examples
-        --------
-        See Combination, CombinationWithRepeats, CatCombination,
-        PBTreeCombinatorialUnit and its subclasses (Permutation and
-        PermutationWithRepeats).
+        For details on creating the CU, consult the documentation of
+        the combinatorial unit class.
 
         """
         # Validate Arguments 

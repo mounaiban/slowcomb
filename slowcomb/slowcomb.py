@@ -59,9 +59,11 @@ class CombinatorialUnit(CacheableSequence):
         """
         Get the index of a combinatorial result.
 
-        This method merely initiates the reverse lookup process. The
-        actual lookup process is defined in _get_index() of the
-        subclass of CombinatorialUnit.
+        This method merely initiates the reverse lookup process, and
+        rejects invalid search terms.
+        
+        The actual lookup process is defined in _get_index() of the
+        CombinatorialUnit subclass.
 
         Returns the index of the combinatorial result as an int.
 
@@ -71,16 +73,23 @@ class CombinatorialUnit(CacheableSequence):
           to be looked up.
 
         """
-        self._prescreen_index_search_term(x)
+        # Reject obviously invalid terms
         if self.is_valid() is False:
             if x == self._default:
                 return 0
-        else:
-            if x == self._default:
-                raise ValueError('default value not accepted as search term')
-            if x == ():
-                raise ValueError('empty sequence not accepted as search term')
-            return self._get_index(x)
+        elif x is None:
+            raise TypeError('Search term cannot be None')
+        elif x == self._default:
+            raise ValueError('default value is not a valid search term')
+        elif x == ():
+            raise ValueError('empty sequence is not a valid search term')
+
+        # Reject otherwise valid terms of unacceptable length
+        if self._r is not None:
+            if len(x) != self._r:
+                msg = "term must have a length of {0}".format(self._r)
+                raise ValueError(msg)
+        return self._get_index(x)
  
     def is_valid(self):
         """
@@ -117,24 +126,6 @@ class CombinatorialUnit(CacheableSequence):
         else:
             return False
 
-    def _prescreen_index_search_term(self, x):
-        """Rejects search terms unsuitable for use with the index()
-        method on various combinatorial sequence classes.
-
-        Raises ValueError when a search term is rejected.
-
-        Arguments
-        ---------
-        x - search term to be used with index()
-
-        """
-        if x is None:
-            raise TypeError('Search term cannot be None')
-
-        if self._r is not None:
-            if len(x) != self._r:
-                msg = "term must have a length of {0}".format(self._r)
-                raise ValueError(msg)
 
     def _get_args(self):
         """
@@ -1941,7 +1932,6 @@ class CombinationWithRepeats(Combination):
             Python iterator type.
 
         """
-        self._prescreen_index_search_term(x)
         # Reconstruct the bitmap from the sequence
         #
         elem_last = x[0]

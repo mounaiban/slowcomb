@@ -35,15 +35,24 @@ class CombinatorialUnit(CacheableSequence):
     ------------------
     A combinatorial unit class should have the following:
     
-    * func - function or method to derive the subset. Accepts a lambda
-      or block function or method.
+    * func - function or method to derive the combinatorial subset.
+      Accepts a lambda or block function or method.
 
-    * seq - a sequence to be set as the data source from which to derive
-      combinatorial terms. 
+    * seq - a sequence to be the data source from which to derive
+      combinatorial terms. If seq supports a reverse-lookup method
+      named index(), the CU becomes capable of finding out the index
+      from raw combinatorial results.
+      The simplest examples are strings, but any sequence may be used.
+      Map it to blobs, database records, other CombinatorialUnit objects
+      or anything that is subscriptable. Think big!
 
     * r - the size of the subset to be derived in this sequence.
       Optional for some combinatorial units.
-
+      Named after r-value used in maths textbooks to describe the size
+      of a combinatorial term which is a different size from the
+      set being worked on (i.e. nPr, nCr), by way of the r-values in
+      Python's combinatorial itertools classes.
+ 
     Optional Arguments
     ------------------
     * ii_start - the starting internal index of the sequence.
@@ -196,19 +205,16 @@ class CombinatorialUnit(CacheableSequence):
                 raise ValueError('r, if present, must be zero or more')
 
         # Instance Attributes
+        #
         self._seq_src = seq
-            # The source sequence from which to generate combinations
-            #  (or permutations). The simplest examples use strings,
-            #  but any sequence may be used. Map it to blobs, 
-            #  database records, anything that has a sequence identifier.
-            #  Even other CombinatorialUnit classes may be used. Think big!
+            # The source sequence from which to derive combinatorial
+            # terms
         self._r = r
-            # The length of a single term returned by the combinator.
-            # Named after the r-arguments used in various classes in
-            # Python's itertools, which is in turn named after the
-            # r-argument (sometimes k) in partial combinations (nCr)
-            # and permutations (nPr).
+            # Sets a fixed length for terms returned by the
+            # combinatorial unit.
+
         #  Other Stat Keepers
+        #
         self._exceptions = None
             # Reserved attribute
             # To be set to true if exceptions have been encountered
@@ -217,54 +223,86 @@ class CombinatorialUnit(CacheableSequence):
         # Construction Routine
         super().__init__(func, length=len(seq),
                 ii_start=ii_start, default=() )
-            # The _n value of a combinatorics sequence is the number of
-            #  items in the set being selected or permutated from.
-            # This meaning of _n overrides that of NumberSequence.
 
 
 class PBTreeCombinatorialUnit(CombinatorialUnit):
-    """Perfect Balanced Tree CombinatorialUnit Class
-    
+    """
     A superclass for supporting the implementations of combinatorial
-    algorithms which derive results from a perfectly-balanced tree,
-    which is simply a B-tree where the number of sub-nodes can be
-    figured out algorithmically for each and every node ahead of time.
+    units that make use of Perfectly-Balanced Trees, B-Trees whose
+    node counts and content can be figured out algorithmically for
+    each and every node ahead of time.
 
-    Properties of the Slowcomb PBTree
-    ---------------------------------
-    Several traits are assumed to be true of the perfectly-balanced
-    tree:
+    Required Arguements
+    -------------------
+    * func - function or method to derive combinatorial terms.
+      Accepts a lambda or block function or method. The definition
+      should look like:
 
-    1. The number of nodes per level is a whole-number multiple of
-        nodes on the previous level.
+      * In module or method scope: func(i), where i is the external
+        index of the term.
 
-    2. Every node on the same level has the same number of child nodes.
-        Therefore, every node on the same level has the same number of
-        sibling nodes
+      * In class scope: func(self, i), where i is the external
+        index of the term.
+
+    * seq - a sequence to be set as the data source from which to derive
+      combinatorial terms. If seq supports a reverse-lookup method
+      named index(), the CU becomes capable of finding out the index
+      from raw combinatorial results. The simplest examples are strings,
+      but any sequence, including database records or even other
+      combinatorial units, may be used.
+
+    * func_len_siblings - function to determine the number of nodes
+      on the tree with a common parent. All nodes on the same level
+      are assumed to have the same number of parent nodes. Accepts
+      methods, block function or lambda functions with the following
+      definition:
+
+      * In module or method scope: f(lvl), where lvl is an int
+        representing the level the node is on in the tree.
+
+      * In class scope: f(self, lvl) where lvl is an int
+        representing the level the node is on in the tree.
+
+
+    Optional Arguments
+    ------------------
+    * r - the size of the subset to be derived in this sequence.
+      Optional for some combinatorial units. Accepts None, or int
+      where r ≥ 0.
+      If r is None, the PBTreeCombinatorialUnit steps through
+      every term of every possible size, from smallest to largest.
+
+
+    How It Works
+    ------------
+
+    About the PBTree
+    ================
+    The Perfectly-Balanced Tree (PBTree) is a virtual tree data
+    structure in which the number of children per node is exactly
+    the same for each node on the same level of the tree, and the
+    content of the nodes are predictably repeated across the tree.
+
+    Thus the following properties apply:
+
+    1. The number of nodes per level is a multiple of nodes on the
+    previous level.
+
+    2. Every node on the same level share the same exact number of
+    sibling nodes.
 
     3. Any node is allowed to have an arbitrary number of child nodes,
-        as long as traits 1 and 2 above ``is True``.
-    
+    as long as traits 1 and 2 above apply.
 
-    Getting Subsets from a PBTree
-    -----------------------------
-    Terms
-    =====
-    The each node, along with all the nodes on the path to that
-    particular node, in order of navigation, represents one term in
-    the sequence.
+    4. The path to a node can be determined from its index expressed
+    as a numerical quantity, by a series of simple arithmetic
+    operations.
 
-    Selecting Terms By Length (r-value)
-    ===================================
-    All siblings (nodes of the same depth or height) on the tree are
-    terms of the same length. Therefore, terms of the same r-value 
-    may be derived by selecting paths to nodes of a particular depth.
-    
-    Indexing
-    --------
-    A PBTreeCombinatorialUnit sequence may be accessed with an integer index,
-    and each node is numbered breadth first; from 'left to right,
-    bottom to top', like in this example:
+
+    Illustration and Indexing
+    =========================
+    Here's a rather crude diagram of a three-level PBTree, with its
+    nodes integer-indexed:
 
     ::
 
@@ -279,73 +317,100 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
                        | 
                        0
 
+
+    NOTE: The tree in this example is drawn from the bottom. For those
+    who prefer their trees with the root on top, just imagine it
+    upside-down.
+
+    Each node is numbered breadth first, from 'left to right, then
+    bottom to top'.
+
     Levels begin at zero and count upwards:
+
     * Level 0 comprises node 0
+
     * Level 1 comprises nodes 1, 2 and 3
+    
     * Level 2 comprises nodes 4, 5, 6, 7, 8 and 9
+
     * Level 3 comprises nodes 10 thru 21
 
-    Therefore, for example, term 5 will be (0,1,5), while term 18 will
-    be (0,3,8,18).
+    The levels are tracked internally using an embedded sequence,
+    _thresholds, which keeps track of the next node after the last
+    node of a particular level. In this example:
 
-    Note: The tree in this example is drawn from the bottom. Just imagine
-    it upside-down if you like your trees that way.
+    * Level 0's threshold is 1
 
-    Use of Internal and External Indices
-    ====================================
-    With a PBTreeCombinatorialUnit sequence, the internal index can be
-    locked to indices of nodes of a particular depth. In our example
-    above, to allow only the selection of subsets of three elements,
-    simply set the internal index starting point, _ii_start, to 4 and
-    the highest interal index, _ii_stop, to 9.
+    * Level 1's threshold is 4
 
-    The external index (i=0) is therefore mapped to the node 4.
-    There will be six nodes, making the last index of the sequence
-    (i=5) map to node 9.
+    * Level 2's threshold is 10
 
-    Use of Node and Level 0
+    * Level 3's threshold is 22 (not shown in tree)
+
+
+    Using the PBTree for Combinatorial Operations
+    ---------------------------------------------
+
+    Paths
+    =====
+    The path to each node can be used to represent a combinatorial
+    result, and the contents of each node could represent the elements
+    of the combinatorial term. The exact content of the nodes depends
+    on the subclass of PBTreeCombinatorics.
+
+    Paths are sequences of child node numbers, which begin from zero for
+    the leftmost child.
+   
+    In our example, the path to node 5 will be (0,0,1), while term 18
+    will be (0,2,0,0).
+
+    Selecting Terms By Length (r-value)
+    ===================================
+    The path to each node on a particluar level represents combinatorial
+    terms of the same length. 
+ 
+    Use of Internal Indices
     =======================
-    The use of Node 0 and Level 0 is defined by the type of combinatorics
-    operation. Some types of operations make use of it, while some others
-    will hide it from the consumer during normal operation.
+    The indices of nodes in the PBTree are internal indices.
 
-    Examples
+    Internal indices can be constrained to begin on the first node
+    of a particular level, and end on the last node of the same level,
+    to create a CU which returns terms of a specific length.
+
+    In our example, setting _ii_start to 10 and _ii_stop to 22 constrains
+    our CU to three (or four, depending on the CU) -element terms.
+    External index 0 will map to node ten, and index 11 will map to
+    node 21.
+   
+    See Also
     --------
-    Please see Permutation and PermutationWithRepeats below.
+    * CatCombination
+
+    * Permutation 
+
+    * PermutationWithRepeats 
 
     """
     def _get_ii_level(self, ii):
-        """Find out on which level in the combinatorics tree a node 
-        is on by its internal index number. Returns the level number
-        as an int.
+        """
+        Returns the level of a node in the combinatorics tree as an
+        int.
 
-        In a perfectly balanced tree, the level which a node rests on
-        can be determined from its index. The PBTreeCombinatorialUnit
-        sequence keeps track of these levels, in an embedded sequence,
-        _thresholds. 
+        In the PBTree, the level which a node rests on is determined
+        from its index, and a sequence of indices of the next node
+        after the last node of each level. These indices are kept
+        in an embedded sequence, _thresholds. 
 
         The root of the tree is regarded as Level 0.
         
-        This method regards the thresholds as a barrier or stop for
-        a particular level. This makes the internal index right 
-        before the threshold the upper bound of a particular level.
-        For example, _thresholds[0] is always one. Therefore, the
-        zero'th level ends at ii=0.
-
-        Thus, a level is determined by the n'th threshold which
-        it first fails to meets or exceed. For more information on
-        thresholds, see _set_thresholds.
-
         Arguments
         ---------
-        ii - The internal index of the term of the sequence. Accepts int,
-            0 ≤ i < self._ii_stop
+        * ii - The internal index of the term of the sequence. Accepts int,
+          0 ≤ i < self._ii_stop
 
-        Example
-        -------
-        In the example depicted in the docstring of the 
-        PBTreeCombinatorialUnit class, the thresholds would have been
-        (1, 4, 10).
+        See Also
+        --------
+        * _set_thresholds
 
         """
 
@@ -358,23 +423,23 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
 
     def _get_comb_tree_path(self, ii):
         """
-        Find out the tree path required to re-construct the i'th term
-        of the combinatorics sequence. Returns a tuple of int internal
-        indices.
+        Find out the path to a particular node of index ii on the
+        PBTree, returns a tuple representing a path to the node.
 
-        The indices are navigation routes in the combinatorics tree.
-        The exact method of resolving the path to a term of the
-        sequence is to be defined in the subclass inheriting from
-        this class.
+        Each element of the path represents the number of the child
+        node to navigate into, with the first child on the left
+        as number zero.
 
-        How The Addressing Works
-        ------------------------
-        Referring to the example tree depicted in the documentation of
-        the PBTreeCombinato class, which has been replicated here for
-        your pleasure: 
+        How The Path Discovery Works
+        ----------------------------
+        The path to a PBTree node can be discovered from its node number
+        using a series of simple arithmetic operations.
+
+        The tree from the class documentation above has been replicated
+        here for your pleasure: 
 
         ::
-    
+                             * 
           10 11 12 13 14 15  16 17 18 19 20 21
             \_|   \_|  \_|   |_/   |_/   |_/
                \    |    |   |     |    /
@@ -386,78 +451,57 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
                            | 
                            0
         
-        In order to reconstruct term 16, and trace its path back to
-        the origin node 0, this method attempts to find out the level
-        the term sits on, and its distance from the left of the tree.
+        In this example, we will find the path to node 16, marked with
+        an asterisk. The discovery process herein begins from the 
+        right-hand end of the path.
 
-        The path is presented as a tuple of ``int`` indices, each
-        ``int`` corresponding to the index of an item on the source
-        sequence, _seq_src, and also the sub nodes to navigate into.
-        The index of these paths begin at zero. The algorithm used in
-        this method gets elements, from the furthest to the closest
-        to the root.
+        There are several facts we have to find out from various
+        metadata to discover the rightmost path index:
 
-        Deriving the First Element of the Path
-        ======================================
-        The 16th term is on Level 3 (recalling that the 0th term is
-        on Level 0). The distance from the left of the level can be
-        determined from the distance of the term from the previous
-        level's threshold (10), which is also the start of Level 3.
+        * Is on Level three (from _thresholds)
 
-        In our example, the distance from the left works out to be 6.
+        * Is on a level with twelve nodes (from _node_counts)
 
-        Recalling trait 2 in the PBTreeCombinatorialUnit class 
-        documentation, we can find out which sibling branch it is by
-        finding the remainder of the division by the number of
-        siblings it has. In this example, there are two siblings per
-        node at Level 3. Therefore, 16 (16%2 == 0) is the first
-        sibling.
+        * Is node number six on this level (subtract 16 from
+          _thresholds), remembering that the the first node is given
+          the number zero. In code, this is referred to as 'distance
+          from left'.
         
-        This actually the last element of the path, 0. Recall that
-        we are resolving the path from the furthest to the closest.
+        * Has two siblings, (from _func_len_siblings)
 
-        Deriving the Next Elements of the Path
-        ======================================
-        To navigate from Node 16 back to Node 7, simply select the
-        corresponding node in the next lower level, which is Level 2.
-        To find this node, keep in mind the left distance of Node 16
-        in the last level, and divide it by the number of siblings in
-        the last level.
+        * Is a child of node 7 (from dividing its position on this
+          level by the number of siblings, then adding it back
+          to index of the first node of Level one).
 
-        * In Level 3, we found that the Node 16 had distance of six
-        nodes from the left. Each node had 2 siblings on this Level,
-        and Node 16 had path value of zero.
+        In shorthand, we could write this as ii=16,lvl=3,n=12,d=6,
+        sibs=2.
 
-        * In Level 2, the parent of Node 16 will have a distance of three
-        (i.e. 6/2) from the left. Keeping in mind that node indices on
-        the level start from zero, the node with a left distance of three
-        on Level 2 is the parent, Node 7. 
-
-        * In Level 2, nodes have two siblings. Therefore, Node 7 is the 
-        second sibling because (a distance of 3) % (2 siblings per node)
-        is equal to 1, the second sibling from zero. This is also the
-        second-last element of our path. Therefore, our path so far
-        is (1,0).
-
-        * In Level 1, the parent of Node 7 will have a distance of one,
-        1%3==1 from the left, as each node has three siblings on this Level.
-        Therefore the parent is Node 2.
+        However, the most important number is node 16's sibling number,
+        which is determined by n % sibs (the remainder of n divided by
+        sibs). From this, we find that node 16 is sibling zero of 
+        node 7.
         
-        * In Level 1, Node 2 is the the second sibling because (a distance
-        of 1) % (3 siblings per node) is equal to 1, making it the second
-        sibling, recalling that sibling indices start from zero. Therefore,
-        we find the third-last element of the path: 1. This makes our
-        path so far (1,1,0).
+        We save this in a sequence, and our path so far is [,0].
+        
+        Repeating the process on node 7, we find that lvl=2,n=6,d=3,
+        sibs=2, and that it is *sibling one* (from d%n) of node 2 
+        (from d//sibs + 1)
 
-        * Finally in Level 0, all left distances resolve to zero. This
-        makes the path at Level 0 always zero, consistent with the
-        properties of a traditional tree structure. Our path becomes
-        (0,1,1,0).
+        We add this fact to the left side of our sequence, making it
+        [,1,0].
 
-        See Also
-        --------
-        Permutation, PermutationWithRepeats and CatCombination on applications
-        of the PBTree combinatorics.
+        Continue with node 2, finding out that lvl=1,n=3,d=1,sibs=3,
+        and that this node is *sibling one* of node 0.
+
+        Add this fact to the left of our sequence, resulting in
+        [,1,1,0].
+
+        The process ends with node 0, where lvl=0,n=1,d=0,sibs=0.
+        This node has no siblings, thus assuming the default path
+        0.
+
+        We complete the path by adding this fact to the left of the
+        route, ending up with [0,1,1,0].
 
         """
         ii_lvl = self._get_ii_level(ii)
@@ -497,8 +541,8 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
 
         Arguments
         ---------
-        ii - integer index of the internal index of a node on the
-            combinatorial tree.
+        * ii - integer index of the internal index of a node on the
+          combinatorial tree.
 
         """
         lvl = self._get_ii_level(ii)
@@ -514,33 +558,22 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         return slice(sub_start, sub_stop)
     
     def _set_node_counts(self):
-        """Placeholder method for setting node counts per level
+        """
+        Placeholder method for setting node counts per level
         on the combinatorics tree.
+
         """
         raise NotImplementedError
 
     def _set_thresholds(self):
-        """Prepares the internal sequence of thresholds, or guard
-        indices indicating the barrier after the last index on the
-        combinatorics tree.
-
+        """
+        Sets the threshold indices of the combinatorial tree.
         This method triggers the node counting method, _set_node_counts().
 
-        ::
-                4   5    6   7     8   9  
-                 \__|    \___/    /___/
-                     \     |     /
-                      1    2    3
-                       \___|___/
-                           | 
-                           0
-        
-        Referring once again to a truncated version of our example 
-        from the documentation of the PBTreeCombinatorialUnit class:
-
-        * The threshold of Level 0 is 1.
-        * The threshold of Level 1 is 4.
-        * The threshold of Level 2 is 10, which is beyond the last Level.
+        See Also
+        --------
+        * The class documentation above, under the heading Illustration
+          and Indexing, for the definition of thresholds.
 
         """
         self._set_node_counts()
@@ -553,16 +586,14 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         self._thresholds = tuple(counts)
 
     def _set_ii_bounds(self):
-        """Sets appropriate limits for the internal index, so that it may
-        report the length of the combinatorics sequence correctly.
+        """
+        Sets start (_ii_start) and stop (_ii_stop) bounds for the
+        internal index, so that only terms of a specific length
+        are accessible, and so that the correct number of terms
+        in this combinatorial unit is reported by len() correctly.
 
-        The length is based both on the r-value (_r) of the sequence, and
-        the length of the source sequence.
-
-        Both minimum and maximum bounds are set.
-
-        This method triggers the threshold setting method, _set_thresholds(),
-        which in turn triggers _set_node_counts().
+        This method triggers the threshold setting method,
+        _set_thresholds(), which in turn triggers _set_node_counts().
 
         ::
 
@@ -577,13 +608,16 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
                            | 
                            0
         
-        Referring to our example tree from the PBTreeCombinatorialUnit class
-        documentation yet again, the bounds are as follows:
+        Referring to our illustration from the class documentation yet
+        again, the bounds are as follows:
 
-        If _r = 0, 0 ≤ ii ≤ 0 (iow ii == 0)
-        If _r = 1, 1 ≤ ii ≤ 3
-        If _r = 2, 4 ≤ ii ≤ 9
-        If _r = 3, 10 ≤ ii ≤ 21
+        * If _r = 0, 0 ≤ ii ≤ 0 (or, ii == 0)
+
+        * If _r = 1, 1 ≤ ii ≤ 3
+
+        * If _r = 2, 4 ≤ ii ≤ 9
+
+        * If _r = 3, 10 ≤ ii ≤ 21
 
         """
         self._set_thresholds()
@@ -601,38 +635,12 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
             self._ii_start = 1
 
     def __init__(self, func, func_len_siblings, seq, r=None):
-        """Creates a PBTreeCombinatorialUnit sequence.
-
-        Please refer to the subclasses CatCombination, Permutation and 
-        PermutationWithRepeats in order to make use of this class.
-        If you are implementing your own subclass, read on to the next
-        section.
-    
-        Required Parameters for Subclasses of PBTreeCombinatorialUnit
-        ---------------------------------------------------------
-        func - The function to derive the subset or term in the sequence.
-            The function must have only one argument (excluding self
-            when a method is used), which accepts the external index of
-            the term to be derived.
-
-        func_len_siblings - The function to measure the number of nodes
-            on the tree with a common parent. All nodes on the same level
-            are assumed to have the same number of parent nodes.
-            This function must have only one argument (excluding self
-            when a method is used), which is the value on the tree to
-            calculate the the sibling count for.
-
-        seq - The source sequence to run combinatorics operations on.
-            Accepts any sequence types, including Python iterators and 
-            sequences.
-
-        Optional Arguments
-        ------------------
-        r - The r-value of the combinatorics operations to be run by
-            the combinatorics class. This is intended to refer to the 
-            length or size of the output of the terms derived.
-            If r is not specified, the PBTreeCombinatorialUnit steps through
-            every node, returning results for every possible value of r.
+        """
+        This is the special constructor method which supports 
+        creation of combinatorial units. 
+        
+        For details on creating the CU, consult the documentation of
+        the combinatorial unit class.
 
         """
         self._func_len_siblings = func_len_siblings
@@ -646,86 +654,124 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
  
 
 class CatCombination(PBTreeCombinatorialUnit):
-    """Addressable Concatenating Combinator
-
+    """
     A sequence of all possible combinations of items from multiple
     position-dependent sequences, where items from the first sequence
     only appears on the first element of the combination, and items 
     from the second appear second, and so on...
 
-    Uses PBTreeCombinatorialUnit to generate its combinations.
-    
-    Note: It is possible to make the CatCombination class function like
+    NOTE: It is possible to make the CatCombination class function like
     a permutator, but position-dependent combinations are the main
     intended use of this class, hence its name.
 
+    Required Arguments
+    ------------------
+    * seqs - Sequence source to derive combinations from. Accepts a 
+      sequence of sub-sequences.
+
+    Optional Arguments
+    ------------------
+    * r - The length of the terms derived from the combinatorial
+      unit. With the CatCombinator, setting r smaller than the
+      number of sub-sequences in causes it to use only the first r
+      sub-sequences. Accepts int, 0 ≤ r < len(seqs).
+
     Example
     -------
-    In a hypothetical English language lesson we have four lists:
+    Let's re-create the three-word CatCombination from the exampes
+    module (from slowcomb.tests.examples.cc). Here's a table of the
+    words in the CU:
 
-    Pronoun  Verb     Determiner  Noun
-    =======  =======  ==========  ====
-    You      kicked   my          dog
-    She      punted               anaconda
-    He
-    It
+    Word 1  Word 2  Word 3
+    ======  ======  ========
+    I       need    sugar
+            want    spice 
+                    scissors
 
-    The CatCombinator will generate all possible Pronoun-Verb-Determiner-
-    Noun combinations:
+    This can be done the more beginner-friendly way:
 
-    r=1    r=2           r=3              r=4
-    ===    ==========    =============    ======================
-    You    You kicked    You kicked my    You kicked my dog
-    She    You punted    You punted my    You kicked my anaconda
-    He     She kicked    She kicked my    You punted my dog
-    It     She punted    She punted my    You punted my anaconda
-           He kicked     He kicked my     She kicked my dog
-           He punted     He punted my     She kicked my anaconda
-           It kicked     It kicked my     She punted my dog
-           It punted     It punted my     She punted my anaconda
-                                          He kicked my dog
-                                          He kicked my anaconda
-                                          He punted my dog
-                                          He punted my anaconda
-                                          It kicked my dog
-                                          It kicked my anaconda
+    >>> from slowcomb.slowcomb import CatCombination
+    >>> s_a = ('I',)
+    >>> s_b = ('need','want')
+    >>> s_c = ('sugar','spice','scissors') 
+    >>> seqs = (s_a, s_b, s_c)
+    >>> catcomb = CatCombination(seqs, r=3)
 
+    Or the hardcore way:
 
-    The resulting combinatorics tree can be visualised as:
+    >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
+    ... ('sugar', 'spice', 'scissors')), r=3)
+
+    This combinatorial unit is set up to output only full sentences,
+    as it's r-value is set to 3.
+
+    To access all full sentences, use the CU as an iterator:
+
+    >>> for d in catcomb:
+    ...     print(d)
+    ('I', 'need', 'sugar')
+    ('I', 'need', 'spice')
+    ('I', 'need', 'scissors')
+    ('I', 'want', 'sugar')
+    ('I', 'want', 'spice')
+    ('I', 'want', 'scissors')
+
+    Reducing the r-value to less than three cuts the sentences
+    short to r number of words:
+
+    >>> catcomb = CatCombination(seqs, r=2)
+    >>> for d in catcomb:
+    ...     print(d)
+    ('I', 'need')
+    ('I', 'want')
+
+    A CatCombination whose r=0 only returns empty tuples. 
+    This is in aligment with the behaviour of the ``combinations`` class
+    from Python's itertools.
+
+    >>> catcomb = CatCombination(seqs, r=0)
+    >>> len(catcomb)
+    1
+
+    >>> catcomb[0]
+    ()
+
+    Fun activity: what output does a CatCombinator with r=None produce?
+    Enter it and find out for yourself. Hint: see the class docstring for
+    PBTreeCombinatorialUnit.
+
+    >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
+    ... ('sugar', 'spice', 'scissors')))
+
+    The resulting combinatorial tree can be visualised as:
 
     ::
+                    
+      su.  sp.  sc.              su.  sp.  sc.
+        \___|___/                  \___|___/
+             \                        /
+             need                  want
+               \                    /
+                \__________________/
+                         |
+                         I
+                         |
+                         0
     
-       d. a. d. a. d. a. d. a.  d. a. d. a. d. a. d. a.
-        \_/   \_/   \_/   \_/   \_/   \_/    \_/   \_/
-         \     \     |     |     |     |     /     /
-          my    my   my    my   my    my   my    my
-           |    |    |     |    |     |    |     | 
-           k.   p.   k.    p.   k.    p.   k.    p.
-            \___/     \___/      \___/      \___/
-              |         |          |          |
-              You       She        He        It
-               \_________\________/__________/
-                             |
-                             0
-    
-        legend: k.-'kicked', p.-'punted', d.-'dog', a.-'anaconda'
+        legend: su.-sugar, sp.-spice, sc.-scissors
 
-    The combinations are ordered as they appear on the tree from
-    left to right. The algorithm used to determine the node counts is
-    described in the _set_node_counts() method in this class.
 
     """
     def add_sequence(self, seq, t=1):
-        """Add another sequence to the sequence of source sequences
+        """
+        Add another sequence to the sequence of source sequences
         
         Arguments
         ---------
-        seq - Source sequence. Accepts any Python sequence (a.k.a.
-            finite collection of items with integer-addressable
-            indices)
+        * seq - Source sequence. Accepts any Python sequence.
             
-        t - Number of times to repeat the sequence. Accepts int,
-            t ≥ 1
+        * t - Number of times to repeat the sequence. Accepts int,
+          t ≥ 1
 
         """
         temp = list(self._seq_src)
@@ -740,7 +786,8 @@ class CatCombination(PBTreeCombinatorialUnit):
 
         Arguments
         ---------
-        x - The term to be searched for. Accepts any Python iterator type.
+        * x - The term to be searched for. Accepts any Python iterator
+          type.
 
         """
         temp_ii = 0
@@ -762,8 +809,10 @@ class CatCombination(PBTreeCombinatorialUnit):
             # Return the external index resolved from internal index
 
     def _get_args(self):
-        """Attempt to rebuild a probable equivalent of the arguments
+        """
+        Attempt to rebuild a probable equivalent of the arguments
         used in initialising a CatCombination sequence
+
         """
         seq_shown = self._seq_src[1:]
             # Strip leading None from the outer sequence
@@ -771,78 +820,56 @@ class CatCombination(PBTreeCombinatorialUnit):
         return re_arg_fmt.format(seq_shown, self._r)
 
     def _get_comb(self, ii):
-        """Returns the first+i'th subset or term of a Catenation
-        Combination sequence
+        """
+        Returns the first+ii'th term of a CatCombinator
 
         Arguments
         ---------
-        ii - Internal Index of the term. Accepts int, 0 ≤ i < _ii_stop
+        * ii - Internal Index of the term. Accepts int, where
+          0 ≤ i < _ii_stop
 
-        Treatment of Addresses
+        Treatment of Tree Path
         ----------------------
-        Each element in the addresses tuple returned by _get_comb_tree_path
-        refers to an item on one of the lists attached to the combinator:
-        The i'th element of the list references an item on the i'th
+        Each element in the addresses tuple returned by
+        _get_comb_tree_path() is regarded as the index of an element of
+        one of the sub-sequences of _seq_src.
+
+        The i'th element of the path references an item on the i'th
         sequence.
 
         Example
         =======
-        Referring to our example in the documentation for this class,
-        let's recreate the combinator, and configure it to return the 
-        full four-word sentences as terms:
+        Referring to our example combinatorial unit:
 
         >>> from slowcomb.slowcomb import CatCombination
-        >>> s_a = ('You','He','She','It')
-        >>> s_b = ('kicked','punted')
-        >>> s_c = ('my',) #  Remember the comma after a lone element 
-        >>> s_d = ('dog','cat','anaconda')
-        >>> seqs = (s_a, s_b, s_c, s_d)
-        >>> comb = CatCombination(seqs,r=4)
+        >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
+        ... ('sugar', 'spice', 'scissors')), r=3)
 
-        Note that the root node is already included in the sequence source.
+        And its corresponding tree:
 
-        We find that there are twenty-four different sentences we can
-        get from this combinator.
-
-        >>> len(comb)
-        24
-
-        Let's try to get the address of the 13th combination.
-
-        Remember that the PBTreeCombinator's address generation takes
-        internal indices, so let's resolve our external index to an
-        internal one:
-
-        >>> ii = comb._resolve_i(14)
-
-        Now, get the combinatorics tree path with the resolved internal
-        index:
-
-        >>> comb._get_comb_tree_path(ii)
-        (0, 2, 0, 0, 2)
-
-        That's the route from the root node to the thirteenth node on
-        Level 4. The leftmost element represents Level 0, and the rightmost
-        represents the topmost Level. Also, Level 0 references the first
-        source sequence, each successive Level on the tree references
-        a corresponding sequence. The CatCombinator does not output
-        the empty subset represented by the root node in Level 0 under
-        normal operation.
+        ::
+                        
+          su.  sp.  sc.              su.  sp.  sc.
+            \___|___/                  \___|___/
+                 \                        /
+                 need                  want
+                   \                    /
+                    \__________________/
+                             |
+                             I
+                             |
+                             0
         
-        Having known that, let's resolve it to a concrete term:
-        
-        Sequence 0 -> can be safely ignored, no output
-        Sequence 1 -> get element 2 -> 'She'
-        Seqeunce 2 -> get element 0 -> 'kicked'
-        Sequence 3 -> get element 0 -> 'my'
-        Sequence 4 -> get element 2 -> 'anaconda'
+            legend: su.-sugar, sp.-spice, sc.-scissors
 
-        Let's confirm our findings:
-        
-        >>> comb[14]
-        ('She', 'kicked', 'my', 'anaconda')
+        Let's recall term 4 from the CU:
 
-        Well done! You have resolved a CatCombinator tree path!
+        >>> catcomb[3]
+        ('I', 'want', 'sugar')
+
+        As 'I' is element 0 in sequence one, 'want' is element 1
+        in sequence two and 'sugar' is element 0 in sequence three,
+        The tree path would have been (0, 0, 1, 0)
 
         """
         addrs = self._get_comb_tree_path(ii)
@@ -854,36 +881,47 @@ class CatCombination(PBTreeCombinatorialUnit):
         return(tuple(out))
     
     def _set_node_counts(self):
-        """Sets up the node count embedded sequence, _node_counts to
-        enable the combinatorics tree's addressing method to function.
-        
-        Node Counts for PBTreeCombinatorialUnit
-        -----------------------------------
-        * Level 0 always has 1 node, the root node.
-        * The number of nodes for any Level thereafter is the node count
-        of the previous Level multiplied by the number of items in the
-        current level.
+        """
+        Counts the number of tree nodes, and keeps them in the embedded
+        sequence _node_counts. This information is necessary in creating
+        paths to nodes on the tree. For more information on when and how
+        this information is used, refer to the class documentation for 
+        PBTreeCombinatorialUnit._get_comb_tree_path().
 
-        Example
-        =======
-        Referring to our example in the documentation for the 
-        CatCombination class, a combinator set up with the following
-        sequences:
-        
-        I : ('You','She','He','It')
-        II : ('kicked','punted')
-        III : ('my')
-        IV : ('dog','cat')
+        Node Counts of a CatCombinator
+        ------------------------------
+        CatCombinator trees branch from a normally hidden origin node
+        on Level zero, which counts as 1 node.
 
-        Will have a node count of:
-        
-        * 1 for Level 0 (representing the root node)
-        * 4*1 == 4 for Level 1
-        * 2*4 == 8 for Level 2
-        * 1*8 == 8 for Level 3
-        * 2*8 == 16 for Level 4
+        Level n has the same number of nodes as elements in _seq_src[n].
+        Each node on that level has as many child nodes as _seq_src[n+1].
 
-        Thus, _node_counts will therefore be equivalent to (1,4,8,8,16).
+        The PBTree of a CatCombinator has the same number of levels
+        of the number of sub-sequences in _seq_src, which includes
+        the origin node.
+
+        In our example CatCombinator:
+
+        ::
+
+          s_a = ('I',)
+          s_b = ('need','want')
+          s_c = ('sugar','spice','scissors') 
+          seqs = (s_a, s_b, s_c)
+          catcomb = CatCombination(seqs, r=3)
+
+        There would have been 3 levels (0 to 2).
+
+        Level zero would have 1 node; Level one, 1 node; Level two, 2
+        nodes and Level three, 6 nodes.
+
+        This makes a total of 10 nodes.
+
+        See Also
+        --------
+        * PBTreeCombinatorialUnit
+
+        * PBTreeCombinatorialUnit._get_comb_tree_path()
 
         """
         func_node_counts = lambda i : len(self._seq_src[i])
@@ -895,87 +933,12 @@ class CatCombination(PBTreeCombinatorialUnit):
         self._node_counts.enable_cache()
     
     def __init__(self, seqs, r=None):
-        """Create a Catenating Combinator Sequence
+        """
+        This is the special constructor method which supports 
+        creation of combinatorial units. 
         
-        Arguments
-        ---------
-        seqs - Sequence source to derive combinations from. Accepts a 
-            sequence of sub-sequences.
-
-        Optional Arguments
-        ==================
-        r - The length of the terms derived from the combinator. On the
-            CatCombinator, setting r smaller than the number of 
-            sub-sequences in seqs causes it to use only the first r
-            sub-sequences. Accepts int, 0 ≤ r < len(seqs).
-
-        Examples
-        --------
-        To re-create the combinator in the documentation for the 
-        CatCombinator class:
-
-        First, prepare the source sequences. The CatCombintion accepts
-        a 'sequence of sequences' as the source. This can be done the
-        readable way:
-
-        >>> from slowcomb.slowcomb import CatCombination
-        >>> s_a = ('You','She','He','It')
-        >>> s_b = ('kicked','punted')
-        >>> s_c = ('my',) #  Remember comma after a lone element 
-        >>> s_d = ('dog','anaconda')
-        >>> seqs = (s_a, s_b, s_c, s_d)
-
-        Or the hardcore, one-liner way:
-
-        >>> seqs = ( ('You','She','He','It'),('kicked','punted'), ('my',),
-        ... ('dog','anaconda') )
-
-        Create the combinator as such, set r to four to generate full
-        sentences:
-
-        >>> comb = CatCombination(seqs,r=4)
-        >>> comb[7]
-        ('She', 'punted', 'my', 'anaconda')
-
-        >>> comb[12]
-        ('It', 'kicked', 'my', 'dog')
-
-        To output only the first three words, reduce the r-value to 3:
-        >>> comb = CatCombination(seqs, r=3)
-        >>> comb[0]
-        ('You', 'kicked', 'my')
-
-        >>> comb [6]  # The space was placed on purpose
-        ('It', 'kicked', 'my')
-
-        Likewise for even shorter output:
-        >>> comb = CatCombination(seqs, r=2)
-        >>> comb[4]
-        ('He', 'kicked')
-
-        >>> comb = CatCombination(seqs, r=1)
-        >>> len(comb)
-        4
-
-        >>> comb[0]
-        ('You',)
-
-        A CatCombination whose r=0 only returns empty tuples. 
-        This is in aligment with the behaviour of the ``combinations`` class
-        from Python's itertools.
-
-        >>> comb = CatCombination(seqs, r=0)
-        >>> len(comb)
-        1
-
-        >>> comb[0]
-        ()
-
-        Fun activity: what output does a CatCombinator with r=None produce?
-
-        >>> seqs = ( ('You','She','He','It'),('kicked','punted'), ('my',),
-        ... ('dog','anaconda') )
-        >>> comb_myst = CatCombination(seqs,r=None)
+        For details on creating the CU, consult the documentation of
+        the combinatorial unit class above.
 
         """
         # Construction Routine

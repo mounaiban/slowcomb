@@ -198,9 +198,6 @@ Documentation
 * Reorganise docstrings for easier reading when using ``help()`` from the
   Python interpreter in interactive mode.
   
-* Use correct reStructuredText formatting for easier reading for those who
-  prefer to use HTML renders of docstrings.
-
 * Improve consistency in use of terminology, choose terms in order to avoid
   confusion with similar or identical words used in Python and other famous
   projects. The aim is to stick with a tenth-year school vocabulary while

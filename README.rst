@@ -195,8 +195,6 @@ API
 
 Documentation
 #############
-* Review and reduce word count in docstrings in ``slowcomb`` and ``slowseq``.
-
 * Reorganise docstrings for easier reading when using ``help()`` from the
   Python interpreter in interactive mode.
   

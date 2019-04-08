@@ -36,6 +36,8 @@ from slowcomb.tests import slowprime
 src_colonel = (('I',),('need', 'want'), ('sugar', 'spice', 'scissors'))
     # A sequence of sequences for use with the CatCombination
     # combinatorial unit
+src_hskt = ('heads', 'shoulders', 'knees', 'toes')
+    # Heads, shoulders, knees and toes, knees and toes...~
 src_rpg_chars = ('🤵','🤶','🦝','🧛','🤹','🦄','🧝','🤖','🤡','🧔','🧟')
 src_rpg_items = ('🧲','🔮','🥢','📿','🧸','🎲','💣','🧭','🧻','🧷','🧿')
     # Sequences of Emoji representing characters and items

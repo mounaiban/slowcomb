@@ -286,7 +286,10 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     the same for each node on the same level of the tree, and the
     content of the nodes are predictably repeated across the tree.
 
-    Thus the following properties apply:
+    As a virtual tree, the actual tree is not present in memory,
+    but its nodes are lazily evaluated as they are requested.
+
+    The following properties apply to the PBTree:
 
     1. The number of nodes per level is a multiple of nodes on the
     previous level.
@@ -370,7 +373,19 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     Selecting Terms By Length (r-value)
     ===================================
     The path to each node on a particluar level represents combinatorial
-    terms of the same length. 
+    terms of the same length. A combinatorial unit can be set up for
+    returning terms of a set length by constraining the CU to selecting
+    nodes of a particular level.
+    
+    For example, in a massive, ten-level combinatorial tree, allowing
+    only Level 3 nodes to be selected causes the CU to only return
+    three-element terms. Likewise, allowing only Level 10 elements
+    to be selected by the CU causes the CU to only return ten-element
+    terms.
+
+    Setting the r-value to zero constrains the CU to only selecting
+    the normally-hidden origin node. This causes the CU to only output
+    the default value, an empty tuple ().
  
     Use of Internal Indices
     =======================
@@ -658,14 +673,10 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
 
 class CatCombination(PBTreeCombinatorialUnit):
     """
-    A sequence of all possible combinations of items from multiple
-    position-dependent sequences, where items from the first sequence
-    only appears on the first element of the combination, and items 
-    from the second appear second, and so on...
-
-    NOTE: It is possible to make the CatCombination class function like
-    a permutator, but position-dependent combinations are the main
-    intended use of this class, hence its name.
+    A Catenating Combination, or a sequence of all possible combinations
+    of items from multiple position-dependent sequences, where items
+    from the first sequence only appears on the first element of the
+    combination, and items from the second appear second, and so on...
 
     Required Arguments
     ------------------
@@ -678,6 +689,12 @@ class CatCombination(PBTreeCombinatorialUnit):
       unit. With the CatCombinator, setting r smaller than the
       number of sub-sequences in causes it to use only the first r
       sub-sequences. Accepts int, 0 ≤ r < len(seqs).
+
+    Note
+    ----
+    * While it is possible to make the CatCombination class work
+      like the Permutation class, position-dependent combinations
+      are the intended use of this class.
 
     Example
     -------
@@ -702,7 +719,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
     Or the hardcore way:
 
-    >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
+    >>> catcomb = CatCombination ( (('I',), ('need', 'want'),
     ... ('sugar', 'spice', 'scissors')), r=3)
 
     This combinatorial unit is set up to output only full sentences,
@@ -728,20 +745,9 @@ class CatCombination(PBTreeCombinatorialUnit):
     ('I', 'need')
     ('I', 'want')
 
-    A CatCombination whose r=0 only returns empty tuples. 
-    This is in aligment with the behaviour of the ``combinations`` class
-    from Python's itertools.
-
-    >>> catcomb = CatCombination(seqs, r=0)
-    >>> len(catcomb)
-    1
-
-    >>> catcomb[0]
-    ()
-
     Fun activity: what output does a CatCombinator with r=None produce?
-    Enter it and find out for yourself. Hint: see the class docstring for
-    PBTreeCombinatorialUnit.
+    Enter it and find out for yourself. Hint: see PBTreeCombinatorialUnit,
+    under the section Optional Arguments.
 
     >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
     ... ('sugar', 'spice', 'scissors')))
@@ -795,8 +801,8 @@ class CatCombination(PBTreeCombinatorialUnit):
         """
         temp_ii = 0
         temp_src = self._seq_src[1:]
-            # Strip the leading second-level sequence representing 
-            # Level 0 (root with origin node) of the combinatorial tree
+            # Strip the leading sub-sequence representing Level 0
+            # (root) of the combinatorial tree
         levels = len(x)
         for lvl in range(levels):
             # Traverse the combinatorial tree
@@ -831,11 +837,14 @@ class CatCombination(PBTreeCombinatorialUnit):
         * ii - Internal Index of the term. Accepts int, where
           0 ≤ i < _ii_stop
 
-        Treatment of Tree Path
-        ----------------------
-        Each element in the tree path returned by
-        _get_comb_tree_path() is regarded as the index of an element of
-        one of the sub-sequences of _seq_src.
+        Term Construction Process for the CatCombination CU
+        ---------------------------------------------------
+        This CU uses the virtual tree in the PBTreeCombinatorics class
+        to build its terms. Terms are represented by paths to nodes on
+        the tree, and the path to each node is created using 
+        PBTreeCombinatronics._get_comb_tree_path(). Each element on the
+        tree path is regarded a direct index of an element of a 
+        corresponding sub-sequence of _seq_src.
 
         The i'th element of the path references an item on the i'th
         sequence.
@@ -845,10 +854,10 @@ class CatCombination(PBTreeCombinatorialUnit):
         Referring to our example combinatorial unit:
 
         >>> from slowcomb.slowcomb import CatCombination
-        >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
+        >>> catcomb = CatCombination ( (('I',), ('need', 'want'),
         ... ('sugar', 'spice', 'scissors')), r=3)
 
-        And its corresponding tree:
+        And its tree:
 
         ::
                         
@@ -893,8 +902,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
         Node Counts of a CatCombinator
         ------------------------------
-        CatCombinator trees branch from a normally hidden origin node
-        on Level zero, which counts as 1 node.
+        The normally-hidden root node in Level 0 counts as 1 node.
 
         Level x has the same number of nodes as elements in _seq_src[x].
         Each node on that level has as many child nodes as _seq_src[x+1].
@@ -938,10 +946,10 @@ class CatCombination(PBTreeCombinatorialUnit):
     def __init__(self, seqs, r=None):
         """
         This is the special constructor method which supports 
-        creation of combinatorial units. 
+        the creation of a CatCombination combinatorial unit. 
         
-        For details on creating the CU, consult the documentation of
-        the combinatorial unit class above.
+        For details on how to do this, please consult the documentation
+        for the CatCombination class.
 
         """
         # Construction Routine
@@ -974,21 +982,19 @@ class Permutation(PBTreeCombinatorialUnit):
 
     Examples
     --------
-    A classic four-element permuator will be created on this 
-    demonstration:
+    Here is a classic four-element permuator:
 
     >>> from slowcomb.slowcomb import Permutation
     >>> words = ('heads','shoulders','knees','toes')
     >>> perm = Permutation(words, r=4)
     >>>     # Easy Mode
 
-    Here is the one-liner version of the statement to create the
-    combinatorial unit if this is preferred:
+    And here is the one-liner equivalent:
 
     >>> perm = Permutation(('heads','shoulders','knees','toes'),r=4)
     >>>     # Hardcore Mode
 
-    The twenty-four rearrangements can be listed by consuming the CU
+    The twenty-four rearrangements can be listed by accessing the CU
     as an iterator:
 
     >>> for d in perm:
@@ -1047,9 +1053,9 @@ class Permutation(PBTreeCombinatorialUnit):
 
         Nodes indices start from zero, and on the left.
 
-    Please note that the last level always has one node per parent,
-    and therefore the same number nodes as the second-last level.
-    This is due to the element elimination of the permutation process.
+    Notice that the last level always has one node per parent, and
+    therefore the same number nodes as the second-last level. This is
+    due to the element elimination of the permutation process.
 
     To derive partial permutations, simply set the r-argument to a
     smaller value to the term size of your choice:
@@ -1141,13 +1147,9 @@ class Permutation(PBTreeCombinatorialUnit):
 
         Node Counts of a Permutation
         ----------------------------
-        Permutator trees branch from a virtual origin node, which is
-        not present in the source sequence _seq_src. This origin
-        node is the sole node of Level zero.
+        The normally-hidden root node in Level zero counts as 1 node.
 
-        The number of nodes at Level zero is 1.
-
-        The number of nodes from Level one onwards is equal to:
+        The number of nodes per level from Level one onwards is equal to:
 
         ::
         
@@ -1199,8 +1201,13 @@ class Permutation(PBTreeCombinatorialUnit):
         * ii - Internal Index of the permutation. Accepts int, 
           0 ≤ i < self._ii_stop
 
-        Treatment of Tree Path
-        ----------------------
+        Term Construction Process for the Permutation CU
+        ------------------------------------------------
+        This CU uses the virtual tree of the PBTreeCombinatorics
+        class to build its terms. Terms are represented by paths
+        to nodes on the tree, and the path to each node is created
+        using PBTreeCombinatorics._get_comb_tree_path().
+
         Each element of the tree path is regarded as a reference to
         a temporary sequence, _seq_src_idxs, which in turn contains
         indices to elements of _seq_src.
@@ -1210,7 +1217,7 @@ class Permutation(PBTreeCombinatorialUnit):
         although its effectiveness has been questioned and, following
         performance tests, may be deprecated in the future.
 
-        For element of the tree path, the corresponding element in
+        For each element of the tree path, the corresponding element in
         _seq_src_idxs is deleted as it is read (popped). The popped
         element is then used to resolve the actual element of _seq_src,
         which is saved in a final output sequence, out.
@@ -1273,25 +1280,25 @@ class Permutation(PBTreeCombinatorialUnit):
 
         Element one in path:
         Curr. _seq_src_idxs: (0, 1, 2, 3)
-        Pop [2], get 2.
+        Pop _seq_src_idxs[2], get 2.
         Write _seq_src[2] to out
         Current out: ['knees',]
 
         Element two in path:
         Curr. _seq_src_idxs: (0, 1, 3)
-        Pop [2], get 3.
+        Pop _seq_src_idxs[2], get 3.
         Write _seq_src[3] to out
         Current out: ['knees', 'toes']
 
         Element three in path:
         Curr. _seq_src_idxs: (0, 1)
-        Pop [0], get 0
+        Pop _seq_src_idxs[0], get 0
         Write _seq_src[0] to out
         Current out: ['knees', 'toes', 'heads']
 
         Element four in path:
         Curr. _seq_src_idxs: (1,)
-        Pop [0], get 0
+        Pop _seq_src_idxs[0], get 0
         Write _seq_src[1] to out
 
         Final out: ['knees', 'toes', 'heads', 'shoulders']
@@ -1320,10 +1327,10 @@ class Permutation(PBTreeCombinatorialUnit):
     def __init__(self, seq, r=None):
         """
         This is the special constructor method which supports 
-        creation of combinatorial units. 
+        creation of a Permutation combinatorial unit. 
         
-        For details on creating the CU, consult the documentation of
-        the combinatorial unit class above.
+        For details on creating the CU, consult the documentation
+        for the Permutation class.
 
         """
         # Construction Routine
@@ -1337,8 +1344,9 @@ class Permutation(PBTreeCombinatorialUnit):
 
 class PermutationWithRepeats(Permutation):
     """
-    A sequence of all possible uses of elements from a source sequence,
-    including uses of the same elements in a different order.
+    A Repeats-Permitted Permutator, or a sequence of all possible
+    uses of elements from a source sequence, given a set fixed number
+    of elements, while allowing for multiple uses of the same element.
     
     Arguments
     ---------
@@ -1347,9 +1355,9 @@ class PermutationWithRepeats(Permutation):
     * r - The length of the terms derived from the combinatorial
       unit. Accepts int, 0 ≤ r < len(seq).
 
-    There are probably many other names for such a sequence, but this
-    name was chosen as it was observed to have a very similar effect
-    to allowing permutations to have repeating elements.
+    There are probably many other names for such a combinatorial
+    operation, but this name was chosen as it was observed to pretty
+    much identical to allowing permutations to have repeating elements.
 
     Example
     -------
@@ -1435,9 +1443,9 @@ class PermutationWithRepeats(Permutation):
 
     Fun Facts
     ---------
-    * You can achieve a similar (or probably identical) sequence using
-      a CatCombinator, and using multiple copies of the same source
-      sub-sequence. However, using this CU may be easier.
+    * You can achieve an identical sequence using a CatCombinator,
+      by using multiple copies of the same source sub-sequence.
+      However, using this CU may be easier.
 
     * This permutator was almost called PokiesPermutator, due to the
       similarity to its output to payline readouts on certain types of
@@ -1513,8 +1521,13 @@ class PermutationWithRepeats(Permutation):
         * ii - Internal Index of the permutation. Accepts int, 
           0 ≤ i < self._ii_stop
 
-        Treatment of Tree Path
-        ----------------------
+        Term Construction Process for the PermutationWithRepeats CU
+        -----------------------------------------------------------
+        This CU uses the virtual tree of the PBCombinatorics class
+        to build its terms. Terms are represented by paths to nodes
+        in the tree, and the path to each node is created using
+        PBTreeConbinatorics._get_comb_tree_path().
+
         With a repeats-permitted permutator, the tree path returned
         by _get_comb_tree_path() is a direct reference to the
         source sequence, _seq_src, as there is no elimination of
@@ -1569,10 +1582,10 @@ class PermutationWithRepeats(Permutation):
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
-        creation of combinatorial units. 
+        creation of a PermutationWithRepeats combinatorial unit. 
         
-        For details on creating the CU, consult the documentation of
-        the combinatorial unit class above.
+        For details on creating the CU, consult the documentation for 
+        the PermutationWithRepeats class.
 
         """
         # Construction Routine
@@ -1841,8 +1854,8 @@ class CombinationWithRepeats(Combination):
 
     Individual terms may be selected:
 
-    >>> combr[7]
-    ('B','B','B')
+    >>> combr[6]
+    ('B', 'B', 'B')
 
     Slicing is also supported:
 

@@ -1,5 +1,6 @@
 """
-test_slowseq_out — Output Tests for supporting sequence classes
+Output Tests for supporting sequence classes
+
 """
 
 # Copyright © 2019 Moses Chong

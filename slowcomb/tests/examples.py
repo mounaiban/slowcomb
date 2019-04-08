@@ -1,5 +1,6 @@
 """
 Shared Specimens for Manual and Automated Tests
+
 """
 
 # Copyright © 2019 Moses Chong

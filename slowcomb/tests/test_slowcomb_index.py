@@ -1,5 +1,6 @@
 """
-test_slowcomb_index — Combinatorial Unit index() reverse-lookup tests
+Combinatorial Unit index() reverse-lookup tests
+
 """
 
 # Copyright © 2019 Moses Chong

@@ -1,5 +1,6 @@
 """
-manual — Manual Testing environment for interactive Python prompt
+Manual Testing environment for interactive Python prompt
+
 """
 
 # Copyright © 2019 Moses Chong

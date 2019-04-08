@@ -1,5 +1,6 @@
 """
-test_slowcomb_out — Slow Addressable Combinatorics Output Test Module
+Combinatiorial Unit Output Test Module
+
 """
 
 # Copyright © 2019 Moses Chong

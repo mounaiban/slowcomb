@@ -1,5 +1,6 @@
 """
-test_slowseq — Unit Tests for supporting sequence classes
+Unit Tests for supporting sequence classes
+
 """
 
 # Copyright © 2019 Moses Chong

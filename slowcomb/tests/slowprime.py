@@ -1,5 +1,6 @@
 """
-slow_prime — Slow prime number finder
+Slow prime number finder
+
 """
 
 # Copyright © 2019 Moses Chong

@@ -69,7 +69,6 @@ class FasterPrimeOutputTests(unittest.TestCase):
         self.assertEqual(self.func(1000),7919)
 
     def test_i_2000(self):
-        # This took ~21s on an AMD A4-7210 in Fedora 29
         self.assertEqual(self.func(2000),17389)
 
     def test_i_5000(self):

@@ -1,6 +1,5 @@
-
 """
-slowcomb.tests.examples — Shared Specimens for Manual and Automated Tests
+Shared Specimens for Manual and Automated Tests
 """
 
 # Copyright © 2019 Moses Chong
@@ -47,7 +46,8 @@ src_rpg_items = ('🧲','🔮','🥢','📿','🧸','🎲','💣','🧭','🧻',
 # Test Data Helper Functions
 #
 def get_latin_upper_alphas(n):
-    """Get the first n uppercase letters of the Latin Alphabet
+    """
+    Get the first n uppercase letters of the Latin Alphabet
     (also called the Roman Alphabet) in a tuple.
 
     """
@@ -56,7 +56,8 @@ def get_latin_upper_alphas(n):
     return tuple([chr(65+x) for x in range(n)])
 
 def get_hindu_arabic_digits(n):
-    """Get the first n uppercase letters of the Hindu-Arabic numerals
+    """
+    Get the first n uppercase letters of the Hindu-Arabic numerals
     (better known as the '0123456789') in a tuple.
 
       PROTIP: A one-digit sequence contains the digit zero ('0'),
@@ -68,13 +69,14 @@ def get_hindu_arabic_digits(n):
     return tuple([chr(0x30+x) for x in range(n)])
 
 def get_fruits(n):
-    """Get a tuple of fruit symbols (Emoji) from the Unicode 6.0
+    """
+    Get a tuple of fruit symbols (Emoji) from the Unicode 6.0
     character set.
 
-    Note that the grocer's definition of fruits is used herein,
+    Note that the grocer's definition of 'fruit' is used herein,
     genetics and taxonomics be damned. This means that the
     aubergine/brinjal/eggplant and tomato are excluded. Also, the 
-    newer fruit Emoji are not included.
+    newer fruit Emoji added after Unicode 6.0 are not included.
 
     Special thanks to the contributors at Emojipedia!
 
@@ -87,12 +89,27 @@ def get_fruits(n):
 # Test Data Helper Classes
 #
 class OrderOfMagnitudeSequenceFactory:
-    """Helper class to prepare standard test items for sequence
-    output tests.
     """
+    Helper class which creates standard test sequences for sequence
+    output tests.
+
+    The sequences created herein are variations of the Order Of
+    Magnitude Sequences, where term i is equal to i* 10**ii. All
+    sequences have exactly ten terms.
+
+    A choice of several different mappings from i to ii are available.
+
+    The base class (e.g. NumberSequence, CacheableSequence, ...)
+    for the sequences may be specified in seq_class.
+
+    """
+    # TODO: Does this class qualify as a 'factory' under the formal
+    #  definition for one?
 
     # Class Variables
     #
+
+    # Returns 10 ** n, see comments in source
     func_n_ord_mag = lambda self,n: n * 10**n
         # Returns n raised (for positive n) or lowered 
         # (for negative n) by n orders of magnitude.
@@ -100,8 +117,9 @@ class OrderOfMagnitudeSequenceFactory:
         #  -0.1, -0.02, -0.003, -0.0004 ...
         # A safe and sane limit of 12 is recommended.
         #
-        # TODO: Why do I need to have a self argument when I define
-        #  a lambda at class level, but not when it is inside a method?
+        #  PROTIP: The 'self' argument is required for any method,
+        #  including lambdas defined at class scope.
+        #
     pos_ii_start = 5
         # All positive ii_start sequences start at internal index 5
     neg_ii_start = -10
@@ -114,22 +132,58 @@ class OrderOfMagnitudeSequenceFactory:
         # where applicable
     
     def get_test_seq_pos_ii(self):
+        """
+        Returns an Order of Magnitude sequence seq, where ii begins
+        at 5. Therefore, seq[0] == 500000, seq[1] == 6000000,
+        and so on...
+
+        """
         return self._seq_class(self.func_n_ord_mag,
             ii_start=self.pos_ii_start, length=self.test_len)
 
     def get_test_seq_neg_ii(self):
+        """
+        Returns an Order of Magnitude sequence seq, where ii begins
+        at -10. Therefore, seq[0] == -10e-10, seq[1] == -9e-9,
+        and so on...
+
+        """
         return self._seq_class(self.func_n_ord_mag,
             ii_start=self.neg_ii_start, length=self.test_len)
 
     def get_test_seq_neg_ii_zero_x(self):
+        """
+        Returns an Order of Magnitude sequence seq, where ii begins
+        at -5. Therefore, seq[0] == 0.00005, seq[1] == 0.0004, and
+        so on...
+
+        Also known as the 'zero-cross' sequence, due to the first ii
+        being negative and the last ii being positive.
+
+        """
         return self._seq_class(self.func_n_ord_mag,
             ii_start=neg_ii_start_zero_x, length=test_len)
 
     def get_test_seq_zero_ii(self):
+        """
+        Returns an Order of Magnitude sequence seq, where ii begins
+        at zero. Therefore, seq[0] == 0, seq[1] == 10, seq[2] == 200
+        and so on...
+
+        Also known as the 'normal' sequence.
+
+        """
         return self._seq_class(self.func_n_ord_mag,
             ii_start=0, length=self.test_len)
 
     def __init__(self, seq_class):
+        """
+        Supports creation of an Order of Magnitude Test Sequence
+        Factory. For instructions on how to create a factory,
+        please see the class documentation for
+        OrderOfMagnitudeSequenceFactory
+
+        """
         if issubclass(seq_class, NumberSequence) is True:
             self._seq_class = seq_class
 

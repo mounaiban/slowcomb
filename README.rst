@@ -186,23 +186,12 @@ and object-oriented programming.
 The version number will be bumped to **1.0** upon completion of most of these
 goals.
 
-API
-###
-* Decide on final argument, attribute and method names. Names should be as 
-  intuitive and clear as possible. Using names borrowed from other famous 
-  projects or Python built-ins for completely different purposes is to be
-  avoided.
-
 Documentation
 #############
-* Reorganise docstrings for easier reading when using ``help()`` from the
-  Python interpreter in interactive mode.
-  
-* Improve consistency in use of terminology, choose terms in order to avoid
-  confusion with similar or identical words used in Python and other famous
-  projects. The aim is to stick with a tenth-year school vocabulary while
-  reserving more advanced and technical terms for the most appropriate
-  contexts. 
+* Just the maintenance stuff to maintain readability, correct and 
+  consistent terminology use, and sticking with a tenth-year school
+  vocabulary unless bigger words are absolutely necessary, and also
+  *formatting*.
 
 Management
 ##########

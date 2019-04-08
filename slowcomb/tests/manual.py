@@ -126,5 +126,8 @@ if __name__ != '__main__':
         [datetime.datetime.now().microsecond%2]))
     print('Welcome to the Slowcomb Manual Testing Environment')
     print("For a list of ready-to-play test items, try typing")
-    print("'examples.' (with the dot) and press the tab key twice.")
+    print("'examples.' (with the dot) and press the tab key twice.\n")
+    print("To skip typing the entire import statement and this message,")
+    print("run the Python interactive prompt with the '-im slowcomb.tests.manual'")
+    print("option.")
 

@@ -123,18 +123,18 @@ class NumberSequence:
     Term Indexing
     -------------
     NumberSequence uses a two-level addressing system to map integer
-    indices supplied by the consumer to a term of the sequence.
+    indices supplied by the user's code to a term of the sequence.
 
-    *External Indices* are supplied to the NumberSequence by consumer
-    code, by way of subscripting as seen in expressions like
-    ``seq[1]``; the number 1 is the external index.
+    External Indices are supplied by the user's code, by way of 
+    subscripting as seen in expressions like seq[1]; the number 1 is
+    the external index.
 
-    *Internal Indices* are the indices used by only the NumberSequence
+    Internal Indices are the indices used by only the NumberSequence
     to keep track of the terms. Internal Indices are resolved from
-    external indices with the ``_resolve_i()`` method.
+    external indices with the _resolve_i() method.
     
     By default, the Internal Index points to the same term as the
-    External Index, but this can be altered with the ``ii_start``
+    External Index, but this can be altered with the ii_start
     keyword argument when creating a new NumberSequence.
 
     At time of writing, the relationship between external and internal
@@ -145,7 +145,7 @@ class NumberSequence:
        
        ii = i + ii_start,
 
-    Where ``_ii_start`` is an integer.
+    Where _ii_start is an integer.
 
     Example
     =======
@@ -157,8 +157,9 @@ class NumberSequence:
 
     >>> from slowcomb.slowseq import NumberSequence
     >>> pow_twos = NumberSequence(lambda x:2**x, length=101)
-    >>> # PROTIP: There are a hundred *and one* numbers
-    >>> # between zero to 100 *inclusive*.
+
+     PROTIP: There are a hundred *and one* numbers between zero to
+     100 *inclusive*.
 
     To get the fifth power of two, you would call
 
@@ -179,7 +180,7 @@ class NumberSequence:
     ... ii_start=-50)
 
     When you want to recall two to the power of minus 5, which works
-    out to be the term behind the 45th external index (as ``2**0`` is
+    out to be the term behind the 45th external index (as 2**0 is
     mapped to the 50th) do this:
     
     >>> pow_twos_nfa[45]
@@ -196,7 +197,7 @@ class NumberSequence:
     -------------------------------------
     Quadratic Curve 
     ===============
-    This example uses ``ii_start``.
+    This example uses ii_start.
 
     Consider this sequence -- all positive values of y in:
 
@@ -327,7 +328,7 @@ class NumberSequence:
     This example demonstrates the use of block functions with the
     NumberSequence, and a possiblitiy of using non-decimal output.
 
-    Consider a sequence 100 colours. Every other colour is an 
+    Consider a sequence of 100 colours. Every other colour is an 
     opposite colour of the last. The first colour is a warm colour,
     and second a cool colour, and so on.
 
@@ -356,7 +357,7 @@ class NumberSequence:
     ...     return out
     >>> seq_hue = NumberSequence(get_hue,100)
 
-    Note the omission of the ``length`` keyword.
+    Note the omission of the length keyword.
 
     Get the first colour (a passionate red)!
     All colours are in W3C 24-bit format, seen in HTML, CSS, SVG...
@@ -453,7 +454,7 @@ class NumberSequence:
     def _get_args(self):
         """
         Attempt to rebuild a probable equivalent of the arguments
-        used in constructing this sequence, as a ``str``.
+        used in constructing this sequence, as a str.
 
         """
         re_arg_fmt = "func={0}, length={1}, ii_start={2}, default={3}"
@@ -475,7 +476,7 @@ class NumberSequence:
         * i - External index of the member. Accepts int, i ≥ 0.
 
         """
-        # TODO: Write up on how term derivation function ``_func``
+        # TODO: Write up on how term derivation function _func
         #       is called, and why this pattern is used.
         #       
         self._check_i(i)
@@ -487,7 +488,7 @@ class NumberSequence:
         
         Arguments
         ---------
-        * s - Python ``slice`` containing external indices for start,
+        * s - Python slice containing external indices for start,
           stop and step values.
 
         """ 
@@ -523,7 +524,7 @@ class NumberSequence:
 
         Arguments
         ---------
-        * s - Python ``slice`` containing external indices.
+        * s - Python slice containing external indices.
 
         """
         len_self = len(self)
@@ -555,12 +556,12 @@ class NumberSequence:
         a NumberSequence using Python's subscript notation.
 
         For details on how this works on this class, please refer
-        to the class documentation above.
+        to its class-scope documentation
 
         Exceptions
         ----------
-        * TypeError - when an object that is not an ``int``or a
-          ``slice`` is used in place of ``key``.
+        * TypeError - when an object that is not an int or a
+          slice is used in place of key.
 
         """
         if isinstance(key, int) is True:
@@ -582,7 +583,7 @@ class NumberSequence:
 
     def __len__(self):
         """
-        Return the number of terms available, as an ``int``.
+        Return the number of terms available, as an int.
         """
 
         # NOTE: This works also when _ii_start is negative
@@ -602,7 +603,7 @@ class NumberSequence:
         """
         Supports the reporting of information that can be used to 
         reconstruct this sequence. The information is returned as a
-        string when the name an instance is referenced, without any
+        string when the name an instance is referenced without any
         reference to its members or without any parentheses.
 
         """
@@ -612,10 +613,11 @@ class NumberSequence:
 
     def __init__(self, func, length, **kwargs):
         """
-        This is the constructor for creating an instance of this class.
+        This is the constructor for creating an instance of
+        NumberSequence.
 
-        For details on using this class, please refer to the class
-        documentation above.
+        For details on using this class, please refer to the 
+        documentation for the NumberSequence class.
 
         """
         # Class Constructor

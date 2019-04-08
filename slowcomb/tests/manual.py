@@ -72,13 +72,36 @@ class SeqTest:
         self._seq = seq
 
 
-class CombrTest(SeqTest):
+class CUTest(SeqTest):
+    """
+    A primitive but unbelievably adorable Combinatorial Unit tester.
+    Contains testing methods specific to CUs, such as tree path and
+    bitmap output to diagnose term construction errors.
 
+    The CU wrapped by this class is referenced to by _seq.
+
+    Arguments
+    ---------
+    * cu - The combinatorial unit to be tested.
+
+    Exceptions
+    ----------
+    * TypeError - when cu is not a recognised combinatorial unit.
+
+    """
     def _get_bitmap_str(self, i):
         """
-        Get the selection bitmap for the first+i'th combinatioral term,
-        of the combinatorial unit wrapped by this CombrTest, assuming
-        that it uses bitmaps.
+        Get the selection bitmap for term i of the combinatorial unit
+        wrapped by this CUTest, assuming that it uses bitmaps.
+
+        Arguments
+        ---------
+        * i - the index of the term of the CU to request. Accepts int,
+          where 0 >= i > len(self._seq).
+
+        Exceptions
+        ----------
+        * TypeError - when i is not an int.
 
         """
         bm = self._seq._bitmap_src[i]
@@ -90,28 +113,41 @@ class CombrTest(SeqTest):
 
     def _get_tree_path_str(self, i):
         """
-        Get the combinatorial tree path for the first+i'th term
-        of the combinatorial unit wrapped by this CombrTest, assuming
-        that it uses trees.
+        Get the combinatorial tree path for term i of the combinatorial
+        unit wrapped by this CUTest, assuming that it uses trees.
 
         """
         tpath = self._seq._get_comb_tree_path(i)
         return str(tpath)
 
     def print_term(self, i):
-        # Output combinatorial terms with selection data
+        """
+        Output combinatorial terms with selection data.
+
+        """
         ii=self._seq._resolve_i(i)
         out_form = "{0}\t{1}"
         out=out_form.format(self._selection_data_method(ii), self._seq[i])
         print(out)
 
     def __repr__(self):
-        banner = "Invoke .run() to see all items and selection data"
-        name = self.__class__.__name__
-        return "{0}: {1}\n{2}".format(name, repr(self._seq), banner)
+        """
+        Supports reporting of information which may be used to
+        reconstruct this tester wrapper.
 
-    def __init__(self, seq):
-        super().__init__(seq)
+        """
+        name = self.__class__.__name__
+        return "{0}({1})".format(name, repr(self._seq))
+
+    def __init__(self, cu):
+        """
+        This is the constructor for creating an instance of this class.
+
+        For information on how to use this class, please refer to the
+        documentation for the CUTest class.
+
+        """
+        super().__init__(cu)
         if(hasattr(self._seq, '_bitmap_src')):
             self._selection_data_method = self._get_bitmap_str
         elif(hasattr(self._seq, '_get_comb_tree_path')):

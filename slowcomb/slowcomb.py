@@ -384,7 +384,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     terms.
 
     Setting the r-value to zero constrains the CU to only selecting
-    the normally-hidden origin node. This causes the CU to only output
+    the normally-hidden root node. This causes the CU to only output
     the default value, an empty tuple ().
  
     Use of Internal Indices
@@ -913,7 +913,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
         The PBTree of a CatCombinator has the same number of levels
         of the number of sub-sequences in _seq_src, which includes
-        the origin node.
+        the root node.
 
         In our example CatCombinator:
 
@@ -1272,7 +1272,7 @@ class Permutation(PBTreeCombinatorialUnit):
         The list of references, _seq_src_idxs is generated, and would
         be equivalent to (-1, 0, 1, 2, 3) for our example. The -1
         always appears in this intermediate index, and is merely a
-        reference to the origin node. The number was chosen 
+        reference to the root node. The number was chosen 
 
         Reading our path from left to right, we pop the corresponding
         element of _seq_src_idxs.
@@ -1498,7 +1498,7 @@ class PermutationWithRepeats(Permutation):
 
         Node Counts for PermutationsWithRepeats
         ----------------------------------------
-        * Level 0 always has one node, the origin node.
+        * Level 0 always has one node, the root node.
 
         * All subsequent Levels have the number of elements in _seq_src
           to the power of the Level number, as number of branches per
@@ -1573,7 +1573,7 @@ class PermutationWithRepeats(Permutation):
         with an asterisk in the diagram. The address tuple returned by 
         _get_comb_tree_path() should be (0, 1, 0, 2).
 
-        We simply discard the leading zero (which refers to the origin
+        We simply discard the leading zero (which refers to the root
         node) in the path, and move on to the (1, 0, 2), which tells us
         which elements to copy to our output.
 

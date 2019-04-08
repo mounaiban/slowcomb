@@ -857,6 +857,9 @@ class CacheableSequence(NumberSequence):
         * i - index to recall a data item with.
           Accepts int, i ≥ 0
 
+        Exceptions
+        ----------
+        * AttributeError - when the cache is not enabled
 
         Notes
         -----
@@ -1133,7 +1136,8 @@ class BlockCacheableSequence(CacheableSequence):
 
     def _get_term_with_cache(self, i):
         """
-        Get the first+i'th term of the sequence from the block cache.
+        Get the term of external index i from the sequence from the
+        block cache.
 
         In the event that the term cannot be found in the cache (cache
         miss), the method will resort to looking up the term without
@@ -1437,14 +1441,16 @@ class SNOBSequence(NumberSequence):
     
     def _get_bits(self, ii):
         """
-        Construct the first+ii'th binary number with a length specified
-        in self._n, with self._r number of bits raised. This is the
-        default _get_term() function of the SNOBSequence.
+        Construct the binary number with length specified in self._n
+        and self._r number of bits raised, of internal index ii. This
+        is the default _get_term() function of the SNOBSequence.
         
         Argument
         --------
-        * ii - The i'th highest number. Accepts int, 0 < ii ≤ nCr(n,r)
+        * ii - The number of index ii. Accepts int, 0 < ii ≤ nCr(n,r)
           [where nCr(n,r) = n! / r! * (n-r)!]
+          The numbers are ordered from largest to smallest. When ii==0,
+          the largest number is returned, and so on...
 
         Exceptions
         ----------
@@ -1629,7 +1635,8 @@ class AccumulateSequence(CacheableSequence):
           
           func(ii)
         
-        The function will be called to derive the first+ii'th term.
+        The function will be called to derive the term of internal
+        index ii.
 
       * If the function is defined at class scope, the function
         should have two arguments including self:
@@ -1693,8 +1700,9 @@ class AccumulateSequence(CacheableSequence):
         return "{0} {1}".format(re_args_a, re_args_b)
 
     def _get_acc(self, i):
-        """Get the accumulation of the first+i'th term, and all
-        terms before it.
+        """
+        Get the accumulation of the term of external index i,
+        and all terms before it.
 
         The accumulative function is defined by the function or
         method referenced by the func_a argument when the
@@ -1745,7 +1753,8 @@ class SumSequence(AccumulateSequence):
           
           func(ii)
         
-        The function will be called to derive the first+ii'th term.
+        The function will be called to derive the term of internal
+        index ii.
 
       * If the function is defined at class scope, the function
         should have two arguments including self:

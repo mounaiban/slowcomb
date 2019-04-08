@@ -1751,7 +1751,7 @@ class Combination(CombinatorialUnit):
         * ii - The internal index of the term. Accepts int,
           0 ≤ ii ≤ _ii_stop.
 
-        Element Selection Process of the Combination CU
+        Term Construction Process of the Combination CU
         -----------------------------------------------
         Combinations are derived from a bitmap. Each bit from
         highest to the lowest (left to right) determines which
@@ -1819,10 +1819,10 @@ class Combination(CombinatorialUnit):
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
-        creation of combinatorial units. 
+        creation of a Combination combinatorial unit. 
         
-        For details on creating the CU, consult the documentation of
-        the combinatorial unit class above.
+        For details on creating the CU, consult the documentation for
+        the Combination class.
 
         """
         super().__init__(self._get_comb, seq, r, ii_start=0)
@@ -1940,7 +1940,7 @@ class CombinationWithRepeats(Combination):
         * ii - The internal index of the term. Accepts int,
           0 ≤ ii ≤ _ii_stop.
 
-        Element Selection in the CombinationWithRepeats CU
+        Term Construction in the CombinationWithRepeats CU
         --------------------------------------------------
         Elements are selected for the terms of the CU based on
         bitmaps. A '1' (raised) bit indicates the presence of an
@@ -2018,10 +2018,10 @@ class CombinationWithRepeats(Combination):
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
-        creation of combinatorial units. 
+        creation of a CombinationWithRepeats combinatorial unit. 
         
-        For details on creating the CU, consult the documentation of
-        the combinatorial unit class above.
+        For details on creating the CU, consult the documentation for
+        the CombinationWithRepeats class.
 
         """
         super().__init__(seq, r)

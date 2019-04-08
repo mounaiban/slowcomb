@@ -24,11 +24,11 @@ VERSION = "0.9.dev.{0}".format(PACKING_TIME_UTC)
 setup(
     name="slowcomb",
     version=VERSION,
-    packages=find_packages(),
+    packages=find_packages(exclude=["*tests*, *demos"]),
     author="Mounaiban",
     author_email="whatever@mounaiban.com",
     description="""General-purpose combinatorics library with
-    addressable results""",
+    addressable (subscriptable) results""",
     keywords="combinatorics combination permutation mathematics library",
     long_description=README,
     project_urls={

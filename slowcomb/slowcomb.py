@@ -790,13 +790,17 @@ class CatCombination(PBTreeCombinatorialUnit):
 
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a member of this 
-        combinatorial sequence.
+        Return the first index of a term, if it is a possible output 
+        of this Combinatorial Unit.
 
         Arguments
         ---------
-        * x - The term to be searched for. Accepts any Python iterator
-          type.
+        * x - The term whose index is being sought after. Accepts any
+          Python iterator type.
+
+        Exceptions
+        ----------
+        * ValueError - when x is not a possible output of this CU.
 
         """
         temp_ii = 0
@@ -1098,13 +1102,17 @@ class Permutation(PBTreeCombinatorialUnit):
     """
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a member of this 
-        combinatorial sequence.
+        Return the first index of a term, if it is a possible output
+        of this Combinatorial Unit.
 
         Arguments
         ---------
-        * x - The term to be searched for. Accepts any Python iterator
-          type.
+        * x - The term whose index is being sought after. Accepts any 
+          Python iterator type.
+
+        Exceptions
+        ----------
+        * ValueError - when x is not a possible output of this CU.
 
         """
         temp_x = list(x)
@@ -1454,13 +1462,17 @@ class PermutationWithRepeats(Permutation):
     """
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a member of this 
-        combinatorial sequence.
+        Return the first index of a term, if it is a possible output
+        of this Combinatorial Unit.
 
         Arguments
         ---------
-        * x - The term to be searched for. Accepts any Python
-          iterator type.
+        * x - The term whose index is being sought after. Accepts any 
+          Python iterator type.
+
+        Exceptions
+        ----------
+        * ValueError - when x is not a possible output of this CU.
 
         """
         temp_ii = 0
@@ -1670,13 +1682,17 @@ class Combination(CombinatorialUnit):
     """
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a member of this 
-        combinatorial sequence.
+        Return the first index of a term, if it is a possible output
+        of this Combinatorial Unit.
 
         Arguments
         ---------
         * x - The term whose index is being sought after. Accepts any 
           Python iterator type.
+
+        Exceptions
+        ----------
+        * ValueError - when x is not a possible output of this CU.
 
         """
 
@@ -1870,13 +1886,17 @@ class CombinationWithRepeats(Combination):
     """
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a member of this 
-        combinatorial sequence.
+        Return the first index of a term, if it is a possible output
+        of this Combinatorial Unit.
 
         Arguments
         ---------
         * x - The term whose index is being sought after. Accepts any 
           Python iterator type.
+
+        Exceptions
+        ----------
+        * ValueError - when x is not a possible output of this CU.
 
         """
         # Reconstruct the bitmap from the sequence

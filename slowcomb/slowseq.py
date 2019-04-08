@@ -614,10 +614,8 @@ class NumberSequence:
     def __init__(self, func, length, **kwargs):
         """
         This is the constructor for creating an instance of
-        NumberSequence.
-
-        For details on using this class, please refer to the 
-        documentation for the NumberSequence class.
+        NumberSequence. For details on using this class, please
+        refer to the cache-scope documentation for NumberSequence.
 
         """
         # Class Constructor
@@ -681,10 +679,10 @@ class CacheableSequence(NumberSequence):
       block and lambda functions are accepted.
 
       * Example function defined at module or method scope:
-        ``func(ii)``.
+        func(ii).
 
       * Example function defined at class scope:
-        ``func(self, ii)``.
+        func(self, ii).
        
     * length - Number of terms in the sequence. Accepts int,
       where length ≥ 0.
@@ -726,7 +724,7 @@ class CacheableSequence(NumberSequence):
     ==============
     Speed advantages are achieveable if the time taken to derive a 
     term is significantly longer than entering an exception block
-    and performing a Python ``dict`` lookup.
+    and performing a Python dict lookup.
     
     The method of caching used herein is recommended for scenarios
     where the same terms from the sequence will be looked up very
@@ -815,8 +813,8 @@ class CacheableSequence(NumberSequence):
         The cache will be re-enabled when enable_cache() called.
         Disabling the cache also clears it.
 
-        The default method for requesting single terms, ``_get_term()``
-        is switched back in and bound to ``_get_term_method``.
+        The default method for requesting single terms, _get_term()
+        is switched back in and bound to _get_term_method.
 
         """
         self._cache = None
@@ -827,8 +825,8 @@ class CacheableSequence(NumberSequence):
         Set up and enable the dictionary cache.
 
         The default method for requesting single terms is switched
-        out for ``_get_term_with_cache()``, by binding said method
-        to ``_get_term_method``.
+        out for _get_term_with_cache(), by binding said method
+        to _get_term_method.
         
         """
         self._cache = {} 
@@ -904,6 +902,12 @@ class CacheableSequence(NumberSequence):
     # Special Methods and Constructor
     # 
     def __init__(self, func, **kwargs):
+        """
+        This is the constructor for creating an instance of 
+        CacheableSequence. For details on using this class, please
+        refer to the class-scope documentation for CacheableSequence.
+
+        """
         super().__init__(func, **kwargs)
         self._cache = None
 
@@ -932,10 +936,10 @@ class BlockCacheableSequence(CacheableSequence):
       block and lambda functions are accepted.
 
       * Example function defined at module or method scope:
-        ``func(ii)``.
+        func(ii).
 
       * Example function defined at class scope:
-        ``func(self, ii)``.
+        func(self, ii).
        
     * length - Number of terms in the sequence. Accepts int,
       where length ≥ 0.
@@ -1168,10 +1172,10 @@ class BlockCacheableSequence(CacheableSequence):
 
     def __init__(self, func, **kwargs):
         """
-        This is the constructor for creating an instance of this class.
-
-        For details on using this class, please refer to the class
-        documentation above.
+        This is the constructor for creating an instance of the
+        BlockCacheableSequence class. For details on using this class,
+        please refer to the class-scope documentation for
+        BlockCacheableSequence.
 
         """
         # Instance Attributes
@@ -1191,7 +1195,7 @@ class SNOBSequence(NumberSequence):
     A Sequence of Numbers With the Same Number Of Bits (SNOB).
 
     This class is a NumberSequence that lazily evaluates all possible
-    binary numbers of a given length and a set number of bits.
+    binary numbers given that it is n bits long and has r bits set.
 
     Numbers are ordered by their value when expressed as a quantity,
     with the numbers with the highest such value to the smallest.
@@ -1591,10 +1595,9 @@ class SNOBSequence(NumberSequence):
     
     def __init__(self, n, r):
         """
-        This is the constructor for creating an instance of this class.
-
-        For details on using this class, please refer to the class
-        documentation above.
+        This is the constructor for creating an instance of the
+        SNOBSequence class. For details on how to use this class,
+        please refer to the class-scope documentation of SNOBSequence.
 
         """
         # Instance Attributes
@@ -1629,7 +1632,7 @@ class AccumulateSequence(CacheableSequence):
         The function will be called to derive the first+ii'th term.
 
       * If the function is defined at class scope, the function
-        should have two arguments including ``self``:
+        should have two arguments including self:
 
         ::
 
@@ -1651,7 +1654,7 @@ class AccumulateSequence(CacheableSequence):
         evaluates x_ii into the accumulator.
 
       * If the function is defined at class scope, the function
-        should have three arguments including ``self``:
+        should have three arguments including self:
 
         ::
 
@@ -1705,10 +1708,10 @@ class AccumulateSequence(CacheableSequence):
 
     def __init__(self, func_ii, func_a, **kwargs):
         """
-        This is the constructor for creating an instance of this class.
-
-        For details on using this class, please refer to the class
-        documentation above.
+        This is the constructor for creating an instance of the
+        AccumulateSequence class. For details on using this class,
+        please refer to the class-scope documentation for
+        AccumulateSequence.
 
         """
         # Instance Attributes
@@ -1727,7 +1730,7 @@ class SumSequence(AccumulateSequence):
     to Python's built-in itertools.accumulate class.
 
     It is pretty much equivalent to running AccumulateSequence
-    with ``lambda x,a: x+a``.
+    with lambda x,a: x+a.
 
 
     Required Arguments
@@ -1767,10 +1770,9 @@ class SumSequence(AccumulateSequence):
     """
     def __init__(self, func_ii, **kwargs):
         """
-        This is the constructor for creating an instance of this class.
-
-        For details on using this class, please refer to the class
-        documentation above.
+        This is the constructor for creating an instance of the
+        SumSequence class. For details on using this class, please
+        refer to the class-scope documentation for SumSequence.
 
         """
         super().__init__(func_ii, lambda a,b:a+b, **kwargs)

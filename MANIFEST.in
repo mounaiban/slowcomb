@@ -1,0 +1,2 @@
+recursive-exclude slowcomb/tests *
+recursive-exclude slowcomb/demos *

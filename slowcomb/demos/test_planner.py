@@ -1,5 +1,6 @@
 """
-plan — Test Planner: Unit Test Method Name Generator
+Test Method Name Generator and Planner
+
 """
 
 # Copyright © 2019 Moses Chong
@@ -28,290 +29,206 @@ from slowcomb.slowcomb import CatCombination
 class TestNameCombinator(CatCombination):
     """
     Template class for systematically generating names for tests.
+
+    Arguments
+    ---------
+    * tags - a sequence of sequences containing test tags that will
+      become part of the generated test names. Every tag combination
+      from all sequences will be used. Tags will appear in the order
+      as specified in the output format.
+
+    * out_format - the output format which becomes the full name of
+      the test. The format should be like:
+      
+      ::
+
+        "test_cond_a_{0[x]}_cond_b_{0[x+1]}_cond_c_{0[x+2]}"
+
+      and so on...
+      
+      The {0} replacement fields references the tag combination,
+      while the subscripts after the 0 indicates which tag
+      of the combination to use. For a more detailed explanation,
+      see the Example below.
+
+    Optional Arguments
+    ------------------
+    * include - Set to False to output nothing. This is just a means
+      of excluding a test name combinator from a combinatorial chain
+      without changing the list. Accepts True or False.
+      True by default.
+
+    Example
+    -------
+    Let's create a test name combinator for our role-playing-game:
+    
+    >>> from slowcomb.demos.test_planner import TestNameCombinator
+    >>> tags_m = ('good', 'neutral', 'evil')
+    >>>     # adapted from Dungeons and Dragons Morality
+    >>> tags_a = ('chaotic', 'neutral', 'lawful')
+    >>>     # adapted from D&D Adherence
+    >>> tags_c = ('scientist', 'architect', 'hacker')
+    >>>     # Our original classes
+    >>> tags_all = (tags_m, tags_a, tags_c)
+    >>> out_format = "test_ending_select_{0[2]}_{0[1]}_{0[0]}"
+    >>> comb = TestNameCombinator(tags_all, out_format)
+
+    Access the combinator as an iterator to see all the names:
+
+    >>> for t in comb:
+    ...     print(t)
+    test_ending_select_scientist_chaotic_good
+    test_ending_select_architect_chaotic_good
+    test_ending_select_hacker_chaotic_good
+    test_ending_select_scientist_neutral_good
+    test_ending_select_architect_neutral_good
+    test_ending_select_hacker_neutral_good
+    test_ending_select_scientist_lawful_good
+    test_ending_select_architect_lawful_good
+    test_ending_select_hacker_lawful_good
+    test_ending_select_scientist_chaotic_neutral
+    test_ending_select_architect_chaotic_neutral
+    test_ending_select_hacker_chaotic_neutral
+    test_ending_select_scientist_neutral_neutral
+    test_ending_select_architect_neutral_neutral
+    test_ending_select_hacker_neutral_neutral
+    test_ending_select_scientist_lawful_neutral
+    test_ending_select_architect_lawful_neutral
+    test_ending_select_hacker_lawful_neutral
+    test_ending_select_scientist_chaotic_evil
+    test_ending_select_architect_chaotic_evil
+    test_ending_select_hacker_chaotic_evil
+    test_ending_select_scientist_neutral_evil
+    test_ending_select_architect_neutral_evil
+    test_ending_select_hacker_neutral_evil
+    test_ending_select_scientist_lawful_evil
+    test_ending_select_architect_lawful_evil
+    test_ending_select_hacker_lawful_evil
+
+    Notice how the tags get inserted into the {0[x]} fields, and how
+    the tags appear in reverse order. Observe in the format:
+
+    ::
+
+      out_format = "test_ending_select_{0[2]}_{0[1]}_{0[0]}"
+
+    That the subscripts are in reverse order: 2, 1 and 0.
+
+    This is merely a fraction of our possible endings, and there are
+    already so many tests! Our game will miss Christmas at least twice
+    at this rate!
+
     """
+    def index():
+        # TODO: Implement index()
+        raise NotImplementedError('index() reverse-lookup not yet available')
 
-    desc = 'Test Name Combinator Class'
-    def _get_names(self, types):
-        raise NotImplementedError
-         
+    def _get_args(self):
+        """
+        Returns a string representation of a probable expression
+        which may re-create this combinatorial unit.
+
+        """
+        out = "tags={0},include={1}".format(self._tags, self._r>0)
+        return out
+
     def _get_comb(self, i):
-        types = super()._get_comb(i)
-        return self._get_names(types)
+        """
+        Gets a tag combination of index i, formats it into a test
+        name and outputs it as a string.
+        """
+        comb_data = super()._get_comb(i)
+        return self._out_format.format(comb_data)
 
-    def __str__(self):
-        return "{0} (Tests: {1})".format(self.desc, len(self))
+    def __init__(self, tags, out_format, **kwargs):
+        """
+        Create an instance of the TestNameCombinator. For instructions
+        on using this class, please refer to the class-scope
+        documentation for TestNameCombinator.
 
-    def __repr__(self):
-        return self.__str__()
-        
-    def __init__(self,tags,**kwargs):
-        """Create a test name combinator
-
-        Optional Arguments
-        ------------------
-        include - Set to False to output nothing. This is just a way
-            to quickly exclude a test name combinstor from a list without
-            changing the list.
-            Accepts True or False. True by default.
         """
         super().__init__(tags,len(tags))
+        self._out_format = out_format
+        self._tags = self._seq_src
         if kwargs.get('include',True) is False:
             self._r = 0
 
 class ExampleTestNameCombinator(TestNameCombinator):
-    """A hopefully more effective way of describing and documenting
-    how this TestNameCombinator works.
-
-    The TestNameCombinator is a CatCombinator which generates formatted
-    names from all possible combinations of tags presented to it.
-    To get the names, simply create an instance of the TestNameCombinator
-    and use it like a Python sequence or iterator.
-
-    >>> from tests.plan import *
-    >>> for d in ExampleTestNameCombinator():
-    ...     print(d)
-
-    >>> ExampleTestNameCombinator()[7]
-    'test_erotic_relationship_aqu_with_vir'
-
-    TestNameCombinators are meant to be used as classes, and not as
-    instances of the same class, due to operational circumstances during
-    the early parts of the project involving slowcomb. This may change
-    in the future.
     """
+    Generate test names for tropical/sidereal Zodiac-type astrological
+    relationship compatibility tests.
 
-    desc = 'Astrology Test Suite Demonstraton'
-    def _get_names(self, types):
-        # Override this function to implement the actual name
-        # generation routine
-        prefix = 'test'
-        out_format = "{0}_{1[0]}_relationship_{1[1]}_with_{1[2]}"
-        return out_format.format(prefix,types)
-            # Read up on how to use format() if you don't know
-            # how to use it, because it will save your life.
+    This is a hopefully more effective way of describing and documenting
+    how the TestNameCombinator class works.
 
+    The ExampleTestNameCombinator demonstrates how TestCombinators
+    may be used as subclasses, in situtations where this is more
+    advantageous than using instances.
+
+    """
     def __init__(self, **kwargs):
-        rel_type = ('erotic','platonic')
+        out_format = "test_{0[0]}_relationship_{0[1]}_with_{0[2]}"
+        rel_type = ('erot','plat')
         zod_sign_greg_ord = ('aqu','pis','ari','tau','gem','can','leo',
             'vir','lbr','sco','sag','cap')
-        all_types = (rel_type, zod_sign_greg_ord, zod_sign_greg_ord)
-            # Group the tuples into an outer tuple, and feed it to
-            #  the TestNameCombinator. Here, the underlying
-            #  CatCombinator will run through all star signs for all
-            #  star signs for two relationship types.
-            # You can repeat the same group twice or more!
-        super().__init__(all_types, **kwargs)
+                # Zodiac signs with ordered by start date appearance
+                # in Gregorian Calendar
+        tags = (rel_type, zod_sign_greg_ord, zod_sign_greg_ord)
+            # Group the tags to be combined into separate tuples,
+            # then wrap the tag tuples in an outer tuple for the
+            # the TestNameCombinator. 
+            # Abbreviate the tags as much as readability is preserved,
+            # to keep the name from getting to long.
+            # Note that the Zodiac signs are used twice, to represent
+            # the two parties in the relationship.
+            #
+            # NOTE: The Zodiac actually begins with Aries, although
+            # newspapers like to begin with Aquarius or the star sign
+            # of the month or something like that...
+
+        super().__init__(tags, out_format, **kwargs)
             # Please always pass on the **kwargs!
 
-            # The Zodiac actually begins with Aries, although newspapers
-            #  like to begin with Aquarius or the star sign of the
-            #  month or something like that...
-
-# Length Attribute Test Interfixes 
+# Shared Tags
 #
-class LengthAttributeTestInterfixes(TestNameCombinator):
-    desc = 'Length Attribute Test Name Interfixes'
-    def _get_names(self, types):
-        subprefix = 'a_len_'
-        return "{0}{1[0]}_ii_start".format(subprefix,types)
+tags_pnz = ('pos','neg','zero')
+tags_ii_start_stop = ('pos','neg','neg_zero_x')
 
-    def __init__(self, **kwargs):
-        offset_types = [['pos','neg','neg_zero_x','zero'],]
-        super().__init__(offset_types, **kwargs)
+# Slice Start, Stop and Step Cases Suffixes
+#
+tags_slice_cases = (tags_pnz, tags_pnz, tags_pnz)
+format_slice_cases = "{0[0]}_start_{0[1]}_stop_{0[2]}_step"
+names_slice_cases = TestNameCombinator(tags_slice_cases, format_slice_cases)
 
-# Slowcomb Sequences Length Attribute Test Names
+# Slowcomb Sequences Integer Subscription Test Names
+#
+tags_intkey_cases = (tags_pnz, tags_ii_start_stop)
+format_intkey_cases = "test_intkey_{0[0]}_i_{0[1]}_ii_start"
+names_intkey_cases = TestNameCombinator(tags_intkey_cases,format_intkey_cases)
+
+# Slowcomb Sequences Slice Subscription Test Names
 # 
-class SlowseqLengthAttributeTestNames(TestNameCombinator):
-    desc = 'Slowcomb Sequences Length Attribute Tests'
+tags_slicekey_cases = (names_slice_cases, tags_ii_start_stop)
+format_slicekey_cases = "test_slicekey_{0[0]}_{0[1]}_ii_start"
+names_slicekey_cases = TestNameCombinator(tags_slicekey_cases,
+    format_slicekey_cases)
 
-    def _get_names(self, types):
-        return "{0[0]}.test_{0[1]}".format(types)
-
-    def __init__(self, **kwargs):
-        classes = ['NumberSequence','CacheableSequence',
-            'BlockCacheableSequence']
-        test_types = LengthAttributeTestInterfixes()
-        all_types = [classes, test_types]
-        super().__init__(all_types, **kwargs)
-
-# Index Test Interfixes
-#
-class IndexTestInterfixes(TestNameCombinator):
-    desc = 'Integer Index Test Interfixes'
-    def _get_names(self, types):
-        subprefix = 'i_'
-        return "{0}{1[0]}_i_{1[1]}_ii_start".format(subprefix,types)
-         
-    def __init__(self, **kwargs):
-        index_types = ['pos','neg','zero']
-        offset_types = ['pos','neg','zero']
-        all_types = [index_types, offset_types]
-        super().__init__(all_types,**kwargs)
-
-class SliceTestInterfixes(TestNameCombinator):
-    desc = 'Slice Index Test Interfixes'
-    def _get_names(self, types):
-        subprefix = 's_'
-        out_format="{0}{1[0]}_start_{1[1]}_stop_{1[2]}_step_{1[3]}_ii_start"
-        return out_format.format(subprefix,types)
-         
-    def __init__(self, **kwargs):
-        start_types = ['pos','neg','zero']
-        stop_types = ['pos','neg','zero']
-        step_types = ['pos','neg']
-        ii_starts = ['pos','neg','zero']
-        all_types = [start_types, stop_types, step_types, ii_starts]
-        super().__init__(all_types,**kwargs)
-
-class ZeroXIndexTestInterfixes(TestNameCombinator):
-    desc = 'Zero-Crossing Integer Index Test Interfixes'
-    def _get_names(self, types):
-        subprefix = 'i_'
-        subsuffix = 'zero_cross'
-        out_format = "{0}{1[0]}_i_{1[1]}_ii_start_{2}"
-        return out_format.format(subprefix,types,subsuffix)
-         
-    def __init__(self, **kwargs):
-        index_types = ['pos','neg','zero']
-        offset_types = ['neg']
-        all_types = [index_types, offset_types]
-        super().__init__(all_types,**kwargs)
-
-class ZeroXSliceTestInterfixes(TestNameCombinator):
-    desc = 'Zero-Crossing Slice Index Test Interfixes'
-    def _get_names(self, types):
-        subprefix = 's_'
-        subsuffix = 'zero_cross'
-        out_format="{0}{1[0]}_start_{1[1]}_stop_{1[2]}_step_{1[3]}_ii_start_{2}"
-        return out_format.format(subprefix,types,subsuffix)
-         
-    def __init__(self, **kwargs):
-        start_types = ['neg','pos']
-        stop_types = ['pos','neg','zero']
-        step_types = ['pos','neg']
-        ii_starts = ['neg']
-        all_types = [start_types, stop_types, step_types, ii_starts]
-        super().__init__(all_types, **kwargs)
-
-# NOTE: Recall that every Combinatorics class is an iterable... ;)
-
-# Resolution and Output Tests Interfixes
-# 
-class TestTypesInterfixes(TestNameCombinator):
-    desc = 'Resolution and Output Test Interfixes'
-
-    def _get_names(self, types):
-        return "{0[0]}_{0[1]}".format(types)
-
-    def __init__(self, **kwargs):
-        index_types = itertools.chain(
-            IndexTestInterfixes(),
-            ZeroXIndexTestInterfixes(),
-            SliceTestInterfixes(),
-            ZeroXSliceTestInterfixes(),
-        )
-        outcome_types = ['resolve','getitem']
-        all_types = [outcome_types, list(index_types)]
-        super().__init__(all_types, **kwargs)
-
-# Slowcomb Sequences Resolution and Output Test Names
-# 
-class SlowseqIndexGetItemTestNames(TestNameCombinator):
-    desc = 'Slowcomb Sequences Basic Tests'
-
-    def _get_names(self, types):
-        return "{0[0]} using test_{0[1]}".format(types)
-
-    def __init__(self, **kwargs):
-        classes = ['NumberSequence','CacheableSequence',
-            'BlockCacheableSequence','AccumulateSequence',
-            'SumSequence']
-        test_types = TestTypesInterfixes()
-        all_types = [classes, test_types]
-        super().__init__(all_types, **kwargs)
-
-# Slow Combinatorics Tests
-#
-class CombinatoricsBasicSequenceTestNames(TestNameCombinator):
-    desc = 'Combinatorics Basic Sequence Test Names'
-
-    def _get_names(self, types):
-        return "{0[0]}:{0[1]}_output_test".format(types)
-
-    def __init__(self, **kwargs):
-        classes = ['Combinator','CombinatorWithRepeats','CatCombinator',
-            'Permutator','PermutatorWithRepeats',]
-        slowseq_test_types = ['iter','i_neg','i_pos','s_neg','s_pos']
-        all_types = (classes, slowseq_test_types)
-        super().__init__(all_types, **kwargs)
-
-class SlowcombSuiteComprehensiveSequenceTestNames(TestNameCombinator):
-    desc = 'Slowcomb Suite Comprehensive Sequence Test Names'
-
-    def _get_names(self, types):
-        return "{0[0]} using {0[1]}".format(types)
-
-    def __init__(self, **kwargs):
-        classes = ['Combinator','CombinatorWithRepeats','CatCombinator',
-            'Permutator','PermutatorWithRepeats','AccumulateSequence',
-            'SumSequence']
-        slowseq_test_types = TestTypesInterfixes()
-        all_types = (classes, slowseq_test_types)
-        super().__init__(all_types, **kwargs)
-
-# Basic Performance Tests
-#
-class CacheableSequencePerformanceTestNames(TestNameCombinator):
-    desc = 'Basic Cacheable Performance Test Names'
-
-    def _get_names(self, types):
-        out_format="{0[0]}.test_perf_{0[1]}_spat_locality"
-        return out_format.format(types)
-
-    def __init__(self, **kwargs):
-        classes = ('NumberSequence', 'CacheableSequence',
-            'BlockCacheableSequence')
-        spat_locality = ('low','low_but_eqdist','medium','high')
-        all_types = (classes, spat_locality)
-        super().__init__(all_types, **kwargs)
-
-# Combinatorics Performance Tests
-#
-class CombinatoricsPerformanceTestNames(TestNameCombinator):
-    desc = 'Basic Combinatorics Performance Test Names'
-
-    def _get_names(self, types):
-        out_format="{0[0]}.test_perf_{0[1]}_n_{0[2]}_r"
-        return out_format.format(types)
-
-    def __init__(self, **kwargs):
-        classes = ('Combination', 'CombinationWithRepeats','CatCombination',
-            'Permutation','PermutationWithRepeats')
-        n_values = ('big','small')
-        r_values = ('big','small')
-        all_types = (classes, n_values, r_values)
-        super().__init__(all_types, **kwargs)
-
-
-# Test Plan CSV File Output
+# Preliminary Slowcomb Sequences Comprehensive Test Plan
 #
 # TODO: Re-implement this using the Python CSV API?
 def get_csv():
-    test_all=itertools.chain(
-        SlowseqLengthAttributeTestNames(),
-        SlowseqIndexGetItemTestNames(),
-        CombinatoricsBasicSequenceTestNames(),
-        SlowcombSuiteComprehensiveSequenceTestNames(include=False),
-        CacheableSequencePerformanceTestNames(),
-        CombinatoricsPerformanceTestNames(),
-    )
+    tests=itertools.chain(names_intkey_cases,names_slicekey_cases)
+    test_list=[t for t in tests]
+    classes=('NumberSequence', 'CacheableSequence', 'BlockCacheableSequence')
     # Output CSV Rows
-    headings='Test name, Status'
+    headings='Test name,Status'
     print(headings)
-    name_list = [r for r in test_all]
-    for d in name_list:
-        print(d, end=',\n')
-    print("Tests In Total: {0}".format(len(name_list)))
+    count=0
+    for c in classes:
+        for t in test_list:
+            print("{0}:{1}".format(c,t), end=',NOT_IMPLEMENTED\n')
+            count+=1
+    print("Tests In Total: {0}".format(count))
 
 # Run get_csv() when called from a CLI shell
 if __name__=='__main__':

@@ -23,6 +23,7 @@ Manual Testing environment for interactive Python prompt
 
 import datetime
 import doctest
+import itertools
 import pdb
 import timeit
 from . import examples
@@ -33,9 +34,14 @@ from slowcomb.tests.slowprime import *
 #
 def test_all_docs():
     """Verify examples in main module docstrings"""
-
-    doctest.testfile('../slowseq.py')
-    doctest.testfile('../slowcomb.py')
+    paths = (
+        '../slowseq.py',
+        '../slowcomb.py',
+        '../demos/benchmark_comb_seq_out.py',
+        '../demos/benchmark_cache.py',
+    )
+    for p in paths:
+        doctest.testfile(p)
 
 
 # Classes

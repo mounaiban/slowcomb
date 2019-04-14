@@ -52,10 +52,12 @@ def run_all_tsv(**kwargs):
 
     Note
     ----
-    * The columnar format was chosen, despite its tendency to repeat
-      information excessively, as opposed to the tabular format,
-      as it was felt that this format would allow use of simpler, more
-      primitive programs (which are easier to code) for data imports.
+    * The two-dimensional tabular format was chosen, despite its tendency
+      to repeat information excessively, as opposed to the multi-dimensional
+      format (e.g. a list of tables, where there are columns for each r and
+      rows for each n for each table) as it was felt that this format would
+      allow use of simpler, more primitive programs (which are easier to
+      code) for data imports.
     
     """
     # Get arguments
@@ -135,10 +137,8 @@ class CombinationSPB(CatCombination):
     of four.
 
     >>> import itertools
-    >>> from . import CombinationSPB
-    >>>     # PROTIP: Use the dot in example docstrings to avoid
-    >>>     # retyping the entire fully qualified name of the module.
-    >>> bench = CombinationSPB()
+    >>> import slowcomb.demos.benchmark_comb_seq_out as mod_bcomb
+    >>> bench = mod_bcomb.CombinationSPB()
     >>> bench[0]
     (<class 'itertools.combinations'>, 8, 4)
 
@@ -177,8 +177,8 @@ class CombinationSPB(CatCombination):
         n-value (items in source sequence) will not run and return
         a time of zero milliseconds.
 
-        This class is a CatCombination in disguise, containing all
-        possible benchmark configurations, lazily-evaluated.
+        Recall that this class is a CatCombination in disguise, containing
+        all possible benchmark configurations, lazily-evaluated.
 
         A particular benchmark test's configuration may be examined by
         requesting the term of index i in the benchmark object as a
@@ -303,7 +303,8 @@ if __name__ == '__main__':
         run_all_tsv(comment=comment)
     except IndexError:
         # If no comment is entered...
-        print("Please enter a comment for this benchmark.")
-        print("Surround your comment in straight/typewriter quotes.")
+        print('Welcome to the Slowcomb Combinatorial Unit Informal SPB')
+        print('Please enter a comment for this benchmark.')
+        print('Surround your comment in straight/typewriter quotes.')
         print("Example: {0} 'Yet another Tuesday test'".format(sys.argv[0]))
 

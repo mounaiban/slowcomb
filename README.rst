@@ -297,6 +297,17 @@ Reliability
 * Implement Exception memory in combinatorics and supporting sequences, in
   order to help isolate and diagnose problematic sequences.
 
+Usability
+#########
+* Extend size limit on Combinatorial Units. Current methods of deriving
+  terms place a strict limit on the number of terms in a CU.
+  
+  * For example, the Permutation CU currently has a limit of 170 elements
+    for the source when deriving 6-element terms (i.e. 170P6), as tested
+    on a 64-bit x86 environment (GNU/Linux 5.x, Python 3.7). Exceeding
+    this limit triggers an ``OverflowError`` due to division of excessively
+    large integers.
+
 Architecture
 ############
 * Refactor the codebase to improve the way dependency injection is used,

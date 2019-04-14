@@ -183,11 +183,11 @@ These goals aim to make Slowcomb usable for small-scale projects, with a
 codebase clear enough to be used as a teaching aid for beginners to Python
 and object-oriented programming.
 
-The version number will be bumped to **1.0** upon completion of most of these
-goals.
-
 Documentation
 #############
+* Complete and upload the missing CONTRIBUTING.rst document, update
+  INSTALL.rst to reflect changes made to the project.
+  
 * Just the maintenance stuff to maintain readability, correct and 
   consistent terminology use, and sticking with a tenth-year school
   vocabulary unless bigger words are absolutely necessary, and also
@@ -207,11 +207,6 @@ Testing
 #######
 * Create a more user-friendly Test Planner. The current ``plan.py`` isn't
   exactly *Fit for Public Use*.
-
-* Performance Tests, Second Edition: implement comparative performance
-  tests to compare Slowcomb with ``itertools`` combinatorics across
-  different source sequence (n-values) and selection sizes (r-values),
-  as well as cache-based mitigations against slowness.
 
 
 Long Term (indefinite schedule)

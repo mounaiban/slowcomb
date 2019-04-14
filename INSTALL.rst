@@ -1,68 +1,159 @@
 Installing and Using Slowcomb for Virgins
 -----------------------------------------
 
+Slowcomb should be easy to import into your project using industry-standard
+procedures, due to its minimal dependency footprint; only Python built-in
+libraries are linked. Importing the library from repository to project, in
+the simplest of terms, is merely a matter of cloning, packaging and deploying.
+
   For information on contributing to the slowcomb project, please see
   ``CONTRIBUTING.rst``
-
-Due to its minimal dependency footprint (only Python built-in libraries
-are linked), slowcomb is easy to set up for use in your projects and 
-hopefully difficult to mess up with.
 
 If you are already fairly experienced with Python software development
 in a Git-managed environment, and you use virtual environments regularly,
 you can stop reading this file and start coding, as you probably already
 know what you're doing, unless you want to join in the fun.
 
-  Note: The advice given herein is rather Unix-focused, as the author
-  uses this library mostly on GNU/Linux and macOS systems. The procedures
-  on Windows should not be too different, apart from differences in path
-  formats (e.g. ``/home`` vs ``C:\Users``) and command line interfaces 
-  (e.g. ``ls`` vs ``dir``).  Windows 10 users have the rather compelling
-  *Windows Subsystem for Linux* option, which supports a legit GNU/Linux
-  system.
+  Note for Windows Users: The advice given herein is rather Unix-focused,
+  as the author used this library mostly on GNU/Linux and macOS systems.
+  The procedures should not be too different on Windows, apart from
+  fundamental differences such as path formats (e.g. ``/home``, as opposed
+  to ``C:\Users``) and command line interfaces (e.g. ``ls`` vs ``dir``).
 
+  PROTIP: Windows 10 users have the rather compelling *Windows Subsystem
+  for Linux* option, which supports a legit GNU/Linux system.
+
+Summary
+-------
 The installation and usage process endorsed here is basically:
 
 1. Clone slowcomb using the ``git clone`` command.
 
-2. Run unit tests with ``python3 -m unittest discover -s slowcomb/tests``
-   in the repository root directory (same directory where you see the
-   ``README.rst`` and ``LICENSE`` files.
+2. Optionally, run unit tests by invoking from the repo root:
+   
+   ::
 
-3. Prepare a virtual environment, install the package generated in
-   step 3 above in your virtual environment using ``pip``.
-     
-   * Alternatively, the package may be installed system-wide, also
-     using ``pip``.
+      python3 -m unittest discover -s slowcomb/tests
 
-4. Generate a package by running ``setup.py``.
+   This will ensure that you are not importing a build with known
+   issues.
 
-5. Import the ``slowcomb.slowcomb`` module, or parts of it, into the 
+3. Optionally, prepare the virtual environment.
+
+4. Generate a package by running ``python setup.py`` from the repo root.
+   The installation package file should appear in the ``dist`` directory
+   from here.
+
+   PROTIP: The packages are generated using ``setuptools`` and should 
+   end with ``.tar.gz``.
+   
+5. Install Slowcomb to your system or virtual environment, using
+   ``pip $YOUR_SLOWCOMB_REPO/dist/$YOUR_ARCHIVE``, substituting:
+   
+   * ``$YOUR_SLOWCOMB_REPO`` for the path to the repo root,
+
+   * ``$YOUR_ARCHIVE`` for the actual name of the package file.
+
+6. Import the ``slowcomb.slowcomb`` module, or parts of it, into the 
    modules of your project.
 
    * Alternatively, import ``slowcomb.slowcomb`` while in the
      interactive Python shell, or ``slowcomb.tests.manual`` if you
      want to mess around...
 
-6. Goto step 4 above to update the slowcomb modules in your project
-   when changes are pushed to the repo.
+7. When changes are made to Slowcomb, pull them into your local repo
+   with ``git pull`` from any directory on or under the repo root, then
+   repeat the process from Step 2.
+
+Installation In More Detail
+---------------------------
 
 Step 1: Clone This Thing
 ========================
-Prepare a directory on the file system of your working (virtual) machine.
-If you have a special directory set aside for checkouts from source
-control repositories, such as a ``downloads-github`` directory (or
-*GitHub Downloads* for you Windows folks who love spaces in names),
-just switch to it and clone this repository there with the usual 
-``git clone`` command:
+Prepare a directory on the file system you are working on.
+
+If you have a special directory set aside for Git repositories (or 
+'checkouts' other source control systems), just switch to it and clone
+this repository there with the ``git clone`` command:
 
 ::
 
    git clone https://github.com/mounaiban/slowcomb
-    
+ 
 A few messages later, you should now have a copy of slowcomb in your
 directory. It should be in a ``slowcomb`` subdirectory from the
 directory you ran the above ``git clone`` command in.
+
+A Word on Words: a Mini Glossary
+********************************
+From this point on, the following terms are going to be used liberally:
+
+* *file system*, the storage space on the system you are working on, when
+  organised into files and directories. This is to avoid using language-
+  and implementation-specific terms such as *hard disk*, *SSD*, 
+  *virtual machine*, *laptop* or even *computer*, and stuff like that.
+
+* *pull*, to apply changes from a copy, or branch, of a repository to
+  another. 
+
+* *repo root*, or Repository Root, the topmost level of the Slowcomb
+  library repository's file system. In the simplest terms, the same
+  directory you find ``README.rst`` and ``setup.py`` in.
+
+* *source root*, the topmost level in which you may find Slowcomb-related
+  material. In the simplest terms, it's the same directory that you
+  may find ``slowcomb.py`` and ``slowseq.py`` in. Relative to the
+  *repo root*, it is in the ``slowcomb/`` directory.
+
+* *VE*, or *Virtual Environment*. An optional feature that allows you to
+  create and maintain multiple copies of a Python environment, each
+  with its own packages and modifications, and to prevent early updates
+  or accidental uninstallations from causing software to stop working.
+  
+   VEs are used for maintaining continuity on enterprise systems or
+   web servers, when running software certified to run only on specific
+   versions of Python, or other modules, earlier than the latest, without
+   holding back the rest of the system from potentially important updates.
+
+Why am I doing this?
+********************
+Cloning from GitHub with Git is the preferred way of downloading source
+code. Minor changes on the repository be applied without having to download
+a newer version of an archive, eliminating the need to manage an entire
+history of archive files. Changes may be reviewed using the ``git log``
+command.
+
+These are just two of the many features exclusive to using Git. If you
+dive deeper, you might find out how to revert any file on your personal
+copy of the repo to an older version while keeping the other files
+intact. You could use the *bisect* feature to quickly find changes that
+introduced a bug you are diagnosing. There are hundreds of features, one
+for practically almost every possible situation a hacker could be in.
+
+Do I have to do this?
+*********************
+No. Alternative installation methods exist. Read on...
+
+How else can I do this?
+***********************
+* **ZIP dumps.** You can download the entire repo in a ZIP archive.
+  From the repo root on the GitHub website, press the green 'Clone
+  or Download' button. In the pop-up box that appears, use the Download
+  ZIP link that appears. Save the ZIP file in your file system, and
+  unpack the contents to a subfolder under your downloads or source code
+  directory.
+  Everything will work the same way like in the good 'ole days before 
+  Git, but you may be missing out on the change tracking features such
+  as the log and incremental updates.
+
+* **Git front ends.** GitHub has its own original front end, the GitHub
+  Desktop, downloadable from https://desktop.github.com. A much older
+  version of this app (you're going back to a time when Electron was
+  probably just a few bullet points on a napkin somewhere) was pretty
+  much all the author has used in the way of Git front ends before he
+  decided take the command line path, so you are pretty much on your
+  own if you go down this way. Godspeed!
+
 
 Step 2: Run Tests and Familiarise Yourself With the Repo
 ========================================================

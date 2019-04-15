@@ -180,9 +180,8 @@ To create a virtual environment, find a suitable location on your file
 system. The VE will be hosted in a subdirectory at this location.
 
   Windows Users: please refer to the Python Documentation, under
-  the section .. _`venv - Creation of Virtual Environments`: https://
-  docs.python3.org/3/library/venv.html for Windows-equivalent
-  instructions.
+  the section `venv - Creation of Virtual Environments <https://docs.python3.org/3/library/venv.html>`_
+  for Windows-equivalent instructions.
 
 If you are using a UNIX shell, use the following command to create a VE
 in the working directory:

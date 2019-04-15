@@ -29,16 +29,16 @@ The installation and usage process endorsed here is basically:
 
 1. Clone slowcomb using the ``git clone`` command.
 
-2. Optionally, run unit tests by invoking from the repo root:
+2. Optionally, prepare the virtual environment.
+
+3. Optionally, run unit tests by invoking from the repo root:
    
    ::
 
-      python3 -m unittest discover -s slowcomb/tests
+      python -m unittest
 
    This will ensure that you are not importing a build with known
    issues.
-
-3. Optionally, prepare the virtual environment.
 
 4. Generate a package by running ``python setup.py`` from the repo root.
    The installation package file should appear in the ``dist`` directory
@@ -87,106 +87,260 @@ directory you ran the above ``git clone`` command in.
 A Word on Words: a Mini Glossary
 ********************************
 From this point on, the following terms are going to be used liberally:
-
-* *file system*, the storage space on the system you are working on, when
-  organised into files and directories. This is to avoid using language-
-  and implementation-specific terms such as *hard disk*, *SSD*, 
-  *virtual machine*, *laptop* or even *computer*, and stuff like that.
-
-* *pull*, to apply changes from a copy, or branch, of a repository to
-  another. 
-
-* *repo root*, or Repository Root, the topmost level of the Slowcomb
-  library repository's file system. In the simplest terms, the same
-  directory you find ``README.rst`` and ``setup.py`` in.
-
-* *source root*, the topmost level in which you may find Slowcomb-related
-  material. In the simplest terms, it's the same directory that you
-  may find ``slowcomb.py`` and ``slowseq.py`` in. Relative to the
-  *repo root*, it is in the ``slowcomb/`` directory.
-
-* *VE*, or *Virtual Environment*. An optional feature that allows you to
-  create and maintain multiple copies of a Python environment, each
-  with its own packages and modifications, and to prevent early updates
-  or accidental uninstallations from causing software to stop working.
   
-   VEs are used for maintaining continuity on enterprise systems or
-   web servers, when running software certified to run only on specific
-   versions of Python, or other modules, earlier than the latest, without
-   holding back the rest of the system from potentially important updates.
+  * *file system*, the storage space on the system you are working on, when
+    organised into files and directories. This is to avoid using language-
+    and implementation-specific terms such as *hard disk*, *SSD*, 
+    *virtual machine*, *laptop* or even *computer*, and stuff like that.
+  
+  * *pull*, to apply changes from a copy, or branch, of a repository to
+    another. 
+  
+  * *repo root*, or Repository Root, the area in the file system that 
+    contains the first level of the Slowcomb library repository's 
+    directory . In the simplest terms, the same directory you find
+    ``README.rst`` and ``setup.py`` in.
+  
+  * *source root*, the area of the file system in which you may find
+    Slowcomb-related material. In the simplest terms, it's the same
+    directory that you may find ``slowcomb.py`` and ``slowseq.py`` in.
+    Relative to the *repo root*, it is in the ``slowcomb/`` directory.
+  
+  * *VE*, or *Virtual Environment*. An optional feature that allows you to
+    create and maintain multiple copies of a Python environment, each
+    with its own packages and modifications, and to prevent early updates
+    or accidental uninstallations from causing software to stop working.
+    
+     VEs are used for maintaining continuity on enterprise systems or
+     web servers, when running software certified to run only on specific
+     versions of Python, or other modules, earlier than the latest, without
+     holding back the rest of the system from potentially important updates.
+
+  * *VE root*, the first level of the area in the file system which
+    contains the files for supporting a VE. In the simplest terms, it's
+    the directory where you find the ``bin``, ``include`` and ``lib``
+    sub-directories.
 
 Why am I doing this?
 ********************
 Cloning from GitHub with Git is the preferred way of downloading source
-code. Minor changes on the repository be applied without having to download
-a newer version of an archive, eliminating the need to manage an entire
-history of archive files. Changes may be reviewed using the ``git log``
-command.
+code. Minor changes on the repository may be applied without having to
+download a newer version of an archive, eliminating the need to manage
+an entire history of archive files. Changes may be reviewed using the
+``git log`` command.
 
 These are just two of the many features exclusive to using Git. If you
 dive deeper, you might find out how to revert any file on your personal
 copy of the repo to an older version while keeping the other files
 intact. You could use the *bisect* feature to quickly find changes that
-introduced a bug you are diagnosing. There are hundreds of features, one
-for practically almost every possible situation a hacker could be in.
+introduced a bug you are diagnosing.
+
+There are hundreds of features, one for practically almost every possible
+situation a hacker could be in.
 
 Do I have to do this?
 *********************
 No. Alternative installation methods exist. Read on...
 
-How else can I do this?
-***********************
+What else can I use ?
+*********************
 * **ZIP dumps.** You can download the entire repo in a ZIP archive.
   From the repo root on the GitHub website, press the green 'Clone
   or Download' button. In the pop-up box that appears, use the Download
-  ZIP link that appears. Save the ZIP file in your file system, and
-  unpack the contents to a subfolder under your downloads or source code
-  directory.
-  Everything will work the same way like in the good 'ole days before 
-  Git, but you may be missing out on the change tracking features such
-  as the log and incremental updates.
+  ZIP link that appears. Save the ZIP file to a safe place on you file
+  system, and unpack the contents into the subdirectory there.
+
+  Everything will work same way like in the good 'ole days, but you may
+  be missing out on features such as the log and incremental updates.
 
 * **Git front ends.** GitHub has its own original front end, the GitHub
-  Desktop, downloadable from https://desktop.github.com. A much older
-  version of this app (you're going back to a time when Electron was
-  probably just a few bullet points on a napkin somewhere) was pretty
-  much all the author has used in the way of Git front ends before he
-  decided take the command line path, so you are pretty much on your
-  own if you go down this way. Godspeed!
+  Desktop, downloadable from https://desktop.github.com. A 2012 release 
+  of this app was all the author has used in the way of Git front
+  ends before he decided take the command line path, so you are pretty
+  much on your own if you go down this way. Godspeed!
+
+* **Subversion**, or SVN. If you are even thinking about using it,
+  I am going to assume that you are a veteran who is far more qualified
+  to talk about it than I am.
+  
+  PROTIP: For those who missed out the crazy MySpace days of the Internet,
+  SVN is a centralised source control system that had the level of
+  influence of Git at time of writing. GitHub maintains SVN support,
+  and there are long-running projects out there still using it, such as
+  the Apache HTTP Server.
 
 
-Step 2: Run Tests and Familiarise Yourself With the Repo
-========================================================
-Slowcomb's project tree is extremely simple and nearly impossible to
-get lost in, but it is worth saying that main modules live in the
-``slowcomb`` subdirectory, and unit tests live in ``slowcomb/tests``.
+Step 2: Prepare the VE (Optional)
+=================================
+As mentioned earlier, Virtual Environments (VEs) are a means of managing
+multiple Python runtime envrionments, usually to avoid the need to modify
+the system-level runtime and the risks associated with doing so.
 
-To run the unit tests, stay in the slowcomb repo root (i.e. the same
-folder as the ``README.rst`` and ``LICENSE`` files), and run this command:
+To create a virtual environment, find a suitable location on your file
+system. The VE will be hosted in a subdirectory at this location.
+
+  Windows Users: please refer to the Python Documentation, under
+  the section .. _`venv - Creation of Virtual Environments`: https://
+  docs.python3.org/3/library/venv.html for Windows-equivalent
+  instructions.
+
+If you are using a UNIX shell, use the following command to create a VE
+in the working directory:
 
 ::
 
-    python3 -m unittest discover -s slowcomb/tests
+  python3 -m venv $ENVY
 
-The ``python3`` explicitly invokes the default Python 3 interpreter on 
-systems that have both Python 2 and 3 interpreters installed.
+Substituting ``$ENVY`` for the name of the VE, which is also the name of
+the subdirectory.
+
+  PROTIP: use under_scores, instead of hy-phens or ``s p a c e s``, in the
+  name of the VE. You will be glad you did, as the latter two punctuations
+  are not allowed in names in Python (see part 2.3 of the Python Language
+  Reference).
+  
+Once you have created a VE, you will have to activate it to use it, by
+invoking:
+
+::
+
+   source bin/activate
+
+from the VE root. The ``activate`` part of the command is actually a
+shell script, but written in a format which is only runnable using the
+``source`` command.
+
+  NOTE: You can actually activate the VE from outside the VE root,
+  just make adjustments to the path, and be aware which VE you
+  are activating!
+
+When successfully activated, the prompt will look like:
+
+::
+
+   (venvy) [urname@urhost venvy]$
+
+Where ``venvy`` is replaced by the actual name you used for your VE.
+
+Once the VE is activated, you will be using the VE's embedded runtime
+instead of your system-wide runtime. The following rules will apply:
+
+* Packages installed on the system-level Python runtime will not be
+  available to the VE. They must be installed again.
+  
+* Packages installed in the VE are not available to other VEs and
+  the system.
+
+* Updates applied in the VE will not apply anywhere else.
+
+* The default Python will be independent from any other VE and the
+  system. If using the numberless ``python`` command activates
+  Python 2.7 on your system-level runtime, you can configure your
+  VE to run the latest Python 3 runtime from the same command without
+  affecting anything else outside the VE.
+
+To leave the VE, just invoke the ``deactivate`` command.
+
+Do I Have to do this?
+*********************
+No. VEs are completely optional. However, it is a good habit to maintain
+separate VEs for playing around with random bits of code.
+
+While Slowcomb is hardly able to make system-wide changes (unless you are
+running a top-secret Python app that is also named ``slowcomb``), the same
+cannot be said for other software that *do* make such changes.
+
+Many publicly-available apps out there are written to deal with changes
+to the Python runtimes and dependencies. However, you may be using
+software that may not be built with such cross-version compatibility
+in mind that are particularly susceptible to problems when dependencies
+and runtimes change.
+
+VEs can help to mitigate such risks of breaking other software on the 
+system due to changes to the runtimes and packages.
+
+
+How else can I do this?
+***********************
+You can skip using VEs altogether, and install Slowcomb on your system-wide
+Python runtime. Just remember to put a ``3`` where it's needed!
 
   PROTIP: On many systems merely running ``python`` invokes a Python 2
-  interpreter. However, the Python slowcomb was written is its largely
-  incompatible successor, Python 3. This is why you have to run
-  ``python3`` instead or the command will not succeed. Hopefully, by
-  the time you read this, Python 3 would have become the default
-  Python.
+  interpreter. However, Slowcomb was written for its largely
+  incompatible successor, Python 3, which is in at time of writing.
+  This is when you have to run ``python3`` instead or the test or
+  command will not succeed.
 
-This runs the built-in ``unittest`` module, which is executable, and
-tells it where the tests are.
+  The same applies to the pip package manager, run ``pip3`` to install
+  pip packages on the Python 3 runtime. As running ``pip`` will only
+  manage Python 2 packages on these systems.
 
-Note that some of the tests have been skipped (there are about 18 of
-them at this time for the master branch). This is normal. A number
-of the tests are slow-running and can take hours to complete. These
-tests have been excluded from the test runner by default.
+  This problem is not expected on VEs created using Python 3.
 
-Step 3: Package
+  Hopefully, by the time you read this, the Pythonistas would have
+  fulfilled their 2020-1-1 promise to drop Python 2, and make Python 3
+  the default Python on all newer systems.
+
+Other solutions for managing VEs exist:
+
+* **pipenv**. A third-party VE manager which aims to address VE-related 
+  usability and security issues by combining VE and package management
+  into a single tool, and throwing in some added integrity and security
+  measures.
+
+* **virtualenv**. A more advanced version of the built-int ``venv``
+  module.
+
+* **Use your IDE.** Some Integrated Development Environments, such as
+  JetBrains' PyCharm feature built-in VE management tools, and are able
+  to create them and switch between them on the fly.
+
+
+Step 3: Run the Unit Tests (Optional)
+=====================================
+To run the unit tests, navigate to the the repo root and simply run:
+
+::
+
+    python -m unittest 
+
+This runs the executable built-in ``unittest`` module, which will home
+in on all modules that begin with ``test_*`` and attempt to run anything
+that looks like a unit test, and then report its result.
+
+You should see something like this on your terminal:
+
+::
+
+   ......................................................................
+   .................................................. 
+   --------------------------------------------------------------
+   Ran 120 tests in 0.0022s
+
+   OK
+
+
+When you see nothing but dots (save for an occassional ``s``), and an
+``OK``, it means all tests that matter have passed. Each dot you see
+represents a test that has passed. 
+
+If you see a lowercase ``s``, it indicates a skipped test. These tests are
+usually expected failures, usually due to an issue that is not expected to
+affect normal operation, but is still important enough to warrant action in
+the foreseeable future.
+
+Anything else is trouble. Check the Issues section in the Slowcomb
+repo on GitHub, and file a report if you cannot find any prior reported
+cases of the same issue, especially if it affects you.
+ 
+Do I have to do this?
+*********************
+Not at all, you can skip running the test, but why would you want to not
+be sure that the build you have is working fine, and be sure that any issue
+caused by Slowcomb bugs are not your fault?
+
+
+Step 4: Package
 ===============
 In order to use slowcomb with your projects, you would have to either:
 
@@ -241,37 +395,12 @@ the latest time stamp.
   enough to see computers get so fast, that the entire package generation 
   can finish in under a microsecond.
 
-Step 4: Install
+
+Step 5: Install
 ===============
-With the full path to the ``dist`` subdirectory under the repo root in
-mind, enter a virtual environment (venv) of your choice. If you are just
-getting started with venv's, create one by first navigating to a directory
-which you want to place the venv, and type:
+Begin by activating the VE of your choice.
 
-::
-
-    python3 -m venv my-first-venv
-
-Substitute ``my-first-venv`` for a name you find to be more useful. A
-directory with the name you chose will be created. Find out more about
-venv's in the Python Tutorial, Chapter 12, *Virtual Environments and
-Packages*.
-
- PROTIP: Note that virtual environments are started in a clean state
- with no packages, and installing slowcomb in the venv will only make it
- available in that particular venv. This is intentional, as it prevents
- an amateur-made library from messing up with your system-wide copy of
- Python.
-
-If you have everything already started, you may get on with it and 
-activate your venv. Either run ``source bin/activate`` from the venv
-directory, or use your preferred alternative method.
-
- Note: The above steps may be skipped if you want to install slowcomb
- system-wide. This is not recommended for beginners, but experts are
- welcome to face the risks of doing it this way.
-
-Once inside your venv, install slowcomb by issuing the pip command with
+Once inside the VE, install slowcomb by issuing the pip command with
 the path to the package generated in Step 3 above. On a ``bash`` terminal 
 on a Unix-compatible system, the command may look like:
 
@@ -296,8 +425,9 @@ A successful installation will be indicated by a message that looks like:
 
 Pause to smell the victory. It's good for your soul.
 
-Step 5: Hack
-============
+
+Step 6: Have Fun!
+=================
 Slowcomb is now installed and ready for use. Either import it in your
 own code to start using it, or mess with it in the Python interactive
 shell.

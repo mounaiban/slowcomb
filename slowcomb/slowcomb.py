@@ -66,6 +66,12 @@ class CombinatorialUnit(CacheableSequence):
     PermutationWithRepeats).
 
     """
+    # Slots
+    #
+    __slots__ = '__dict__'
+
+    # Methods
+    #
     def index(self, x):
         """
         Get the index of a combinatorial result.
@@ -1315,21 +1321,31 @@ class Permutation(PBTreeCombinatorialUnit):
         to the method or function that requested it.
         
         """
-        addrs = self._get_comb_tree_path(ii)
+        path = self._get_comb_tree_path(ii)
+        temp = []
+        temp.extend(self._seq_src)
         out = []
-        seq_src_idxs = [x for x in range(-1, len(self._seq_src))]
-            # Create a list of indices to the source sequences
-            #  instead of deep copying the actual data
-            # The -1 only refers to the root node, it will be
-            #  discarded. The number was chosen out as it would
-            #  allow the simplest algorithm known at time of writing
-        for iii in addrs:
-            # Resolve the indices in seq_sec_refs to the actual
-            #  data in _seq_src. Ignore the -1 reference to the
-            #  root node.
-            ir = seq_src_idxs.pop(iii)
-            if(ir >= 0):
-                out.append(self._seq_src[ir])
+        zero_run = 0
+        for iii in range(1,len(path)):
+            # Look out for zero runs in the tree path
+            if path[iii] == 0:
+                zero_run += 1
+            else:
+                if zero_run > 0:
+                    # Multiple zeroes in a row multiple adjacent 
+                    # elements the temporary copy of _source_seq
+                    # that remain in the same order as in the source,
+                    # and therefore may be copied as-is to output.
+                    # This should be faster than adding the elements
+                    # one-by-one.
+                    out.extend(temp[0:zero_run])
+                    temp = temp[zero_run:] # Quickly drop copied elements
+                out.append(temp.pop(path[iii]))
+                zero_run = 0 
+        # Workaround for tree paths that end with zeroes:
+        # copy remaining elements from source sequence.
+        if zero_run > 0:
+            out.extend(temp[0:zero_run])
         return tuple(out)
 
     def __init__(self, seq, r=None):

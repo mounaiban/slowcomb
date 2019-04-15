@@ -406,22 +406,17 @@ on a Unix-compatible system, the command may look like:
 
 ::
 
-    pip3 install /home/mrtooliteral/downloads-github/slowcomb/dist/\
-    slowcomb-0.x.dev.2019-09-09T09-09-09.999999.tar.gz
+    pip3 install /home/urname/github-repos/slowcomb/dist/slowcomb-1.x.dev.2019-09-09T09-09-09.999999.tar.gz
 
 With the exact path before ``/dist/`` altered to suit your filesystem,
 and the exact name of the archive changed to match the one that's
 actually on your filesystem.
 
- Note that the backslash (\\) character is only present to allow the
- example to be shown in two lines and still be correct. It may be safely
- removed, as long as you mend the command back into a single line.
-
 A successful installation will be indicated by a message that looks like:
 
 ::
 
-    Successfully installed slowcomb-0.x.dev.2019-09-09T09-09-09.999999
+    Successfully installed slowcomb-1.x.dev.2019-09-09T09-09-09.999999
 
 Pause to smell the victory. It's good for your soul.
 

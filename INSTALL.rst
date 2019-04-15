@@ -164,10 +164,11 @@ What else can I use ?
   to talk about it than I am.
   
   PROTIP: For those who missed out the crazy MySpace days of the Internet,
-  SVN is a centralised source control system that had the level of
-  influence of Git at time of writing. GitHub maintains SVN support,
-  and there are long-running projects out there still using it, such as
-  the Apache HTTP Server.
+  `SVN is a centralised source control system <http://subversion.apache.org/>`_
+  that had the level of influence of Git, at time of writing, during the
+  height of the glorious 2000s 😟. GitHub maintains SVN support, and there
+  are long-running projects out there still using it, such asthe Apache
+  HTTP Server.
 
 
 Step 2: Prepare the VE (Optional)
@@ -180,7 +181,7 @@ To create a virtual environment, find a suitable location on your file
 system. The VE will be hosted in a subdirectory at this location.
 
   Windows Users: please refer to the Python Documentation, under
-  the section `venv - Creation of Virtual Environments <https://docs.python3.org/3/library/venv.html>`_
+  the section `venv - Creation of Virtual Environments <https://docs.python.org/3/library/venv.html>`_
   for Windows-equivalent instructions.
 
 If you are using a UNIX shell, use the following command to create a VE
@@ -277,18 +278,18 @@ Python runtime. Just remember to put a ``3`` where it's needed!
   This problem is not expected on VEs created using Python 3.
 
   Hopefully, by the time you read this, the Pythonistas would have
-  fulfilled their 2020-1-1 promise to drop Python 2, and make Python 3
-  the default Python on all newer systems.
+  met their `2020-1-1 deadline <https://pythonclock.org/>`_ to drop Python 2,
+  thus making Python 3 the default Python on all newer systems.
 
 Other solutions for managing VEs exist:
 
-* **pipenv**. A third-party VE manager which aims to address VE-related 
+* **pipenv**: A third-party VE manager which aims to address VE-related 
   usability and security issues by combining VE and package management
   into a single tool, and throwing in some added integrity and security
-  measures.
+  measures. See: https://pipenv.readthedocs.io/
 
 * **virtualenv**. A more advanced version of the built-int ``venv``
-  module.
+  module. See: https://virtualenv.readthedocs.io/
 
 * **Use your IDE.** Some Integrated Development Environments, such as
   JetBrains' PyCharm feature built-in VE management tools, and are able

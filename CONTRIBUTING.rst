@@ -30,35 +30,35 @@ Executive Summary
 -----------------
 The process endorsed on this project is basically like:
 
-  0. Optionally, learn how to use Git and Virtual Environments (VE).
-     You might have chosen to go with GitHub Desktop, or an IDE that
-     handles VEs and packaging in one spot.
+1. Optionally, learn how to use Git and Virtual Environments (VE).
+   You might have chosen to go with GitHub Desktop, or an IDE that
+   handles VEs and packaging in one spot.
 
-  1. Optionally, set up a VE on your file system
+2. Optionally, set up a VE on your file system
 
-  2. Fork Slowcomb, thus creating your personal branch of the Slowcomb
-     master branch.
+3. Fork Slowcomb, thus creating your personal branch of the Slowcomb
+   master branch.
 
-  3. Clone Slowcomb to your file system.
+4. Clone Slowcomb to your file system.
 
-  4a. If using a VE, activate it.
+5. If using a VE, activate it.
   
-  4b. Hack: play around as necessary, add your modifications, enhancements
-      or bugfixes
+6. Hack: play around as necessary, add your modifications, enhancements
+   or bugfixes
 
-  5. Write and run Tests
+7. Write and run Tests
 
-  6a. If satisfied, commit your changes to your local Git repository,
-      then push those changes to your branch on GitHub.
+8. If satisfied, commit your changes to your local Git repository,
+   then push those changes to your branch on GitHub.
 
-  6b. If interrupted by the need to make an urgent change which may
-      affect an incomplete change, stash your work in progress. Then,
-      pop your WIP back when you are done with the urgent edit.
+9. If interrupted by the need to make an urgent change which may
+   affect an incomplete change, stash your work in progress. Then,
+   pop your WIP back when you are done with the urgent edit.
 
-  7. When you feel ready, make a pull request to the master branch at
-     https://github.com/mounaiban/slowcomb.
+10. When you feel ready, make a pull request to the master branch at
+    https://github.com/mounaiban/slowcomb.
 
-  7a. Pull *from* master to keep your other files up-to-date
+11. Pull *from* master to keep your other files up-to-date
 
-  8. Goto Step 4
+12. Goto Step 4
 

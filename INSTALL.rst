@@ -88,38 +88,38 @@ A Word on Words: a Mini Glossary
 ********************************
 From this point on, the following terms are going to be used liberally:
   
-  * *file system*, the storage space on the system you are working on, when
-    organised into files and directories. This is to avoid using language-
-    and implementation-specific terms such as *hard disk*, *SSD*, 
-    *virtual machine*, *laptop* or even *computer*, and stuff like that.
-  
-  * *pull*, to apply changes from a copy, or branch, of a repository to
-    another. 
-  
-  * *repo root*, or Repository Root, the area in the file system that 
-    contains the first level of the Slowcomb library repository's 
-    directory . In the simplest terms, the same directory you find
-    ``README.rst`` and ``setup.py`` in.
-  
-  * *source root*, the area of the file system in which you may find
-    Slowcomb-related material. In the simplest terms, it's the same
-    directory that you may find ``slowcomb.py`` and ``slowseq.py`` in.
-    Relative to the *repo root*, it is in the ``slowcomb/`` directory.
-  
-  * *VE*, or *Virtual Environment*. An optional feature that allows you to
-    create and maintain multiple copies of a Python environment, each
-    with its own packages and modifications, and to prevent early updates
-    or accidental uninstallations from causing software to stop working.
-    
-     VEs are used for maintaining continuity on enterprise systems or
-     web servers, when running software certified to run only on specific
-     versions of Python, or other modules, earlier than the latest, without
-     holding back the rest of the system from potentially important updates.
+* *file system*, the storage space on the system you are working on, when
+  organised into files and directories. This is to avoid using language-
+  and implementation-specific terms such as *hard disk*, *SSD*, 
+  *virtual machine*, *laptop* or even *computer*, and stuff like that.
 
-  * *VE root*, the first level of the area in the file system which
-    contains the files for supporting a VE. In the simplest terms, it's
-    the directory where you find the ``bin``, ``include`` and ``lib``
-    sub-directories.
+* *pull*, to apply changes from a copy, or branch, of a repository to
+  another. 
+
+* *repo root*, or Repository Root, the area in the file system that 
+  contains the first level of the Slowcomb library repository's 
+  directory . In the simplest terms, the same directory you find
+  ``README.rst`` and ``setup.py`` in.
+
+* *source root*, the area of the file system in which you may find
+  Slowcomb-related material. In the simplest terms, it's the same
+  directory that you may find ``slowcomb.py`` and ``slowseq.py`` in.
+  Relative to the *repo root*, it is in the ``slowcomb/`` directory.
+
+* *VE*, or *Virtual Environment*. An optional feature that allows you to
+  create and maintain multiple copies of a Python environment, each
+  with its own packages and modifications, and to prevent early updates
+  or accidental uninstallations from causing software to stop working.
+  
+   VEs are used for maintaining continuity on enterprise systems or
+   web servers, when running software certified to run only on specific
+   versions of Python, or other modules, earlier than the latest, without
+   holding back the rest of the system from potentially important updates.
+
+* *VE root*, the first level of the area in the file system which
+  contains the files for supporting a VE. In the simplest terms, it's
+  the directory where you find the ``bin``, ``include`` and ``lib``
+  sub-directories.
 
 Why am I doing this?
 ********************

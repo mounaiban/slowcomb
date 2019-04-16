@@ -64,7 +64,7 @@ def int_ncr(n,r):
 
 # Classes
 #
-class NumberSequence:
+class NumberSequence(object):
     """
     Subscriptable Lazily-Evaluated Numerical Sequence
 
@@ -403,6 +403,21 @@ class NumberSequence:
     1,4,9,16,25,36,49,64,81,100,
 
     """
+    # Slots
+    #
+    __slots__ = (
+        '_default',
+        '_func', 
+        '_get_term_method', 
+        '_get_multi_term_method',
+        '_ii_start',
+        '_i',
+        '_ii_stop',
+        '_len',
+        '_name'
+    )
+
+
     # Private Methods
     # 
     def _check_i(self, i):
@@ -654,7 +669,6 @@ class NumberSequence:
             raise ValueError('sequence length must be zero or more')
         self._set_ii_bounds()
 
-
 class CacheableSequence(NumberSequence):
     """
     Cacheable alternative to NumberSequence, the Subscriptable
@@ -804,6 +818,14 @@ class CacheableSequence(NumberSequence):
       https://en.wikipedia.org/wiki/Locality_of_reference
 
     """
+    # Slots
+    #
+    __slots__ = (
+        '_cache',
+        '_cache_method',
+        '_cache_multi_method',
+    )
+
     # Public Methods
     #
     def disable_cache(self):
@@ -1087,6 +1109,13 @@ class BlockCacheableSequence(CacheableSequence):
       https://en.wikipedia.org/wiki/Locality_of_reference
 
     """
+    # Slots
+    #
+    __slots__ = (
+        '_cache_start_i',
+        '_cache_step_i',
+        '_cache_stop_i',
+    )
 
     def disable_cache(self):
         """Disable the block cache and clear it"""
@@ -1283,6 +1312,12 @@ class SNOBSequence(NumberSequence):
     details on how numbers are derived.
 
     """
+    # Slots
+    #
+    __slots__ = ('_n', '_r')
+
+    # Methods
+    #
     def index(self, x):
         """
         Look up the index of a number if it belongs in this SNOBSequence.
@@ -1680,6 +1715,12 @@ class AccumulateSequence(CacheableSequence):
       terms added together.
 
     """
+    # Slots
+    #
+    __slots__ = ('_a', '_func_ii', '_func_a')
+
+    # Methods
+    #
     def _get_args(self):
         """
         Attempt to rebuild a probable equivalent of the arguments

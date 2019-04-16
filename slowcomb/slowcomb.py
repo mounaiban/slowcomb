@@ -68,7 +68,7 @@ class CombinatorialUnit(CacheableSequence):
     """
     # Slots
     #
-    __slots__ = '__dict__'
+    __slots__ = ('_r', '_seq_src', '_exceptions')
 
     # Methods
     #
@@ -415,6 +415,12 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     * PermutationWithRepeats 
 
     """
+    # Slots
+    #
+    __slots__ = ('_func_len_siblings', '_node_counts', '_thresholds')
+
+    # Methods
+    #
     def _get_ii_level(self, ii):
         """
         Returns the level of a node in the combinatorics tree as an
@@ -1696,6 +1702,11 @@ class Combination(CombinatorialUnit):
     the code and documentation for _get_comb.
 
     """
+    # Slots
+    #
+    __slots__ = ('_bitmap_src')
+    # Methods
+    #
     def _get_index(self, x):
         """
         Return the first index of a term, if it is a possible output

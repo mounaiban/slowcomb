@@ -210,9 +210,9 @@ class PermutationNoRIndexTest(unittest.TestCase):
             src = examples.get_latin_upper_alphas(n)
             combu = self.combu_class(src)
             for i in range(len(combu)-1):
-                out = combu[i]
-                with self.subTest(n=n, i=i, out=out):
-                    self.assertEqual(i, combu.index(out))
+                with self.assertRaises(NotImplementedError):
+                    out = combu[i]
+                    combu.index(out)
 
     def test_index_none_term_no_r(self):
         """ValueError when None is used as a search term.

@@ -21,7 +21,7 @@ Slow Addressable Combinatorics Library main module.
 #
 
 from math import factorial
-from slowcomb.slowseq import lambda_int_npr, int_ncr,\
+from slowcomb.slowseq import lambda_int_npr, int_ncr, int_npr,\
     AccumulateSequence, NumberSequence, CacheableSequence, SNOBSequence
 
 # Classes
@@ -1338,6 +1338,9 @@ class Permutation(PBTreeCombinatorialUnit):
             out.append(temp.pop(i))
         return tuple(out)
 
+    def __len__(self):
+        n = len(self._seq_src)
+        return int_npr(n, self._r)
 
     def __init__(self, seq, r=None):
         """
@@ -1622,6 +1625,8 @@ class PermutationWithRepeats(Permutation):
         else:
             return tuple(out)
 
+    def __len__(self):
+        return len(self._seq_src)**self._r
 
     def __init__(self, seq, r):
         """

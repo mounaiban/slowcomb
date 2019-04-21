@@ -17,7 +17,7 @@ PACKING_TIME_UTC = datetime.datetime.utcnow().isoformat()
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     README=readme.read()
 
-VERSION = "1.0.dev.{0}".format(PACKING_TIME_UTC)
+VERSION = "1.1.dev.{0}".format(PACKING_TIME_UTC)
 
 # Invocation of setup()
 #

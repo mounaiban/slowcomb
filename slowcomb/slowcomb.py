@@ -1980,7 +1980,8 @@ class PermutationWithRepeats(Permutation):
         path = self._iter_path.digits()
         for i in path:
             out.append(self._seq_src[i])
-        self._iter_special_number.incr()
+        self._iter_path.incr()
+        self._i += 1
         return tuple(out)
             
     def __init__(self, seq, r):

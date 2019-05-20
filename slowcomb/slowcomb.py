@@ -26,6 +26,327 @@ from slowcomb.slowseq import lambda_int_npr, int_ncr, int_npr,\
 
 # Classes
 #
+class CustomBaseNumberF(object):
+    """
+    Number with a custom and optionally non-uniform base, with radix
+    determined by a function.
+
+    Numbers handled by this class are of a fixed length, and digits are
+    handled as individual integers in a list. Currently, only positive
+    integers are supported.
+
+    Required Arguments
+    ------------------
+    * length - the length of the number. Accepts int, where length > 0.
+    
+    * func_radix - function to determine the radix of a digit. Lambdas
+      and methods are accepted. The definition should be like:
+    
+      ::
+
+      func(i)
+
+      Where i is the position of the digit, 0 < i < length, and i == 0
+      for the rightmost or most significant digit.
+
+    Optional Arguments
+    ------------------
+    * digits - the digits of the number, if the number is to have an
+      initial state.
+
+    Notes
+    -----
+    This class is being investigated for performance issues. Preliminary
+    tests with the CPython interpreter suggest that calls to
+    func_radix() to determine the radix of a digit incur a significant
+    performance penalty. For the time being, the use of this class is only
+    recommended for problems where it is unreasonable to specify the radices
+    of the digits ahead of time.
+ 
+    """
+    # TODO: Document remaining exceptions.
+    __slots__ = ('_digits', '_length', '_func_radix')
+
+    def incr(self):
+        """
+        Increase the value of the number by one. If this method is invoked
+        when the number is at its maximum value, it wraps around to zero.
+
+        This method is intended as a means of bypassing the potentially
+        slow operation of recalculating the number from an integer, when
+        performing the relatively trivial operation of adding one to the
+        number.
+
+        """
+        iii = self._length-1 # Start from right hand side of number
+        carry = self._digits[iii]+1 >= self._func_radix(iii)
+        while carry is True:
+            try:
+                self._digits[iii] = 0
+                iii -= 1
+                carry = self._digits[iii]+1 >= self._func_radix(iii)
+            except IndexError:
+                # If iii runs past the right side of self._digits,
+                # it means that the number has overflowed.
+                self.set_zero()
+                return None
+                    # Guard against infinite loops when running this
+                    # method on zero-value numbers of radix 1.
+        self._digits[iii] += 1
+        return None
+            
+    def set_digits(self, digits):
+        """
+        Sets the digits of this number directly.
+
+        Required Argument
+        -----------------
+        * digits - The digits of the number in a sequence, where
+          1 < len(digits) < len(self), where len(self) is the number
+          of digits in this number, as declared when it was created.
+
+        Exceptions
+        ----------
+        * ValueError is raised when the following inputs are received:
+
+          - The number of digits specified does not match the declared
+            length of the number. For example the Mayan number input
+            (17, 18, 15, 11) will not be accepted for a five-digit
+            number. Numbers will have to be truncated or padded before
+            input.
+
+          - The result of self._func_radix returns a negative number.
+
+          - A number with a digits that exceed the radix of the number
+            or a particular digit. For example, Mayan number (uniform
+            base-20) cannot be (11, 8, 20, 12) because valid digits 
+            are from 0 to 19. Likewise, a non-uniform base number of 
+            base (10, 9, 8, 7) cannot take (11, 10, 9, 8) as an input.
+
+          - Any digit is negative.
+
+        """
+        if len(digits) != self._length:
+            # Number of digits must match length
+            raise ValueError("Number of digits does not match length")
+        for i in range(len(digits)):
+            if self._func_radix(i) < 0:
+                # Reject negative radices 
+                msg_format = "Digit {0} from left has negative radix"
+                msg = msg_format.format(i)
+                raise ValueError(msg)
+            elif digits[i] >= self._func_radix(i):
+                # Reject digits that are too large for a position
+                msg_format = "Digit {0} from left exceeds max of {1}"
+                msg = msg_format.format(i, self._func_radix(i)-1)
+                raise ValueError(msg)
+            elif digits[i] < 0:
+                # Reject negative digits
+                msg_format = "Digit {0} from left is negative"
+                msg = msg_format.format(i)
+                raise ValueError(msg)
+            i += 1
+        self._digits = list(digits)
+
+    def set_zero(self):
+        """
+        Sets the value of the number to zero
+
+        """
+        self._digits = [0] * self._length
+            # Start with an all-zero path, to minimise slow list
+            # manipulations when setting value from smaller ints
+
+    def set_digits_from_int(self, i):
+        """
+        Sets the digits of the number from an integer
+
+        Argument
+        --------
+        * i - An integer to be converted to radix of this number.
+          Accepts int, where i > 0
+
+        """
+        self.set_zero()
+        iii = self._length-1
+        # Build the number in memory from smallest digit to
+        # the largest
+        while i > 0:
+            if iii < 0:
+                # If i is still not zero when the last digit has
+                # been processed, it means that the number is too
+                # large to be expressed.
+                raise OverflowError("Maximum value of number too small")
+            radix_i = self._func_radix(iii)
+            digit = i % radix_i
+            self._digits[iii] = digit
+            i //= radix_i
+            iii -= 1
+
+    def digits(self):
+        """
+        Return the digits of the number as a tuple of integers.
+
+        """
+        return tuple(self._digits)
+
+    def __len__(self):
+        """
+        Supports the use of len() on this class.
+
+        """
+        return len(self._digits)
+   
+    def __init__(self, length, func_radix, digits=None, **kwargs):
+        """
+        Constructor method to support the creation of the Custom
+        Base Number. Please refer to the class documentation on how
+        to use this class.
+        
+        """
+        self._digits = None
+        self._length = length
+        self._func_radix = func_radix
+
+        if digits is not None:
+            self.set_digits(digits)
+        else:
+            self.set_zero()
+
+class CustomBaseNumberP(CustomBaseNumberF):
+    """
+    Number with a custom, non-uniform base, with radices for each 
+    digit explicitly specified.
+
+
+    Required Arguments
+    ------------------
+    * radices - A sequence of integers declaring the radix of each
+      digit of this non-uniform base number. The length of this
+      sequence determines the length of the number, or len(self).
+      For example, a sexagesimal number representing a 24-hour clock 
+      with a visible hour, minute and second signal could be represented
+      by (24, 60, 60, 60).
+      Accepts any sequence of integers.
+
+    * digits - The digits of the number in a sequence, where
+      1 < len(digits) < len(self), where len(self) is the number
+      of digits in this number, as declared when it was created.
+      The digits are specified as a sequence type containing only
+      integers which represent an individual digit of the number.
+      Accepts any sequence of integers.
+
+    Exceptions
+    ----------
+    * TypeError is raised when any digit is not an integer.
+
+    * ValueError is raised when the following inputs are received:
+
+      - The number of digits specified does not match the declared
+        length of the number. For example the Mayan number input
+        (17, 18, 15, 11) will not be accepted for a five-digit
+        number. Numbers will have to be truncated or padded before
+        input.
+
+      - A number with a digits that exceed the radix of the number
+        or a particular digit. For example, Mayan number (uniform
+        base-20) cannot be (11, 8, 20, 12) because valid digits 
+        are from 0 to 19. Likewise, a non-uniform base number of 
+        base (10, 9, 8, 7) cannot take (11, 10, 9, 8) as an input.
+
+      - Any digit is negative.
+
+    """
+    # TODO: Document remaining exceptions.
+    __slots__ = ('_digits', '_length', '_radices')
+
+    def incr(self):
+        """
+        Increase the value of the number by one. If this method is invoked
+        when the number is at its maximum value, it wraps around to zero.
+
+        This method is intended as a means of bypassing the potentially
+        slow operation of recalculating the number from an integer, when
+        performing the relatively trivial operation of adding one to the
+        number.
+
+        """
+        iii = self._length-1 # Start from right hand side of number
+        iii = self._length-1
+        carry = self._digits[iii]+1 >= self._radices[iii]
+        while carry is True:
+            try:
+                self._digits[iii] = 0
+                iii -= 1
+                carry = self._digits[iii]+1 >= self._radices[iii]
+            except IndexError:
+                # If iii runs past the right side of self._digits,
+                # it means that the number has overflowed.
+                self.set_zero()
+                return None
+                    # Guard against infinite loops for numbers that 
+                    # just keep overflowing, such as zero-value numbers
+                    # with a radix of all 1's
+        self._digits[iii] += 1
+            
+    def set_digits(self, digits):
+        # Verify input first
+        if digits is None:
+            raise TypeError("Only sequences of integers >= 0 accepted")
+        elif len(digits) != len(self):
+            # Reject numbers that are too long or short
+            msg_format = "Number must be {0} digits long"
+            msg = msg_format.format(len(self))
+            raise ValueError(msg)
+        for iii in range(len(digits)):
+            if isinstance(digits[iii], int) is True:
+                # Accept only integers
+                if digits[iii] < 0:
+                # Validate each digit
+                    msg_format = "Digit {0} is negative"
+                    msg = msg_format.format(iii)
+                    raise ValueError(msg)
+                elif digits[iii] >= self._radices[iii]:
+                    msg_format = "Digit {0} exceeds its max value of {1}"
+                    msg = msg_format.format(iii, self._radices[iii]-1)
+                    raise ValueError(msg)
+            else:
+                msg_format = "Digit {0} is not an integer"
+                msg = msg_format.format(iii)
+                raise TypeError(msg)
+        # Only assign digits after checks are complete and pass.
+        self._digits = digits
+
+    def set_digits_from_int(self, i):
+        self.set_zero()
+        iii = self._length-1
+        # Build the number in memory from smallest digit to
+        # the largest
+        while i > 0:
+            if iii < 0:
+                # If there is still sme value left in i after dividing
+                # by the last radix, it means that the number is too large
+                # to be expressed.
+                raise OverflowError("Radix too small to express int value")
+            radix_i = self._radices[iii]
+            digit = i % radix_i
+            self._digits[iii] = digit
+            i //= radix_i
+            iii -= 1
+
+    def __len__(self):
+        return self._length
+
+    def __init__(self, radices, digits=None, **kwargs):
+        self._digits = None
+        self._length = len(radices)
+        self._radices = radices
+
+        if digits is None:
+            self.set_zero()
+        else:
+            self.set_digits(digits)
+
 class CombinatorialUnit(CacheableSequence):
     """
     Superclass which supports implementations of Combinatorial Units
@@ -1342,6 +1663,22 @@ class Permutation(PBTreeCombinatorialUnit):
         n = len(self._seq_src)
         return int_npr(n, self._r)
 
+    def __next__(self,):
+        if self._i >= len(self):
+            raise StopIteration
+
+        path = self._iter_perm_path.digits()
+
+        temp = []
+        temp.extend(self._seq_src)
+        out = []
+        for i in path:
+            out.append(temp.pop(i))
+        self._i += 1
+        self._iter_perm_path.incr()
+        return tuple(out)
+            
+
     def __init__(self, seq, r=None):
         """
         This is the special constructor method which supports 
@@ -1358,7 +1695,13 @@ class Permutation(PBTreeCombinatorialUnit):
 
         super().__init__(self._get_perm, self._func_len_siblings, seq, r)
         self._set_thresholds()
-
+        # NOTE: Experiment with CustomBaseNumberF
+        if r is not None:
+            self._iter_perm_path = CustomBaseNumberF(
+                self._r,
+                lambda x:len(self._seq_src)-x
+            )
+ 
 
 class PermutationWithRepeats(Permutation):
     """
@@ -1628,6 +1971,18 @@ class PermutationWithRepeats(Permutation):
     def __len__(self):
         return len(self._seq_src)**self._r
 
+    def __next__(self):
+        if self._i >= len(self):
+            raise StopIteration
+
+        # NOTE: Experiment with CustomBaseNumber class to generate tree paths
+        out = []
+        path = self._iter_path.digits()
+        for i in path:
+            out.append(self._seq_src[i])
+        self._iter_special_number.incr()
+        return tuple(out)
+            
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
@@ -1641,6 +1996,8 @@ class PermutationWithRepeats(Permutation):
         super().__init__(seq, r)
 
         # Construction Routine
+        self._iter_path = CustomBaseNumberP(radices=(len(seq), ) * r)
+            # NOTE: Experiment using CustomBaseNumber to generate tree paths
         self._func_len_siblings = lambda x: len(self._seq_src) 
             # Override self._func_len_siblings
         self._seq_src = seq

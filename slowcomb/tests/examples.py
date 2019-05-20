@@ -25,6 +25,7 @@ Shared Specimens for Manual and Automated Tests
 import itertools
 from slowcomb.slowcomb import CatCombination, Combination, \
     CombinationWithRepeats, Permutation, PermutationWithRepeats
+from slowcomb.slowcomb import CustomBaseNumberF
 from slowcomb.slowseq import NumberSequence, CacheableSequence, \
     BlockCacheableSequence
 from slowcomb.slowseq import AccumulateSequence, SNOBSequence, SumSequence

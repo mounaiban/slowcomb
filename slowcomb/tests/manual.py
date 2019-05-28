@@ -124,7 +124,8 @@ class CUTest(SeqTest):
         unit wrapped by this CUTest, assuming that it uses trees.
 
         """
-        tpath = self._seq._get_comb_tree_path(i)
+        self._seq._path_src.set_digits_from_int(i)
+        tpath = self._seq._path_src.digits()
         return str(tpath)
 
     def print_term(self, i):
@@ -132,9 +133,8 @@ class CUTest(SeqTest):
         Output combinatorial terms with selection data.
 
         """
-        ii=self._seq._resolve_i(i)
         out_form = "{0}\t{1}"
-        out=out_form.format(self._selection_data_method(ii), self._seq[i])
+        out=out_form.format(self._selection_data_method(i), self._seq[i])
         print(out)
 
     def __repr__(self):
@@ -157,7 +157,7 @@ class CUTest(SeqTest):
         super().__init__(cu)
         if(hasattr(self._seq, '_bitmap_src')):
             self._selection_data_method = self._get_bitmap_str
-        elif(hasattr(self._seq, '_get_comb_tree_path')):
+        elif(hasattr(self._seq, '_path_src')):
             self._selection_data_method = self._get_tree_path_str
         else:
             raise TypeError('unknown or non-combinatorial unit specified')

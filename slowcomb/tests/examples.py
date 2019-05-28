@@ -249,10 +249,6 @@ seq_snob = SNOBSequence(8,4)
 #
 cc = CatCombination(src_colonel, r=3)
     # Catenating Combination with a fixed r-size of three words.
-cc_no_r = CatCombination(src_colonel)
-    # Catenating Combination with no defined r-size.
-    # Includes all combinations of length 1 to the longest 
-    # possible length (i.e. 3, see src_colonel above).
 cc_complex = CatCombination((
         Combination(src_rpg_chars,r=4),
         Combination(src_rpg_items,r=5),
@@ -312,7 +308,7 @@ perm = Permutation(get_latin_upper_alphas(4), r=4)
     # Permutation: every possible arrangement of the first four
     # Latin alphabets, (A, B, C, D). This is an example of the
     # strictest definition of 'permutation'.
-perm_part_no_r = Permutation(get_latin_upper_alphas(4))
+#perm_part_no_r = Permutation(get_latin_upper_alphas(4))
     # Permutation with no defined r-size.
     # Includes every possible arrangement of any selection of
     # any number of the first four Latin alphabets.

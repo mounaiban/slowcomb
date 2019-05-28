@@ -85,7 +85,6 @@ class CatCombinationOutputTests(unittest.TestCase):
         # See examples.py for exact content of this source 
 
     def setUp(self):
-        self.comb = CatCombination(self.seq)
         self.comb_min_r = CatCombination(self.seq,1)
         self.comb_median_r = CatCombination(self.seq,2)
         self.comb_max_r = CatCombination(self.seq,3)

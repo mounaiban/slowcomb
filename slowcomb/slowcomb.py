@@ -65,6 +65,7 @@ class CustomBaseNumberF(object):
  
     """
     # TODO: Document remaining exceptions.
+    # TODO: Review support for zero-length numbers
     __slots__ = ('_digits', '_length', '_func_radix')
 
     def incr(self):
@@ -78,6 +79,9 @@ class CustomBaseNumberF(object):
         number.
 
         """
+        if len(self) == 0:
+            # Do not do anything if number has zero length
+            return None
         iii = self._length-1 # Start from right hand side of number
         carry = self._digits[iii]+1 >= self._func_radix(iii)
         while carry is True:
@@ -153,7 +157,7 @@ class CustomBaseNumberF(object):
         Sets the value of the number to zero
 
         """
-        self._digits = [0] * self._length
+        self._digits = [0,] * self._length
             # Start with an all-zero path, to minimise slow list
             # manipulations when setting value from smaller ints
 
@@ -167,6 +171,9 @@ class CustomBaseNumberF(object):
           Accepts int, where i > 0
 
         """
+        if len(self) == 0:
+            # Do not do anything if length of number is zero
+            return None
         self.set_zero()
         iii = self._length-1
         # Build the number in memory from smallest digit to
@@ -195,7 +202,7 @@ class CustomBaseNumberF(object):
         Supports the use of len() on this class.
 
         """
-        return len(self._digits)
+        return self._length
    
     def __init__(self, length, func_radix, digits=None, **kwargs):
         """
@@ -204,6 +211,7 @@ class CustomBaseNumberF(object):
         to use this class.
         
         """
+        # TODO: Deny use of negative integers and non-integers for length
         self._digits = None
         self._length = length
         self._func_radix = func_radix
@@ -271,6 +279,10 @@ class CustomBaseNumberP(CustomBaseNumberF):
         number.
 
         """
+        if len(self) == 0:
+            # Do nothing if length is zero
+            return None
+
         iii = self._length-1 # Start from right hand side of number
         iii = self._length-1
         carry = self._digits[iii]+1 >= self._radices[iii]
@@ -347,7 +359,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
         else:
             self.set_digits(digits)
 
-class CombinatorialUnit(CacheableSequence):
+class CombinatorialUnit(object):
     """
     Superclass which supports implementations of Combinatorial Units
     the Slow Combinatorics Library. These Combinatorial Units, or
@@ -358,9 +370,6 @@ class CombinatorialUnit(CacheableSequence):
     ------------------
     A combinatorial unit class should have the following:
     
-    * func - function or method to derive the combinatorial subset.
-      Accepts a lambda or block function or method.
-
     * seq - a sequence to be the data source from which to derive
       combinatorial terms. If seq supports a reverse-lookup method
       named index(), the CU becomes capable of finding out the index
@@ -376,10 +385,6 @@ class CombinatorialUnit(CacheableSequence):
       set being worked on (i.e. nPr, nCr), by way of the r-values in
       Python's combinatorial itertools classes.
  
-    Optional Arguments
-    ------------------
-    * ii_start - the starting internal index of the sequence.
-
     Examples
     --------
     See Combination, CombinationWithRepeats, CatCombination,
@@ -389,7 +394,10 @@ class CombinatorialUnit(CacheableSequence):
     """
     # Slots
     #
-    __slots__ = ('_r', '_seq_src', '_exceptions')
+    __slots__ = ('_default', '_i', '_r', '_seq_src', '_exceptions')
+
+    # Class Attributes
+    #
 
     # Methods
     #
@@ -481,17 +489,11 @@ class CombinatorialUnit(CacheableSequence):
         re_args = re_arg_fmt.format(seq_shown, self._r)
         return re_args
  
-    def _get_subset_count(self):
-        """
-        Get the number of subsets the CombinatorialUnit is able to
-        return. Returns the count as an int.
+    def _get_index(self):
+        raise NotImplementedError
 
-        This is simply the distance between the first internal
-        index and the last internal index. These depend on the
-        type of combinatorial unit involved.
-
-        """
-        return self._ii_stop - self._ii_start
+    def _get_comb_count(self):
+        raise NotImplementedError
 
     def __getitem__(self, key):
         """
@@ -501,9 +503,18 @@ class CombinatorialUnit(CacheableSequence):
 
         """
         if self.is_valid() is False:
-            return self._default
+            return self.default
+        elif isinstance(key, int) is True:
+            # Single term lookup using integer index
+            return self._get_term(key)
+        elif isinstance(key, slice) is True:
+            # Multiple term lookup using slice
+            out = []
+            for iii in range(s.start, s.stop, s.step):
+                out.append(self._get_term(iii))
+                return tuple(out)
         else:
-            return super().__getitem__(key)
+            raise TypeError('indices must be int or slice')
 
     def __len__(self):
         """
@@ -514,13 +525,16 @@ class CombinatorialUnit(CacheableSequence):
         if self.is_valid() is True:
             # The threshold of the last level is also the 
             # node count
-            return self._get_subset_count()
+            return self._get_comb_count()
         else:
             # Non-valid combinatorics sequences always report a
             # length of one, to account for the default value.
             return 1
 
-    def __init__(self, func, seq, r=None, ii_start=1):
+    def __iter__(self):
+        return self
+
+    def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
@@ -536,9 +550,12 @@ class CombinatorialUnit(CacheableSequence):
 
         # Instance Attributes
         #
+        self._default = ()
         self._seq_src = seq
             # The source sequence from which to derive combinatorial
             # terms
+        self._i = 0
+            # Index when CU is used as an iterator
         self._r = r
             # Sets a fixed length for terms returned by the
             # combinatorial unit.
@@ -547,13 +564,8 @@ class CombinatorialUnit(CacheableSequence):
         #
         self._exceptions = None
             # Reserved attribute
-            # To be set to true if exceptions have been encountered
-            # during the operation of this Combinator
-
-        # Construction Routine
-        super().__init__(func, length=len(seq),
-                ii_start=ii_start, default=() )
-
+            # To be set if exceptions have been encountered during 
+            # the operation of this Combinator
 
 class PBTreeCombinatorialUnit(CombinatorialUnit):
     """
@@ -738,254 +750,13 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     """
     # Slots
     #
-    __slots__ = ('_func_len_siblings', '_node_counts', '_thresholds')
+    __slots__ = ('_path_src')
 
-    # Methods
-    #
-    def _get_ii_level(self, ii):
-        """
-        Returns the level of a node in the combinatorics tree as an
-        int.
+    def _get_path(self, i):
+        self._path_src.set_digits_from_int(i)
+        return self._path_src.digits()
 
-        In the PBTree, the level which a node rests on is determined
-        from its index, and a sequence of indices of the next node
-        after the last node of each level. These indices are kept
-        in an embedded sequence, _thresholds. 
-
-        The root of the tree is regarded as Level 0.
-        
-        Arguments
-        ---------
-        * ii - The internal index of the term of the sequence. Accepts int,
-          0 ≤ i < self._ii_stop
-
-        See Also
-        --------
-        * _set_thresholds
-
-        """
-
-        for t in range(len(self._thresholds)):
-            if(ii < self._thresholds[t]):
-                return t
-        # If ii is larger than the last threshold, it is
-        #  out of range
-        raise IndexError('internal index is past the last level')
-
-    def _get_comb_tree_path(self, ii):
-        """
-        Find out the path to a particular node of index ii on the
-        PBTree, returns a tuple representing a path to the node.
-
-        Each element of the path represents the number of the child
-        node to navigate into, with the first child on the left
-        as number zero.
-
-        How The Path Discovery Works
-        ----------------------------
-        The path to a PBTree node can be discovered from its node number
-        using a series of simple arithmetic operations.
-
-        The tree from the class documentation above has been replicated
-        here for your pleasure: 
-
-        ::
-                             * 
-          10 11 12 13 14 15  16 17 18 19 20 21
-            \_|   \_|  \_|   |_/   |_/   |_/
-               \    |    |   |     |    /
-                4   5    6   7     8   9  
-                 \__|    \___/    /___/
-                     \     |     /
-                      1    2    3
-                       \___|___/
-                           | 
-                           0
-        
-        In this example, we will find the path to node 16, marked with
-        an asterisk. The discovery process herein begins from the 
-        right-hand end of the path.
-
-        There are several facts we have to find out from various
-        metadata to discover the rightmost path index:
-
-        * Is on Level three (from _thresholds)
-
-        * Is on a level with twelve nodes (from _node_counts)
-
-        * Is node number six on this level (subtract 16 from
-          _thresholds), remembering that the the first node is given
-          the number zero. In code, this is referred to as 'distance
-          from left'.
-        
-        * Has two siblings, (from _func_len_siblings)
-
-        * Is a child of node 7 (from dividing its position on this
-          level by the number of siblings, then adding it back
-          to index of the first node of Level one).
-
-        In shorthand, we could write this as ii=16,lvl=3,n=12,d=6,
-        sibs=2.
-
-        However, the most important number is node 16's sibling number,
-        which is determined by n % sibs (the remainder of n divided by
-        sibs). From this, we find that node 16 is sibling zero of 
-        node 7.
-        
-        We save this in a sequence, and our path so far is [,0].
-        
-        Repeating the process on node 7, we find that lvl=2,n=6,d=3,
-        sibs=2, and that it is *sibling one* (from d%n) of node 2 
-        (from d//sibs + 1)
-
-        We add this fact to the left side of our sequence, making it
-        [,1,0].
-
-        Continue with node 2, finding out that lvl=1,n=3,d=1,sibs=3,
-        and that this node is *sibling one* of node 0.
-
-        Add this fact to the left of our sequence, resulting in
-        [,1,1,0].
-
-        The process ends with node 0, where lvl=0,n=1,d=0,sibs=0.
-        This node has no siblings, thus assuming the default path
-        0.
-
-        We complete the path by adding this fact to the left of the
-        route, ending up with [0,1,1,0].
-
-        """
-        ii_lvl = self._get_ii_level(ii)
-        if ii_lvl == 0:
-            # Special case for looking up level zero
-            # This is to prevent negative level lookups, which
-            # don't work due to how things are implemented.
-            d_lvl = 0
-        else:
-            d_lvl = ii - self._thresholds[ii_lvl-1]
-            # Distance of the last component of the
-            # i'th term from the left of the combinator tree.
-        addrs = []
-        for level in range(ii_lvl,-1,-1):
-            # Resolve relative distance to an index
-            j = d_lvl % self._func_len_siblings(level)
-            addrs.insert(0,j)
-            # Scale down distance for the next shallower level 
-            d_lvl //= self._func_len_siblings(level)
-        return tuple(addrs)
-
-    def _get_full_subset_count(self):
-        """
-        Return the total possible number of subsets with all
-        possible r's for a PBTreeCombinatorialUnit.
-
-        The number of total subsets is also the number of nodes
-        in the combinatorics tree, which in turn coincides with
-        the last node index level threshold.
-        """
-        return self._thresholds[len(self._thresholds)-1]
-
-    def _get_child_iidxs(self, ii):
-        """
-        Return a slice covering the internal index range for the
-        immediate child nodes of a particular node
-
-        Arguments
-        ---------
-        * ii - integer index of the internal index of a node on the
-          combinatorial tree.
-
-        """
-        lvl = self._get_ii_level(ii)
-        lvl_start = self._thresholds[lvl]
-        lvl_d = ii - lvl_start
-            # Distance from beginning of current tree level
-        lvl_siblings = self._func_len_siblings(lvl)
-        next_lvl = lvl+1
-        next_lvl_start = self._thresholds[next_lvl]
-        next_lvl_siblings = self._func_len_siblings(next_lvl)
-        sub_start = next_lvl_start + lvl_d*next_lvl_siblings
-        sub_stop = sub_start + next_lvl_siblings
-        return slice(sub_start, sub_stop)
-    
-    def _set_node_counts(self):
-        """
-        Placeholder method for setting node counts per level
-        on the combinatorics tree.
-
-        """
-        raise NotImplementedError
-
-    def _set_thresholds(self):
-        """
-        Sets the threshold indices of the combinatorial tree.
-        This method triggers the node counting method, _set_node_counts().
-
-        See Also
-        --------
-        * The class documentation above, under the heading Illustration
-          and Indexing, for the definition of thresholds.
-
-        """
-        self._set_node_counts()
-            # Need to count the nodes first
-        total = 0
-        counts = []
-        for i in self._node_counts:
-            total += i
-            counts.append(total)
-        self._thresholds = tuple(counts)
-
-    def _set_ii_bounds(self):
-        """
-        Sets start (_ii_start) and stop (_ii_stop) bounds for the
-        internal index, so that only terms of a specific length
-        are accessible, and so that the correct number of terms
-        in this combinatorial unit is reported by len() correctly.
-
-        This method triggers the threshold setting method,
-        _set_thresholds(), which in turn triggers _set_node_counts().
-
-        ::
-
-          10 11 12 13 14 15  16 17 18 19 20 21
-            \_|   \_|  \_|   |_/   |_/   |_/
-               \    |    |   |     |    /
-                4   5    6   7     8   9  
-                 \__|    \___/    /___/
-                     \     |     /
-                      1    2    3
-                       \___|___/
-                           | 
-                           0
-        
-        Referring to our illustration from the class documentation yet
-        again, the bounds are as follows:
-
-        * If _r = 0, 0 ≤ ii ≤ 0 (or, ii == 0)
-
-        * If _r = 1, 1 ≤ ii ≤ 3
-
-        * If _r = 2, 4 ≤ ii ≤ 9
-
-        * If _r = 3, 10 ≤ ii ≤ 21
-
-        """
-        self._set_thresholds()
-            # Must set thresholds first
-        if isinstance(self._r, int):
-            if self._r <= 0:
-                self._ii_start = 1
-                self._ii_stop = 1
-            else:
-                self._ii_start = self._thresholds[self._r-1]
-                self._ii_stop = self._thresholds[self._r]
-        else:
-            i_last_threshold = len(self._thresholds) - 1
-            self._ii_stop = self._thresholds[i_last_threshold]
-            self._ii_start = 1
-
-    def __init__(self, func, func_len_siblings, seq, r=None):
+    def __init__(self, seq, r, path_src):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
@@ -994,14 +765,8 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         the combinatorial unit class.
 
         """
-        self._func_len_siblings = func_len_siblings
-            # Function to find the number of nodes with a common parent
-            #  on a given level. This function should take one argument
-            #  (excluding self, if a method is used instead), and return
-            #  and int representing the number of sibling nodes.
-        self._node_counts = []
-        self._thresholds = []
-        super().__init__(func, seq, r, ii_start=0)
+        super().__init__(seq, r)
+        self._path_src = path_src
  
 
 class CatCombination(PBTreeCombinatorialUnit):
@@ -1104,6 +869,11 @@ class CatCombination(PBTreeCombinatorialUnit):
 
 
     """
+
+    # Slots
+    #
+    __slots__ = ()
+
     def add_sequence(self, seq, t=1):
         """
         Add another sequence to the sequence of source sequences
@@ -1119,7 +889,13 @@ class CatCombination(PBTreeCombinatorialUnit):
         temp = list(self._seq_src)
         temp.extend([seq]*t)
         self._seq_src = tuple(temp)
-        self._set_ii_bounds()
+
+    def _get_comb_count(self):
+        if self.is_valid() is True:
+            count = 1
+            for iii in range(self._r):
+                count *= len(self._seq_src[iii])
+            return count
 
     def _get_index(self, x):
         """
@@ -1165,7 +941,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         re_arg_fmt = "seq={0}, r={1}"
         return re_arg_fmt.format(seq_shown, self._r)
 
-    def _get_comb(self, ii):
+    def _get_term(self, ii):
         """
         Returns the first+ii'th term of a CatCombinator
 
@@ -1221,66 +997,29 @@ class CatCombination(PBTreeCombinatorialUnit):
         The tree path would have been (0, 0, 1, 0)
 
         """
-        addrs = self._get_comb_tree_path(ii)
+        path = self._get_path(ii)
         out = []
-        for i in range(len(addrs)):
-            out_data = self._seq_src[i][addrs[i]]
+        for iii in range(len(path)):
+            out_data = self._seq_src[iii][path[iii]]
             if out_data is not None:
                 out.append(out_data)
         return(tuple(out))
-    
-    def _set_node_counts(self):
-        """
-        Counts the number of tree nodes, and keeps them in the embedded
-        sequence _node_counts. This information is necessary in creating
-        paths to nodes on the tree. For more information on when and how
-        this information is used, refer to the class documentation for 
-        PBTreeCombinatorialUnit._get_comb_tree_path().
 
-        Node Counts of a CatCombinator
-        ------------------------------
-        The normally-hidden root node in Level 0 counts as 1 node.
+    def __next__(self):
+        # TODO: Method to support use as an iterator, with
+        # special optimised code path, with minimal function calls
+        if self._i >= len(self):
+            raise StopIteration
 
-        Level x has the same number of nodes as elements in _seq_src[x].
-        Each node on that level has as many child nodes as _seq_src[x+1].
+        self._path_src.set_digits_from_int(self._i)
+        path = self._path_src._digits
+        out = []
+        for iii in range(self._r):
+            out.append(self._seq_src[iii][path[iii]])
+        self._i += 1
+        return tuple(out)
 
-        The PBTree of a CatCombinator has the same number of levels
-        of the number of sub-sequences in _seq_src, which includes
-        the root node.
-
-        In our example CatCombinator:
-
-        ::
-
-          s_a = ('I',)
-          s_b = ('need','want')
-          s_c = ('sugar','spice','scissors') 
-          seqs = (s_a, s_b, s_c)
-          catcomb = CatCombination(seqs, r=3)
-
-        There would have been 3 levels (0 to 2).
-
-        Level zero would have 1 node; Level one, 1 node; Level two, 2
-        nodes and Level three, 6 nodes.
-
-        This makes a total of 10 nodes.
-
-        See Also
-        --------
-        * PBTreeCombinatorialUnit
-
-        * PBTreeCombinatorialUnit._get_comb_tree_path()
-
-        """
-        func_node_counts = lambda i : len(self._seq_src[i])
-        func_product_seq = lambda i,a : i*a
-            # This basically makes the AccumulateSequence 
-            #  a product sequence.
-        self._node_counts = AccumulateSequence(func_node_counts,
-            func_product_seq, length=len(self._seq_src))
-        self._node_counts.enable_cache()
-    
-    def __init__(self, seqs, r=None):
+    def __init__(self, seqs, r):
         """
         This is the special constructor method which supports 
         the creation of a CatCombination combinatorial unit. 
@@ -1290,12 +1029,14 @@ class CatCombination(PBTreeCombinatorialUnit):
 
         """
         # Construction Routine
-        seq_init = [ (None,) ] # Place the root node
-        seq_init.extend(seqs)
-        seq_src = tuple(seq_init)
-
-        self._func_len_siblings = lambda lvl : len(self._seq_src[lvl])
-        super().__init__(self._get_comb,self._func_len_siblings,seq_src, r)
+        seq_src = tuple(seqs)
+        subcounts = []
+        for i in range(r):
+            subcounts.append(len(seq_src[i]))
+        path_src = CustomBaseNumberP(subcounts)
+            # Set the radices to the count of each sub-sequence from left
+            # to right
+        super().__init__(seq_src, r, path_src)
 
 
 class Permutation(PBTreeCombinatorialUnit):
@@ -1433,6 +1174,7 @@ class Permutation(PBTreeCombinatorialUnit):
         legend: h.-heads, s.-shoulders, k.-knees, t.-toes 
 
     """
+
     def _get_index(self, x):
         """
         Return the first index of a term, if it is a possible output
@@ -1478,62 +1220,7 @@ class Permutation(PBTreeCombinatorialUnit):
         self._seq_src=tuple(seq)
         self._set_thresholds()
 
-    def _set_node_counts(self):
-        """
-        Counts the number of tree nodes, and keeps them in the embedded
-        sequence _node_counts. This information is necessary in creating
-        paths to nodes on the tree. For more information on when and how
-        this information is used, refer to the class documentation for 
-        PBTreeCombinatorialUnit._get_comb_tree_path().
-
-        Node Counts of a Permutation
-        ----------------------------
-        The normally-hidden root node in Level zero counts as 1 node.
-
-        The number of nodes per level from Level one onwards is equal to:
-
-        ::
-        
-          (n - (x-1)) * n[x-1]
-
-        Where:
-
-        * n means the number of elements in _seq_src
-
-        * x is the level number
-
-        * n[x] means the number of nodes on level x
-
-        All successive levels after Level one have one less branch
-        per node than the previous Level. This is due to the elimination
-        process during permutation to prevent items from repeating.
-
-        Example
-        =======
-        With reference to our example above, the node counts for a
-        permuataion on ('heads', 'shoulders', 'knees', 'toes')
-        would be:
-
-        * 1 node for Level 0 (the root node)
-
-        * 4*1 == 4 nodes for Level 1
-
-        * 3*4 == 12 for Level 2
-
-        * 2*12 == 24 for Level 3
-
-        * 1*24 == 24 for Level 4
-
-        The two last Levels will always have the same number of nodes.
-
-        """
-        self._node_counts = CacheableSequence(
-            lambda_int_npr(len(self._seq_src)),
-            length = len(self._seq_src)+1
-        )
-        self._node_counts.enable_cache()
-
-    def _get_perm(self, ii):
+    def _get_term(self, ii):
         """
         Return the results of the permutation of internal index ii.
 
@@ -1631,25 +1318,8 @@ class Permutation(PBTreeCombinatorialUnit):
         """
         if self._r is None:
             raise NotImplementedError('r=None no longer supported')
-        i = ii - self._ii_start 
-            # FIXME: This undoes the internal index (ii) mapping for
-            # the time being. The use of ii mapping will be removed
-            # from Permutation CUs in the future.
-            #
-
-        path = [0,] * self._r
-            # Start with an all-zero path, as only the rightmost
-            # elements will change for lower indices.
-        iii = self._r - 1
-        n = len(self._seq_src)
-        sibs = n - self._r + 1
-        # Build the path in memory
-        while sibs <= n:
-            path_elem = i % sibs
-            path[iii] = path_elem
-            i //= sibs
-            sibs += 1
-            iii -= 1
+        self._path_src.set_digits_from_int(ii)
+        path = self._path_src.digits()
 
         # Build the actual term
         temp = []
@@ -1663,23 +1333,22 @@ class Permutation(PBTreeCombinatorialUnit):
         n = len(self._seq_src)
         return int_npr(n, self._r)
 
-    def __next__(self,):
-        if self._i >= len(self):
+    def __next__(self):
+        if self._i >= self._len_iter:
             raise StopIteration
 
-        path = self._iter_perm_path.digits()
-
+        path = self._path_src_iter._digits
         temp = []
         temp.extend(self._seq_src)
         out = []
         for i in path:
             out.append(temp.pop(i))
         self._i += 1
-        self._iter_perm_path.incr()
+        self._path_src_iter.incr()
         return tuple(out)
             
 
-    def __init__(self, seq, r=None):
+    def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
         creation of a Permutation combinatorial unit. 
@@ -1689,21 +1358,17 @@ class Permutation(PBTreeCombinatorialUnit):
 
         """
         # Construction Routine
-        self._func = self._get_perm
-        self._seq_src = seq
-        self._func_len_siblings = lambda lvl: len(self._seq_src) - (lvl-1)
+        func_radix = lambda x:len(self._seq_src)-x
+        path_src = CustomBaseNumberF(r, func_radix)
+        super().__init__(seq, r, path_src)
+        
+        # Instance Attributes
+        # TODO: Iterator access stuff
+        radices = tuple([x for x in range(len(seq), len(seq)-r, -1)])
+        self._path_src_iter = CustomBaseNumberP(radices)
+        self._len_iter = len(self)
 
-        super().__init__(self._get_perm, self._func_len_siblings, seq, r)
-        self._set_thresholds()
-        # NOTE: Experiment with CustomBaseNumberF
-        if r is not None:
-            self._iter_perm_path = CustomBaseNumberF(
-                self._r,
-                lambda x:len(self._seq_src)-x
-            )
- 
-
-class PermutationWithRepeats(Permutation):
+class PermutationWithRepeats(PBTreeCombinatorialUnit):
     """
     A Repeats-Permitted Permutator, or a sequence of all possible
     uses of elements from a source sequence, given a set fixed number
@@ -1813,6 +1478,10 @@ class PermutationWithRepeats(Permutation):
       gambling machines.
 
     """
+    # Slots
+    #
+    __slots__ = ('_len_iter', '_path_iter', '_out_iter', '_seq_src',)
+
     def _get_index(self, x):
         """
         Return the first index of a term, if it is a possible output
@@ -1844,40 +1513,7 @@ class PermutationWithRepeats(Permutation):
         return temp_ii - self._ii_start
             # Return the external index resolved from internal index
             
-    def _set_node_counts(self):
-        """
-        Sets up the node count embedded sequence, _node_counts, to
-        enable tree paths to be constructed.
-
-        Node Counts for PermutationsWithRepeats
-        ----------------------------------------
-        * Level 0 always has one node, the root node.
-
-        * All subsequent Levels have the number of elements in _seq_src
-          to the power of the Level number, as number of branches per
-          node is constant and equal to the number of items in _seq_src
-          throughout the entire permutation tree.
-
-        Example
-        =======
-        Consider a three-element repeats-permitted permutation unit.
-        The node counts per level would be as follows, when r=4:
-
-        * 1 node for Level 0 
-
-        * 3*1 == 3 nodes for Level 1
-
-        * 3*3 == 9 nodes for Level 2
-
-        * 9*3 == 27 nodes for Level 3
-
-        """
-        self._node_counts = NumberSequence(
-            lambda x : len(self._seq_src) ** x,
-            length = self._r+1
-        )
-
-    def _get_perm(self, ii):
+    def _get_term(self, ii):
         """
         Return the permutation of internal index number ii.
 
@@ -1945,44 +1581,27 @@ class PermutationWithRepeats(Permutation):
         over by the algorithm.
 
         """
-        i = ii - self._ii_start 
-            # FIXME : This hack undoes the internal address (ii) mapping.
-            # The ii-mapping will be completely removed from all tree
-            # combinatorial units in the near future.
-            # 
-        sibs = len(self._seq_src)
-            # Node siblings
+        self._path_src.set_digits_from_int(ii)
+        path = self._path_src._digits
         out = [self._seq_src[0],] * self._r
-            # Output, pre-filled with leftmost item from _seq_src
-        iii = len(out)-1
-        while i > 0:
-            path_elem = i % sibs
-            out[iii] = self._seq_src[path_elem]
-                # Optimisation: Immediately resolve path_elem and
-                # copy referenced element to out. Equivalent to
-                # working out all path_elems into a distinct number,
-                # then processing the number by using it to get
-                # data from _seq_src to derive the term.
-            iii -= 1
-            i //= sibs
-        else:
-            return tuple(out)
+        for iii in range(self._r):
+            out[iii] = self._seq_src[path[iii]]
+        return tuple(out)
 
     def __len__(self):
         return len(self._seq_src)**self._r
 
     def __next__(self):
-        if self._i >= len(self):
+        if self._i >= self._len_iter:
             raise StopIteration
 
         # NOTE: Experiment with CustomBaseNumber class to generate tree paths
-        out = []
-        path = self._iter_path.digits()
-        for i in path:
-            out.append(self._seq_src[i])
-        self._iter_path.incr()
+        path = self._path_iter._digits
+        for iii in range(self._r):
+            self._out_iter[iii] = self._seq_src[path[iii]]
+        self._path_iter.incr()
         self._i += 1
-        return tuple(out)
+        return tuple(self._out_iter)
             
     def __init__(self, seq, r):
         """
@@ -1994,16 +1613,14 @@ class PermutationWithRepeats(Permutation):
 
         """
         # Construction Routine
-        super().__init__(seq, r)
-
-        # Construction Routine
-        self._iter_path = CustomBaseNumberP(radices=(len(seq), ) * r)
+        self._path_iter = CustomBaseNumberP(radices=(len(seq), ) * r)
             # NOTE: Experiment using CustomBaseNumber to generate tree paths
-        self._func_len_siblings = lambda x: len(self._seq_src) 
-            # Override self._func_len_siblings
         self._seq_src = seq
-        self._set_thresholds()
+        super().__init__(seq, r, self._path_iter)
 
+        # Instance Attributes
+        self._len_iter = len(self)
+        self._out_iter = [self._seq_src[0],] * self._r
 
 class Combination(CombinatorialUnit):
     """
@@ -2207,6 +1824,10 @@ class Combination(CombinatorialUnit):
                 out.append(self._seq_src[i])
             probe >>= 1 
         return tuple(out)
+
+    def _get_comb_count(self):
+        # TODO: Return number of combinations
+        return int_npr(len(self._seq_src), self._r)
     
     def _set_bitmap_src(self):
         """Set up the selection bitmap source in order to map out items
@@ -2214,8 +1835,6 @@ class Combination(CombinatorialUnit):
         the combinations.
 
         """
-        self._bitmap_src = SNOBSequence(len(self._seq_src), self._r)
-
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
@@ -2225,7 +1844,7 @@ class Combination(CombinatorialUnit):
         the Combination class.
 
         """
-        super().__init__(self._get_comb, seq, r, ii_start=0)
+        super().__init__(seq, r)
 
 
 class CombinationWithRepeats(Combination):

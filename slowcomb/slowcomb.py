@@ -503,7 +503,7 @@ class CombinatorialUnit(object):
 
         """
         if self.is_valid() is False:
-            return self.default
+            return self._default
         elif isinstance(key, int) is True:
             # Single term lookup using integer index
             return self._get_term(key)
@@ -1750,16 +1750,7 @@ class Combination(CombinatorialUnit):
             # the last item in the source sequence
         return self._bitmap_src.index(bitmap)
  
-    def _set_ii_bounds(self):
-        """
-        Sets appropriate limits for the internal index, so that 
-        len() reports the correct number of possible terms.
-
-        """
-        self._set_bitmap_src()
-        self._ii_stop = len(self._bitmap_src)
-
-    def _get_comb(self, ii):
+    def _get_term(self, ii):
         """
         Return the first+ii'th term of the Combination sequence.
 
@@ -1825,16 +1816,23 @@ class Combination(CombinatorialUnit):
             probe >>= 1 
         return tuple(out)
 
-    def _get_comb_count(self):
-        # TODO: Return number of combinations
-        return int_npr(len(self._seq_src), self._r)
-    
     def _set_bitmap_src(self):
-        """Set up the selection bitmap source in order to map out items
-        to be selected from the source sequence in order to perform
-        the combinations.
+        self._bitmap_src = SNOBSequence(len(self._seq_src), self._r)
+        
+    def __iter__(self):
+        return self
 
-        """
+    def __next__(self):
+        if self._i >= len(self):
+            raise StopIteration
+
+        out = self[self._i]
+        self._i += 1
+        return out
+
+    def __len__(self):
+        return int_ncr(len(self._seq_src), self._r)
+    
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
@@ -1845,6 +1843,8 @@ class Combination(CombinatorialUnit):
 
         """
         super().__init__(seq, r)
+        self._i = 0
+        self._set_bitmap_src()
 
 
 class CombinationWithRepeats(Combination):
@@ -1949,7 +1949,7 @@ class CombinationWithRepeats(Combination):
         return self._bitmap_src.index(bitmap)
  
 
-    def _get_comb(self, ii):
+    def _get_term(self, ii):
         """
         Return the first+ii'th term of the Repeats-Permitted
         Combination sequence.
@@ -2034,6 +2034,10 @@ class CombinationWithRepeats(Combination):
         seq_len = len(self._seq_src)
         self._bitmap_src = SNOBSequence(seq_len-1 + self._r, self._r)
 
+    def __len__(self):
+        seq_len = len(self._seq_src)
+        return int_ncr(seq_len-1 + self._r, self._r)
+    
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 

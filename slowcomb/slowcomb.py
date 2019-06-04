@@ -68,6 +68,16 @@ class CustomBaseNumberF(object):
     # TODO: Review support for zero-length numbers
     __slots__ = ('_digits', '_length', '_func_radix')
 
+    def get_int_from_digits(self):
+        out = 0
+        mul = 1
+        for i in range(len(self._digits)-1, -1, -1):
+            # TODO: For every digit from right to left
+            # recover its decimal integer value
+            out += self._digits[i] * mul
+            mul *= self._func_radix(i)
+        return out
+
     def incr(self):
         """
         Increase the value of the number by one. If this method is invoked
@@ -267,6 +277,16 @@ class CustomBaseNumberP(CustomBaseNumberF):
     """
     # TODO: Document remaining exceptions.
     __slots__ = ('_digits', '_length', '_radices')
+
+    def get_int_from_digits(self):
+        out = 0
+        mul = 1
+        for i in range(self._length-1, -1, -1):
+            # TODO: For every digit from right to left
+            # recover its decimal integer value
+            out += self._digits[i] * mul
+            mul *= self._radices[i]
+        return out
 
     def incr(self):
         """
@@ -912,23 +932,15 @@ class CatCombination(PBTreeCombinatorialUnit):
         * ValueError - when x is not a possible output of this CU.
 
         """
-        temp_ii = 0
-        temp_src = self._seq_src[1:]
-            # Strip the leading sub-sequence representing Level 0
-            # (root) of the combinatorial tree
-        levels = len(x)
-        for lvl in range(levels):
-            # Traverse the combinatorial tree
-            try:
-                iii_elem = temp_src[lvl].index(x[lvl])
-            except ValueError:
-                msg = '{0} not an output of this sequence'.format(x)
-                raise ValueError(msg)
-            child_nodes = self._get_child_iidxs(temp_ii)
-            temp_ii = child_nodes.start + iii_elem
-                # Advance the temp_ii index further into the subtree
-        return temp_ii - self._ii_start
-            # Return the external index resolved from internal index
+        # TODO: Attempt to rebuild the original path
+        path = [0] * self._r
+        i = 0
+        for el in x:
+            path[i] = self._seq_src[i].index(el)
+            i += 1
+        self._path_src.set_digits(path)
+        return self._path_src.get_int_from_digits()
+        
 
     def _get_args(self):
         """
@@ -1190,23 +1202,16 @@ class Permutation(PBTreeCombinatorialUnit):
         * ValueError - when x is not a possible output of this CU.
 
         """
-        temp_x = list(x)
+        path = [0] * self._r
         temp_src = list(self._seq_src)
-        temp_ii = 0
-        levels = len(temp_x)
-        for lvl in range(levels):
-            elem = temp_x.pop(0)
-            try:
-                iii_elem = temp_src.index(elem)
-            except ValueError:
-                msg = '{0} not an output of this sequence'.format(x)
-                raise ValueError(msg)
-            temp_src.pop(temp_src.index(elem))
-                # Exclude elements that have been found from next search
-            subtree_slice = self._get_child_iidxs(temp_ii)
-            temp_ii = subtree_slice.start + iii_elem
-        return temp_ii - self._ii_start
-            # Return the external index resolved from internal index
+        i = 0
+        for el in x:
+            index_el = temp_src.index(el)
+            path[i] = index_el
+            temp_src.pop(index_el)
+            i += 1
+        self._path_src.set_digits(path)
+        return self._path_src.get_int_from_digits()
 
     def set_src(self, seq):
         """
@@ -1366,7 +1371,7 @@ class Permutation(PBTreeCombinatorialUnit):
         # TODO: Iterator access stuff
         radices = tuple([x for x in range(len(seq), len(seq)-r, -1)])
         self._path_src_iter = CustomBaseNumberP(radices)
-        self._len_iter = len(self)
+        self._len_iter = int_npr(len(self._seq_src), self._r)
 
 class PermutationWithRepeats(PBTreeCombinatorialUnit):
     """
@@ -1497,22 +1502,16 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         * ValueError - when x is not a possible output of this CU.
 
         """
-        temp_ii = 0
-        levels = len(x)
-        for i in range(levels):
-            elem = x[i]
-            try:
-                iii_elem = self._seq_src.index(elem)
-            except ValueError:
-                msg = '{0} not an output of this sequence'.format(x)
-                raise ValueError(msg)
-            child_nodes = self._get_child_iidxs(temp_ii)
-            temp_ii = child_nodes.start + iii_elem
-                # Advance the temp_ii index further into the combinatorial
-                # tree
-        return temp_ii - self._ii_start
-            # Return the external index resolved from internal index
-            
+        # TODO: Attempt to rebuild paths
+        path = [0] * self._r
+        i = 0
+        for el in x:
+            path[i] = self._seq_src.index(el)
+            i += 1
+        self._path_src.set_digits(path)
+        # TODO: Return the integer value of the path
+        return self._path_src.get_int_from_digits()
+
     def _get_term(self, ii):
         """
         Return the permutation of internal index number ii.

@@ -44,7 +44,7 @@ def int_ncr(n,r):
     * r - Number of selections from the set. Accepts int.
 
     """
-    return int(factorial(n)/( factorial(r)*factorial(n-r) ))
+    return int(factorial(n)//( factorial(r)*factorial(n-r) ))
 
 def int_npr(n,r):
     """
@@ -67,7 +67,7 @@ def int_npr(n,r):
     * r - Number of selections from the set. Accepts int.
 
     """
-    return int(factorial(n)/factorial(n-r))
+    return int(factorial(n)//factorial(n-r))
 
 # Classes
 #

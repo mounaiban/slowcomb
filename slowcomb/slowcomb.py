@@ -1537,12 +1537,9 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         of _seq_src, and the n in this case is the number of elements
         in _seq_src.
 
-        This also means that the tree path can be directly worked out
-        using just the external decimal integer index of the term.
-        The current method uses a double-division process: the index
-        number is divided for the remainder to get the path element,
-        then integer-divided again to distribute remaiing value over
-        to the subsequent digits, if any.
+        In the current implementation, a CustomBaseNumberP object
+        configured to behave like a number with uniform base n, where
+        n == len(self._seq_src), with length equal to self._r.
 
         Example
         =======
@@ -1553,7 +1550,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         The combinatorial tree can be visualised as:
 
         ::
-                                    *
+
            0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2
            ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥
              |      |      |      |      |      |      |      |      |
@@ -1565,27 +1562,26 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
                                          |
                                          X
 
-        Where 0 == 🍇, 1 == 🍈, 2 == 🍉 and X == Origin
-        Node 11 is marked with the *
-        Tree levels start from Level 0.
+        Where 0 == 🍇, 1 == 🍈, 2 == 🍉 and X == Root node
 
-        Tracing the paths of the tree, one ends up with base-3 numbers.
-        Here are the first nine:
+        This CU is equivalent to a base-3 number. To create a CU which
+        selects only three items, the path will have three elements.
+        Therefore, we use a three-digit base-3 number as the path.
+        Here are the paths for the first nine terms:
 
-        Lv3 Node  Path       Term
-        ========  =========  ==========
-        0         (0,0,0)    (🍇,🍇,🍇)
-        1         (0,0,1)    (🍇,🍇,🍈)
-        2         (0,0,2)    (🍇,🍇,🍉)
-        3         (0,1,0)    (🍇,🍈,🍇)
-        4         (0,1,1)    (🍇,🍈,🍈)
-        5         (0,1,2)    (🍇,🍈,🍉)
-        6         (0,2,0)    (🍇,🍉,🍇)
-        7         (0,2,1)    (🍇,🍉,🍈)
-        8         (0,2,2)    (🍇,🍉,🍉)
+        Term (r=3)  Path       Term
+        ==========  =========  ==========
+        0           (0,0,0)    (🍇,🍇,🍇)
+        1           (0,0,1)    (🍇,🍇,🍈)
+        2           (0,0,2)    (🍇,🍇,🍉)
+        3           (0,1,0)    (🍇,🍈,🍇)
+        4           (0,1,1)    (🍇,🍈,🍈)
+        5           (0,1,2)    (🍇,🍈,🍉)
+        6           (0,2,0)    (🍇,🍉,🍇)
+        7           (0,2,1)    (🍇,🍉,🍈)
+        8           (0,2,2)    (🍇,🍉,🍉)
 
-        The root node X is ignored during term derivation and skipped
-        over by the algorithm.
+        The root node is ignored during path and term derivation.
 
         """
         self._path_src.set_digits_from_int(ii)

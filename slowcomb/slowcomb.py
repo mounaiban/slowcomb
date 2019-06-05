@@ -22,7 +22,7 @@ Slow Addressable Combinatorics Library main module.
 #
 
 from math import factorial
-from slowcomb.slowseq import lambda_int_npr, int_ncr, int_npr,\
+from slowcomb.slowseq import int_ncr, int_npr,\
     AccumulateSequence, NumberSequence, CacheableSequence, SNOBSequence
 
 # Classes

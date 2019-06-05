@@ -24,22 +24,6 @@ from math import factorial, floor
 
 # Functions
 # 
-def lambda_int_npr(n):
-    """
-    Return an nPr lambda function, with a fixed n, that returns results
-    as integers.
-
-    The nPr function determines the number of outcomes for a partial
-    permutation, when taking r items from a set of n items, and taking
-    each item exactly once. It is usually written like:
-
-        n! / (n-r)!
-    
-    Where ! means factorial, the product of an integer and all smaller
-    positive integers.
-
-    """
-    return lambda r: int(factorial(n)/factorial(n-r))
 
 def int_ncr(n,r):
     """

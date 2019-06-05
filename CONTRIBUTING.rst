@@ -70,16 +70,16 @@ documented anywhere else:
 
 Use of Directories
 ==================
-* ``/`` - the repo root is only for important documents that are
-  everyone must read if they want to use or make contributions
-  to this project, and scripts and specification files for preparing
-  installation packages.
+* ``/`` - the repo root is only for important documents that everyone
+  must read if they want to use or make contributions to this project,
+  and scripts and specification files for preparing installation
+  packages.
 
 * ``/slowcomb`` - the source root (which maps to the ``slowcomb``
-  namespace) is only used for the main modules ``slowcomb.py`` and 
+  namespace). Only used for the main modules ``slowcomb.py`` and 
   ``slowseq.py`` for now...
 
-* ``/slowcomb/demos`` - runnable examples on how Slowcomb can (or 
+* ``/slowcomb/demos`` - runnable examples on how Slowcomb should (or 
   should not) be used, non-essential tests unrelated to operational
   correctness, such as performance benchmarks.
 
@@ -89,24 +89,28 @@ Use of Directories
 
 Prefixes
 ========
-Some filenames may begin with specific words to indicate their purpose
+Some module files may begin with specific words to indicate their purpose
 and intended use.
 
-* ``benchmark_`` - usually non-essential performance and memory consumption
-  tests that are placed in the ``/demos`` directory and run manually with
-  commands like ``python -m slowcomb.demos.benchmark_whatever``.
+* ``benchmark_`` - usually non-essential, *quantitative* performance and
+  memory consumption tests that are placed in the ``/demos`` directory
+  and run manually with commands like
+  ``python -m slowcomb.demos.benchmark_whatever``.
 
 * ``test_`` - **important** test modules intended to be run with Python's
   ``unittest`` test automation module; these are to be placed only in
-  the ``/tests`` directory.
+  the ``/tests`` directory. By default, all tests in modules with this prefix
+  will be run with the ``python -m unittest`` command.
 
 * ``test_benchmark_`` - **important** benchmark modules intended to be run
   with Python's ``unittest`` module; these benchmarks are qualitative, with
   specific requirements such as *take no more than a second* or
   *no more than 2KB memory overhead per record*, with no regard for the
   quantitative measure (e.g. taking 0.005s is as good as taking 0.998s,
-  as long as it is 1.00s or less).
+  as long as it is 1.00s or less). By default, all tests in modules with
+  this prefix will be run with the ``python -m unittest`` command.
 
 * ``xtest_`` - non-essential extra test modules intended for use with
   Python's ``unittest`` module that are allowed to fail on releases
   deemed 'suitable for production use'.
+ 

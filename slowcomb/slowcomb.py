@@ -1,5 +1,6 @@
 """
 Slow Addressable Combinatorics Library main module. 
+
 """
 
 # Copyright © 2019 Moses Chong
@@ -28,8 +29,8 @@ from slowcomb.slowseq import lambda_int_npr, int_ncr, int_npr,\
 #
 class CustomBaseNumberF(object):
     """
-    Number with a custom and optionally non-uniform base, with radix
-    determined by a function.
+    Number with a custom base, with radix determined by a function.
+    The radix may be either uniform or non-uniform.
 
     Numbers handled by this class are of a fixed length, and digits are
     handled as individual integers in a list. Currently, only positive
@@ -37,7 +38,7 @@ class CustomBaseNumberF(object):
 
     Required Arguments
     ------------------
-    * length - the length of the number. Accepts int, where length > 0.
+    * length - the length of the number. Accepts int, where length >= 0.
     
     * func_radix - function to determine the radix of a digit. Lambdas
       and methods are accepted. The definition should be like:
@@ -47,12 +48,21 @@ class CustomBaseNumberF(object):
       func(i)
 
       Where i is the position of the digit, 0 < i < length, and i == 0
-      for the rightmost or most significant digit.
+      determines the radix of the leftmost or most significant digit.
 
     Optional Arguments
     ------------------
     * digits - the digits of the number, if the number is to have an
       initial state.
+    
+    Exceptions
+    ----------
+    * TypeError is raised when an attempt is made to specify the length
+      using a non-integer.
+
+    * ValueError is raised when a negative integer is specified as the
+      length of the number.
+      
 
     Notes
     -----
@@ -64,25 +74,33 @@ class CustomBaseNumberF(object):
     of the digits ahead of time.
  
     """
-    # TODO: Document remaining exceptions.
-    # TODO: Review support for zero-length numbers
+    # TODO: Tests for supporting zero-length numbers
     __slots__ = ('_digits', '_length', '_func_radix')
 
     def get_int_from_digits(self):
+        """
+        Get the decimal integer equivalent value of the number
+
+        """
         out = 0
         mul = 1
         for i in range(len(self._digits)-1, -1, -1):
-            # TODO: For every digit from right to left
-            # recover its decimal integer value
+            # Recover the integer value of the number by
+            # multiplying the numerical values of the digits
+            # from right to left
             out += self._digits[i] * mul
             mul *= self._func_radix(i)
         return out
 
     def incr(self):
         """
-        Increase the value of the number by one. If this method is invoked
-        when the number is at its maximum value, it wraps around to zero.
+        Increase the value of the number by one.
 
+        If this method is invoked when the number is at its maximum value,
+        it wraps around to zero.
+
+        Note
+        ----
         This method is intended as a means of bypassing the potentially
         slow operation of recalculating the number from an integer, when
         performing the relatively trivial operation of adding one to the
@@ -124,18 +142,18 @@ class CustomBaseNumberF(object):
         * ValueError is raised when the following inputs are received:
 
           - The number of digits specified does not match the declared
-            length of the number. For example the Mayan number input
-            (17, 18, 15, 11) will not be accepted for a five-digit
-            number. Numbers will have to be truncated or padded before
-            input.
+            length of the number. For example the Mayan number (uniform
+            base-20) input (17, 18, 15, 11) will not be accepted for a
+            five-digit number. Numbers will have to be truncated or padded
+            before input.
 
           - The result of self._func_radix returns a negative number.
 
           - A number with a digits that exceed the radix of the number
-            or a particular digit. For example, Mayan number (uniform
-            base-20) cannot be (11, 8, 20, 12) because valid digits 
-            are from 0 to 19. Likewise, a non-uniform base number of 
-            base (10, 9, 8, 7) cannot take (11, 10, 9, 8) as an input.
+            or a particular digit. For example, a Mayan number cannot be
+            (11, 8, 20, 12) because valid digits are from 0 to 19.
+            Likewise, a non-uniform base number of base (10, 9, 8, 7)
+            cannot take (11, 10, 9, 8) as an input.
 
           - Any digit is negative.
 
@@ -168,17 +186,20 @@ class CustomBaseNumberF(object):
 
         """
         self._digits = [0,] * self._length
-            # Start with an all-zero path, to minimise slow list
-            # manipulations when setting value from smaller ints
 
     def set_digits_from_int(self, i):
         """
-        Sets the digits of the number from an integer
+        Sets the digits of the number from a decimal integer
 
         Argument
         --------
         * i - An integer to be converted to radix of this number.
-          Accepts int, where i > 0
+          Accepts int, where i >= 0
+
+        Exception
+        ---------
+        * OverflowError is raised when an integer has a value that
+          exceeds the maximum value of the number
 
         """
         if len(self) == 0:
@@ -193,7 +214,7 @@ class CustomBaseNumberF(object):
                 # If i is still not zero when the last digit has
                 # been processed, it means that the number is too
                 # large to be expressed.
-                raise OverflowError("Maximum value of number too small")
+                raise OverflowError("Value of int specified too large")
             radix_i = self._func_radix(iii)
             digit = i % radix_i
             self._digits[iii] = digit
@@ -221,9 +242,12 @@ class CustomBaseNumberF(object):
         to use this class.
         
         """
-        # TODO: Deny use of negative integers and non-integers for length
-        self._digits = None
+        if isinstance(length, int) is False:
+            raise TypeError("Please specify length using int only")
+        if length < 0:
+            raise ValueError("Length of number cannot be negative")
         self._length = length
+        self._digits = None
         self._func_radix = func_radix
 
         if digits is not None:
@@ -233,9 +257,10 @@ class CustomBaseNumberF(object):
 
 class CustomBaseNumberP(CustomBaseNumberF):
     """
-    Number with a custom, non-uniform base, with radices for each 
-    digit explicitly specified.
+    Number with a custom base, with radices for each digit explicitly
+    specified.
 
+    The base of the number may be uniform or non-uniform
 
     Required Arguments
     ------------------
@@ -282,8 +307,8 @@ class CustomBaseNumberP(CustomBaseNumberF):
         out = 0
         mul = 1
         for i in range(self._length-1, -1, -1):
-            # TODO: For every digit from right to left
-            # recover its decimal integer value
+            # Recover integer value by multiplying the decimal values
+            # of the digits from right to left
             out += self._digits[i] * mul
             mul *= self._radices[i]
         return out
@@ -399,7 +424,6 @@ class CombinatorialUnit(object):
       or anything that is subscriptable. Think big!
 
     * r - the size of the subset to be derived in this sequence.
-      Optional for some combinatorial units.
       Named after r-value used in maths textbooks to describe the size
       of a combinatorial term which is a different size from the
       set being worked on (i.e. nPr, nCr), by way of the r-values in
@@ -439,6 +463,9 @@ class CombinatorialUnit(object):
           to be looked up.
 
         """
+        # TODO: Document exceptions
+        # TODO: Document use of CUs as Iterators
+
         # Reject obviously invalid terms
         if self.is_valid() is False:
             if x == self._default:
@@ -510,9 +537,21 @@ class CombinatorialUnit(object):
         return re_args
  
     def _get_index(self):
+        """
+        Return the first index of a term, if it is a possible output 
+        of this Combinatorial Unit. For details on usage, please refer
+        to a subclass of this class.
+
+        """
         raise NotImplementedError
 
     def _get_comb_count(self):
+        """
+        Returns the number of possible combinatorial terms with
+        this Combinatorial Unit. For details on usage, please refer
+        to a subclass of this class.
+
+        """
         raise NotImplementedError
 
     def __getitem__(self, key):
@@ -552,6 +591,10 @@ class CombinatorialUnit(object):
             return 1
 
     def __iter__(self):
+        """
+        Supports the use of CombinatorialUnits as iterators
+
+        """
         return self
 
     def __init__(self, seq, r):
@@ -590,82 +633,71 @@ class CombinatorialUnit(object):
 class PBTreeCombinatorialUnit(CombinatorialUnit):
     """
     A superclass for supporting the implementations of combinatorial
-    units that make use of Perfectly-Balanced Trees, B-Trees whose
-    node counts and content can be figured out algorithmically for
-    each and every node ahead of time.
+    units that make use of Perfectly-Balanced Trees (PBTrees).
 
+    PBTrees are B-Trees, so the number of child nodes for every node
+    on the same level are the same. The node counts thus can be 
+    figured out algorithmically for each and every node. The content,
+    or more accurately, content referenced by the nodes is predictably
+    repeated across the tree.
+    
     Required Arguements
     -------------------
-    * func - function or method to derive combinatorial terms.
-      Accepts a lambda or block function or method. The definition
-      should look like:
-
-      * In module or method scope: func(i), where i is the external
-        index of the term.
-
-      * In class scope: func(self, i), where i is the external
-        index of the term.
-
     * seq - a sequence to be set as the data source from which to derive
       combinatorial terms. If seq supports a reverse-lookup method
       named index(), the CU becomes capable of finding out the index
-      from raw combinatorial results. The simplest examples are strings,
-      but any sequence, including database records or even other
-      combinatorial units, may be used.
+      from raw combinatorial results.
+      
+      - The simplest examples are strings, but any sequence, including
+        database connections may be used.
 
-    * func_len_siblings - function to determine the number of nodes
-      on the tree with a common parent. All nodes on the same level
-      are assumed to have the same number of parent nodes. Accepts
-      methods, block function or lambda functions with the following
-      definition:
+      - Other CU's may be used as a source as well. CUs support reverse 
+        index lookup using index() only if the CU's source sequence also
+        fully supports index().
 
-      * In module or method scope: f(lvl), where lvl is an int
-        representing the level the node is on in the tree.
+    * r - an integer determining the number of elements in the combinatoral
+      terms output by the CU, in other words the number of items to be
+      selected from seq. Accepts int, where r >= 0. Additional constraints
+      on the value of r may apply depending on the Combinatorial Unit in
+      use.
 
-      * In class scope: f(self, lvl) where lvl is an int
-        representing the level the node is on in the tree.
+    * path_src - the path source, or any object which is able to derive
+      paths to navigate the combinatorial tree of the CU. The path is a
+      representation of a possible output of the CU.
+      
+      - The PBTree Combinatorial Unit assumes that a CustomBaseNumber
+        is used to derive paths. However, any other object of a class
+        that implements CustomBaseNumber methods may also work.
 
-
-    Optional Arguments
-    ------------------
-    * r - the size of the subset to be derived in this sequence.
-      Optional for some combinatorial units. Accepts None, or int
-      where r ≥ 0.
-      If r is None, the PBTreeCombinatorialUnit steps through
-      every term of every possible size, from smallest to largest.
-
+      - For more information on how to use a CustomBaseNumber, please
+        see the CustomBaseNumberF and CustomBaseNumberP classes above.
 
     How It Works
     ------------
 
-    About the PBTree
-    ================
-    The Perfectly-Balanced Tree (PBTree) is a virtual tree data
-    structure in which the number of children per node is exactly
-    the same for each node on the same level of the tree, and the
-    content of the nodes are predictably repeated across the tree.
-
-    As a virtual tree, the actual tree is not present in memory,
-    but its nodes are lazily evaluated as they are requested.
-
+    Properties of the PBTree
+    ========================
     The following properties apply to the PBTree:
 
-    1. The number of nodes per level is a multiple of nodes on the
-    previous level.
+    1. As a virtual tree, the actual tree is not present in memory,
+       but its nodes are lazily evaluated as they are requested.
 
-    2. Every node on the same level share the same exact number of
-    sibling nodes.
+    2. The number of nodes per level is a multiple of the number of
+       nodes on the previous level.
 
-    3. Any node is allowed to have an arbitrary number of child nodes,
-    as long as traits 1 and 2 above apply.
+    3. Every node on the same level share the same exact number of
+       sibling nodes.
 
-    4. The path to a node can be determined from its index expressed
-    as a numerical quantity, by a series of simple arithmetic
-    operations.
+    4. Any node is allowed to have an arbitrary number of child nodes,
+       as long as traits 1 and 2 above apply.
+
+    5. The path to a node can be determined from its index expressed
+       as a numerical quantity, by a series of simple arithmetic
+       operations.
 
 
-    Illustration and Indexing
-    =========================
+    Using the PBTree to Represent Combinatorial Terms
+    =================================================
     Here's a rather crude diagram of a three-level PBTree, with its
     nodes integer-indexed:
 
@@ -687,47 +719,48 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     who prefer their trees with the root on top, just imagine it
     upside-down.
 
-    Each node is numbered breadth first, from 'left to right, then
-    bottom to top'.
-
-    Levels begin at zero and count upwards:
-
-    * Level 0 comprises node 0
-
-    * Level 1 comprises nodes 1, 2 and 3
-    
-    * Level 2 comprises nodes 4, 5, 6, 7, 8 and 9
-
-    * Level 3 comprises nodes 10 thru 21
-
-    The levels are tracked internally using an embedded sequence,
-    _thresholds, which keeps track of the next node after the last
-    node of a particular level. In this example:
-
-    * Level 0's threshold is 1
-
-    * Level 1's threshold is 4
-
-    * Level 2's threshold is 10
-
-    * Level 3's threshold is 22 (not shown in tree)
-
-
-    Using the PBTree for Combinatorial Operations
-    ---------------------------------------------
+    In this example, each node is numbered breadth first: from 'left
+    to right, then bottom to top'.
 
     Paths
     =====
     The path to each node can be used to represent a combinatorial
     result, and the contents of each node could represent the elements
     of the combinatorial term. The exact content of the nodes depends
-    on the subclass of PBTreeCombinatorics.
+    on the subclass of PBTreeCombinatorics. Node zero is omitted from
+    the path, as its purpose is simply to unify the tree's nodes in
+    visualisations.
 
-    Paths are sequences of child node numbers, which begin from zero for
-    the leftmost child.
-   
-    In our example, the path to node 5 will be (0,0,1), while term 18
-    will be (0,2,0,0).
+    The Paths to each of the nodes are as follows:
+
+    Node    Path
+    ----    -----------
+    0       N/A
+    1       (0,)
+    2       (1,)
+    3       (2,)
+    4       (0, 0)
+    5       (0, 1)
+    6       (1, 0)
+    7       (1, 1)
+    8       (2, 0)
+    9       (2, 1)
+    10      (0, 0, 0)
+    11      (0, 0, 1)
+    12      (0, 1, 0)
+    13      (0, 1, 1)
+    14      (1, 0, 0)
+    15      (1, 0, 1)
+    16      (1, 1, 0)
+    17      (1, 1, 1)
+    18      (2, 0, 0)
+    19      (2, 0, 1)
+    20      (2, 1, 0)
+    21      (2, 1, 1)
+
+    The path can be regarded as a custom-base number with a non-uniform
+    radix. The radix of the n'th digit is determined by the number of
+    nodes on the n'th level.
 
     Selecting Terms By Length (r-value)
     ===================================
@@ -742,30 +775,12 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     to be selected by the CU causes the CU to only return ten-element
     terms.
 
-    Setting the r-value to zero constrains the CU to only selecting
-    the normally-hidden root node. This causes the CU to only output
-    the default value, an empty tuple ().
+    Setting the r-value to zero causes the combinatorial unit to return
+    empty terms.
  
-    Use of Internal Indices
-    =======================
-    The indices of nodes in the PBTree are internal indices.
-
-    Internal indices can be constrained to begin on the first node
-    of a particular level, and end on the last node of the same level,
-    to create a CU which returns terms of a specific length.
-
-    In our example, setting _ii_start to 10 and _ii_stop to 22 constrains
-    our CU to three (or four, depending on the CU) -element terms.
-    External index 0 will map to node ten, and index 11 will map to
-    node 21.
-   
     See Also
     --------
-    * CatCombination
-
-    * Permutation 
-
-    * PermutationWithRepeats 
+    CatCombination, Permutation, PermutationWithRepeats 
 
     """
     # Slots
@@ -801,8 +816,6 @@ class CatCombination(PBTreeCombinatorialUnit):
     * seqs - Sequence source to derive combinations from. Accepts a 
       sequence of sub-sequences.
 
-    Optional Arguments
-    ------------------
     * r - The length of the terms derived from the combinatorial
       unit. With the CatCombinator, setting r smaller than the
       number of sub-sequences in causes it to use only the first r
@@ -862,10 +875,6 @@ class CatCombination(PBTreeCombinatorialUnit):
     ...     print(d)
     ('I', 'need')
     ('I', 'want')
-
-    Fun activity: what output does a CatCombinator with r=None produce?
-    Enter it and find out for yourself. Hint: see PBTreeCombinatorialUnit,
-    under the section Optional Arguments.
 
     >>> catcomb = CatCombination ( (('I',), ('need', 'want'), \
     ... ('sugar', 'spice', 'scissors')))

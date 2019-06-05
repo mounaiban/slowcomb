@@ -185,9 +185,6 @@ and object-oriented programming.
 
 Documentation
 #############
-* Complete and upload the missing CONTRIBUTING.rst document, update
-  INSTALL.rst to reflect changes made to the project.
-  
 * Just the maintenance stuff to maintain readability, correct and 
   consistent terminology use, and sticking with a tenth-year school
   vocabulary unless bigger words are absolutely necessary, and also
@@ -208,6 +205,15 @@ Testing
 * Create a more user-friendly Test Planner. The current ``plan.py`` isn't
   exactly *Fit for Public Use*.
 
+Usability
+#########
+* Increase limit on the number of terms addressable by Combinatorial Units.
+  Current methods of deriving terms place strict limits on the number of
+  terms in a CU.
+
+  * To be truly useful, Combinatorial Units must be able to handle a large
+    number of terms.
+ 
 
 Long Term (indefinite schedule)
 *******************************
@@ -296,18 +302,7 @@ Reliability
 ###########
 * Implement Exception memory in combinatorics and supporting sequences, in
   order to help isolate and diagnose problematic sequences.
-
-Usability
-#########
-* Extend size limit on Combinatorial Units. Current methods of deriving
-  terms place a strict limit on the number of terms in a CU.
-  
-  * For example, the Permutation CU currently has a limit of 170 elements
-    for the source when deriving 6-element terms (i.e. 170P6), as tested
-    on a 64-bit x86 environment (GNU/Linux 5.x, Python 3.7). Exceeding
-    this limit triggers an ``OverflowError`` due to division of excessively
-    large integers.
-
+ 
 Architecture
 ############
 * Refactor the codebase to improve the way dependency injection is used,

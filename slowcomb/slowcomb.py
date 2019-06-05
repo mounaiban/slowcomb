@@ -769,11 +769,10 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     returning terms of a set length by constraining the CU to selecting
     nodes of a particular level.
     
-    For example, in a massive, ten-level combinatorial tree, allowing
-    only Level 3 nodes to be selected causes the CU to only return
-    three-element terms. Likewise, allowing only Level 10 elements
-    to be selected by the CU causes the CU to only return ten-element
-    terms.
+    For example, a CU with a source of ten items has a ten-level
+    combinatorial tree. Limiting the path to a length of three restricts
+    access to the first three levels of the tree, creating a CU that
+    selects only three items out of a source of ten.
 
     Setting the r-value to zero causes the combinatorial unit to return
     empty terms.

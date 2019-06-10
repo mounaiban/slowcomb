@@ -974,22 +974,6 @@ class CatCombination(PBTreeCombinatorialUnit):
     #
     __slots__ = ()
 
-    def add_sequence(self, seq, t=1):
-        """
-        Add another sequence to the sequence of source sequences
-        
-        Arguments
-        ---------
-        * seq - Source sequence. Accepts any Python sequence.
-            
-        * t - Number of times to repeat the sequence. Accepts int,
-          t ≥ 1
-
-        """
-        temp = list(self._seq_src)
-        temp.extend([seq]*t)
-        self._seq_src = tuple(temp)
-
     def supports_index(self, **kwargs):
         """
         Attempt to test if a Catenation Combination Unit supports index()

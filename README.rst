@@ -190,30 +190,11 @@ Documentation
   vocabulary unless bigger words are absolutely necessary, and also
   *formatting*.
 
-Management
-##########
-* Provide a graceful way of indicating if ``index()`` is available on a
-  combinatorial sequence or not. The ``index()`` method is only supported
-  on sequences that implement it. Complex setups which involve multiple
-  levels of combinatorial sequences (e.g. permutation of combinations)
-  may include sources that do not support ``index()``. A method to find
-  out the parts of a combinatorial chain that do not support ``index()``
-  will be useful.
-
 Testing
 #######
 * Create a more user-friendly Test Planner. The current ``plan.py`` isn't
   exactly *Fit for Public Use*.
 
-Usability
-#########
-* Increase limit on the number of terms addressable by Combinatorial Units.
-  Current methods of deriving terms place strict limits on the number of
-  terms in a CU.
-
-  * To be truly useful, Combinatorial Units must be able to handle a large
-    number of terms.
- 
 
 Long Term (indefinite schedule)
 *******************************

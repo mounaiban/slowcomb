@@ -617,7 +617,7 @@ class CombinatorialUnit(object):
         """
         raise NotImplementedError
 
-    def _get_comb_count(self):
+    def get_term_count(self):
         """
         Returns the number of possible combinatorial terms with
         this Combinatorial Unit. For details on usage, please refer
@@ -656,7 +656,7 @@ class CombinatorialUnit(object):
         if self.is_valid() is True:
             # The threshold of the last level is also the 
             # node count
-            return self._get_comb_count()
+            return self.get_term_count()
         else:
             # Non-valid combinatorics sequences always report a
             # length of one, to account for the default value.
@@ -1068,7 +1068,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         return True
 
 
-    def _get_comb_count(self):
+    def get_term_count(self):
         if self.is_valid() is True:
             count = 1
             for iii in range(self._r):
@@ -1492,7 +1492,7 @@ class Permutation(PBTreeCombinatorialUnit):
             out.append(temp.pop(i))
         return tuple(out)
 
-    def __len__(self):
+    def get_term_count(self):
         n = len(self._seq_src)
         return int_npr(n, self._r)
 
@@ -1741,7 +1741,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
             out[iii] = self._seq_src[path[iii]]
         return tuple(out)
 
-    def __len__(self):
+    def get_term_count(self):
         return len(self._seq_src)**self._r
 
     def __next__(self):
@@ -1969,6 +1969,9 @@ class Combination(CombinatorialUnit):
             probe >>= 1 
         return tuple(out)
 
+    def get_term_count(self):
+        return int_ncr(len(self._seq_src), self._r)
+
     def _set_bitmap_src(self):
         self._bitmap_src = SNOBSequence(len(self._seq_src), self._r)
         
@@ -1983,9 +1986,6 @@ class Combination(CombinatorialUnit):
         self._i += 1
         return out
 
-    def __len__(self):
-        return int_ncr(len(self._seq_src), self._r)
-    
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 
@@ -2177,6 +2177,10 @@ class CombinationWithRepeats(Combination):
             probe >>= 1 
         return tuple(out)
 
+    def get_term_count(self):
+        seq_len = len(self._seq_src)
+        return int_ncr(seq_len-1 + self._r, self._r)
+
     def _set_bitmap_src(self):
         """
         Set up the selection bitmap source in order to map out items
@@ -2187,10 +2191,6 @@ class CombinationWithRepeats(Combination):
         seq_len = len(self._seq_src)
         self._bitmap_src = SNOBSequence(seq_len-1 + self._r, self._r)
 
-    def __len__(self):
-        seq_len = len(self._seq_src)
-        return int_ncr(seq_len-1 + self._r, self._r)
-    
     def __init__(self, seq, r):
         """
         This is the special constructor method which supports 

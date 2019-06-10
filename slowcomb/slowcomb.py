@@ -519,6 +519,78 @@ class CombinatorialUnit(object):
         else:
             return False
 
+    def supports_index(self, **kwargs):
+        """
+        Attempt to test if a Combinatoral Unit supports index()
+
+        The index() method of a Combinatorial Unit returns the first
+        index of a CU's term as an integer. If this CU supports index(),
+        it will return True.
+
+        Arguments
+        ---------
+        No arguments are required.
+
+        Please disregard **kwargs, as it is used only as a means of
+        tracking recursive calls.
+
+        Exceptions
+        ----------
+        * RecursionError is raised if a recursion loop is detected or
+          suspected. Recursion loops occur when any nested CU attempts
+          to use any CU above it as a source sequence. This prevents any 
+          navigation of the CU chain from terminating, causing a never-
+          ending loop.
+
+          - The error message will appear with a pair of numbers that
+            look like
+
+          ::
+
+            [1] to [0]
+
+           - In this example, a CU at level 1 is using a CU at level 0
+             as a source sequence, but the aforementioned level 0
+             sequence is already using the level 1 CU as a source sequence.
+
+        """
+        cu_path = kwargs.get('cu_path', [])
+            # Path from the top level CU to the lowest level CU
+            # used for detecting recursion loops. 
+        if self in cu_path:
+            # Abort operation if this CU is already in the path,
+            # as it means there is a recursion loop. Report this
+            # error and raise an exception.
+            i_depth = len(cu_path)-1
+            i_self = cu_path.index(self)
+            out_format = 'loop in combinatorial unit chain: [{0}] to [{1}]'
+            out = out_format.format(i_depth, i_self)
+            raise RecursionError(out)
+
+        if isinstance(self._seq_src, CombinatorialUnit) is True:
+            # Register self into the path
+            cu_path.append(self)
+            # Descend into nested _seq_src if it is also another CU
+            return self._seq_src.supports_index(cu_path = cu_path)
+        else:
+            # Check functionality of index() if CU is terminal (i.e.
+            # has a non-CU as a source sequence).
+            # This test works by checking the correctness of the
+            # first and last indices returned by index().
+            try:
+               comb_count = len(self)
+               first_term = self[0]
+               last_term = self[comb_count-1]
+               first_index_works = (self.index(first_term) == 0)
+               last_index_works = (self.index(last_term) == comb_count-1)
+               return (first_index_works & last_index_works)
+            except AttributeError:
+                # When a source sequence does not have an index() method,
+                # attempting to call it regardless raises an AttributeError.
+                # The lack of an index() method in a single part of the
+                # CU tree is regarded as a lack of support for the
+                # entire tree.
+                return False
 
     def _get_args(self):
         """
@@ -917,6 +989,100 @@ class CatCombination(PBTreeCombinatorialUnit):
         temp = list(self._seq_src)
         temp.extend([seq]*t)
         self._seq_src = tuple(temp)
+
+    def supports_index(self, **kwargs):
+        """
+        Attempt to test if a Catenation Combination Unit supports index()
+
+        The index() method of a Combinatorial Unit returns the first
+        index of a CU's term as an integer. If this CU supports index(),
+        it will return True.
+
+        A CatCombination unit has multiple source sequences in _seq_src,
+        and is deemed to have index() support, if all of its sequences have
+        support for an index() method that behaves identically.
+
+        Arguments
+        ---------
+        No arguments are required.
+
+        Please disregard **kwargs, as it is used only as a means of
+        tracking recursive calls.
+
+        Exceptions
+        ----------
+        * RecursionError is raised if a recursion loop is detected or
+          suspected. Recursion loops occur when any nested CU attempts
+          to use any CU above it as a source sequence. This prevents any 
+          navigation of the CU chain from terminating, causing a never-
+          ending loop.
+
+          - The error message will appear with a pair of numbers that
+            look like
+
+          ::
+
+            [1] to [0]
+
+           - In this example, a CU at level 1 is using a CU at level 0
+             as a source sequence, but the aforementioned level 0
+             sequence is already using the level 1 CU as a source sequence.
+
+        """
+        # NOTE: This method is an overridden version of 
+        # CombinatorialUnit.supports_index() to handle CatCombination's
+        # slightly different _seq_src format.
+
+        cu_path = kwargs.get('cu_path', [])
+            # Nesting list of CUs in order of the shallowest to the
+            # deepest. Every CU down the list is part of the _seq_src
+            # of the next higher CU.
+        if self in cu_path:
+            # Abort operation if this CU is already in cu_path,
+            # as it means there is an infinite recursion loop.
+            i_depth = len(cu_path)-1
+            i_self = cu_path.index(self)
+            # Report location of loop in cu_path
+            #
+            # TODO: Implement a means of spatially locating loops, i.e.
+            # finding the exact point where the loop begins down to the
+            # nesting layer and its index in the offending CU's _seq_src.
+            out_format = 'loop in combinatorial unit chain: [{0}] to [{1}]'
+            out = out_format.format(i_depth, i_self)
+            raise RecursionError(out)
+
+        for s in self._seq_src:
+            # Use breadth-first recursive check to search CUs.
+            # Return False if at least one CU has a _seq_src 
+            # with no index() method.
+            if isinstance(s, CombinatorialUnit) is True:
+                cu_path.append(self) # Register self into the path
+                if s.supports_index(cu_path=cu_path) is False:
+                    # Descend into nested CUs in _seq_src, bringing
+                    # along the tree path.
+                    return False
+
+            else:
+                try:
+                    # Check functionality of index() if CU is terminal
+                    # (i.e. has a non-CU as a source sequence)
+                    comb_count = len(s)
+                    first_term = s[0]
+                    last_term = s[comb_count-1]
+                    first_index_works = (s.index(first_term) == 0)
+                    last_index_works = (s.index(last_term) == comb_count-1)
+                    if (first_index_works & last_index_works) is False:
+                        return False
+                except AttributeError:
+                    # If there is an AttributeError raised when index()
+                    # is called on any _seq_src, then the CU is regarded
+                    # as not having index() support
+                    return False
+
+        # Assume that index() is supported if every source sequence
+        # found has been tested to support index()
+        return True
+
 
     def _get_comb_count(self):
         if self.is_valid() is True:

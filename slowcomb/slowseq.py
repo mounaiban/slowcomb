@@ -442,7 +442,7 @@ class NumberSequence(object):
         * IndexError - if i is deemed out of range.
 
         """
-        len_self = len(self)
+        len_self = self._len
         if i >= len_self or i < -len_self:
             raise IndexError('Sequence index out of bounds')
     

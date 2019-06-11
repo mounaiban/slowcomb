@@ -297,6 +297,34 @@ cc_complex_no_idxs = CatCombination((
     #
     # This CU is intended to test index() handling routines.
     #
+cc_complex_loop = CatCombination((
+        Combination(get_latin_upper_alphas(4),r=2),
+        Combination(get_fruits(4),r=2),
+    ),
+    r=2
+)
+cc_complex_loop._seq_src = list(cc_complex_loop._seq_src)
+cc_complex_loop._seq_src[1]._seq_src = cc_complex_loop
+    # Trouble Complex Catenating Combination with Recursion Loop.
+    # This is a two-tier Catenating Combination which has been
+    # manually edited to have a second-tier CU attempt to use its
+    # host CU as a source sequence.
+    # The index() method is not supported, and deriving terms
+    # are not possible due to the recursion loop. The CU may be
+    # visualised in a diagram like:
+    #
+    #         .————— Ca 
+    #        /
+    #   CC -. <————.
+    #        \      \
+    #         .————— Ct
+    #
+    #   Legend: CC: CatCombination, Ca: ABCD Combinator,
+    #           Ct: Troublesome Combinator linked back to CC
+    # 
+    # This CU is intended to test index() and recursion error
+    # handling routines.
+    #
 comb = Combination(get_latin_upper_alphas(8), r=4)
     # Combination: including selections of four Latin alphabets
     # out of the first 8, (A, B, C, D, E, F, G, H).
@@ -308,6 +336,16 @@ perm = Permutation(get_latin_upper_alphas(4), r=4)
     # Permutation: every possible arrangement of the first four
     # Latin alphabets, (A, B, C, D). This is an example of the
     # strictest definition of 'permutation'.
+perm_loop = Permutation(
+    Permutation(get_latin_upper_alphas(4),r=4),
+    r=1
+)
+perm_loop._seq_src = list(perm_loop._seq_src)
+perm_loop._seq_src = perm_loop
+    # Trouble Permutation with Recursion Loop
+    # A manual edit has been made to cause the Permutation 
+    # to use itself as a source sequence. This CU is intended
+    # to test error handling routines.
 #perm_part_no_r = Permutation(get_latin_upper_alphas(4))
     # Permutation with no defined r-size.
     # Includes every possible arrangement of any selection of

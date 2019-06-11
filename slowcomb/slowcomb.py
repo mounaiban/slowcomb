@@ -1772,7 +1772,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         super().__init__(seq, r, self._path_iter)
 
         # Instance Attributes
-        self._len_iter = len(self)
+        self._len_iter = self.get_term_count()
         self._out_iter = [self._seq_src[0],] * self._r
 
 class Combination(CombinatorialUnit):

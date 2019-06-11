@@ -346,10 +346,6 @@ perm_loop._seq_src = perm_loop
     # A manual edit has been made to cause the Permutation 
     # to use itself as a source sequence. This CU is intended
     # to test error handling routines.
-#perm_part_no_r = Permutation(get_latin_upper_alphas(4))
-    # Permutation with no defined r-size.
-    # Includes every possible arrangement of any selection of
-    # any number of the first four Latin alphabets.
 perm_part = Permutation(get_latin_upper_alphas(8), r=4)
     # Permutation: every possible arrangement of a selection of
     # four Latin alphabets out of the first 8.

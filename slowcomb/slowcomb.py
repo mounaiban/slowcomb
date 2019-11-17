@@ -438,7 +438,7 @@ class CombinatorialUnit(object):
     """
     # Slots
     #
-    __slots__ = ('_default', '_i', '_r', '_seq_src', '_exceptions')
+    __slots__ = ('_default', '_i', '_r', '_seq_src', '_exceptions', 'name')
 
     # Class Attributes
     #
@@ -669,7 +669,7 @@ class CombinatorialUnit(object):
         """
         return self
 
-    def __init__(self, seq, r):
+    def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
@@ -686,6 +686,7 @@ class CombinatorialUnit(object):
         # Instance Attributes
         #
         self._default = ()
+        self.name = name
         self._seq_src = seq
             # The source sequence from which to derive combinatorial
             # terms
@@ -862,7 +863,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         self._path_src.set_digits_from_int(i)
         return self._path_src.digits()
 
-    def __init__(self, seq, r, path_src):
+    def __init__(self, seq, r, path_src, name=None):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
@@ -871,7 +872,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         the combinatorial unit class.
 
         """
-        super().__init__(seq, r)
+        super().__init__(seq, r, name=name)
         self._path_src = path_src
  
 
@@ -1189,7 +1190,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         self._i += 1
         return tuple(out)
 
-    def __init__(self, seqs, r):
+    def __init__(self, seqs, r, name=None):
         """
         This is the special constructor method which supports 
         the creation of a CatCombination combinatorial unit. 
@@ -1206,7 +1207,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         path_src = CustomBaseNumberP(subcounts)
             # Set the radices to the count of each sub-sequence from left
             # to right
-        super().__init__(seq_src, r, path_src)
+        super().__init__(seq_src, r, path_src, name=name)
 
 
 class Permutation(PBTreeCombinatorialUnit):
@@ -1511,7 +1512,7 @@ class Permutation(PBTreeCombinatorialUnit):
         return tuple(out)
             
 
-    def __init__(self, seq, r):
+    def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a Permutation combinatorial unit. 
@@ -1523,7 +1524,7 @@ class Permutation(PBTreeCombinatorialUnit):
         # Construction Routine
         func_radix = lambda x:len(self._seq_src)-x
         path_src = CustomBaseNumberF(r, func_radix)
-        super().__init__(seq, r, path_src)
+        super().__init__(seq, r, path_src, name=name)
         
         # Instance Attributes
         # TODO: Iterator access stuff
@@ -1756,7 +1757,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         self._i += 1
         return tuple(self._out_iter)
             
-    def __init__(self, seq, r):
+    def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a PermutationWithRepeats combinatorial unit. 
@@ -1769,7 +1770,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         self._path_iter = CustomBaseNumberP(radices=(len(seq), ) * r)
             # NOTE: Experiment using CustomBaseNumber to generate tree paths
         self._seq_src = seq
-        super().__init__(seq, r, self._path_iter)
+        super().__init__(seq, r, self._path_iter, name=name)
 
         # Instance Attributes
         self._len_iter = self.get_term_count()
@@ -1986,7 +1987,7 @@ class Combination(CombinatorialUnit):
         self._i += 1
         return out
 
-    def __init__(self, seq, r):
+    def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a Combination combinatorial unit. 
@@ -1995,7 +1996,7 @@ class Combination(CombinatorialUnit):
         the Combination class.
 
         """
-        super().__init__(seq, r)
+        super().__init__(seq, r, name=name)
         self._i = 0
         self._set_bitmap_src()
 
@@ -2191,7 +2192,7 @@ class CombinationWithRepeats(Combination):
         seq_len = len(self._seq_src)
         self._bitmap_src = SNOBSequence(seq_len-1 + self._r, self._r)
 
-    def __init__(self, seq, r):
+    def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a CombinationWithRepeats combinatorial unit. 
@@ -2200,5 +2201,5 @@ class CombinationWithRepeats(Combination):
         the CombinationWithRepeats class.
 
         """
-        super().__init__(seq, r)
+        super().__init__(seq, r, name=name)
 

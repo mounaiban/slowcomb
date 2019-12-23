@@ -669,6 +669,23 @@ class CombinatorialUnit(object):
         """
         return self
 
+    def __repr__(self):
+        """
+        Supports the reporting of information that can be used to reconstruct
+        the CombinatorialUnit. The information is returned as a string that
+        may be used as an expression in a Python interpreter.
+
+        """
+        class_name = self.__class__.__name__
+        out_fmt = "{0}({1}, {2}, name={3})"
+        if isinstance(self._seq_src, str) is True:
+            # Output strings as tuples of characters
+            seq_src_out = tuple(self._seq_src)
+        else:
+            seq_src_out = self._seq_src
+        out = out_fmt.format(class_name, seq_src_out, self._r, self.name)
+        return out
+            
     def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 

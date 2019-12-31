@@ -1691,34 +1691,10 @@ class AboutPage(ControlsPage):
         )
     sppx = 4
 
-    def _get_text_from_file(self):
-        # Show file only if it has the correct checksum.
-        # This is to avoid placing instructions into the wrong app
-        csum_str_expected = 'de424bf3e7dcba091c27d652ada485fb'
-        wrong_text_fmt = self._text("help-error-wrong-text-fmt")
-        file_not_found_fmt = self._text("help-error-file-not-found-fmt")
-        try:
-            filename = self._text("help-file-name")
-            dirpath = os.path.dirname(argv[0])
-            abspath = os.path.join(dirpath, filename)
-            with open(abspath, mode='r') as f:
-                text = f.read(-1)
-            checksum = GLib.compute_checksum_for_string(
-                GLib.ChecksumType.MD5, text, len(text)
-            )
-            if checksum == csum_str_expected:
-                out = text
-            else:
-                out = wrong_text_fmt.format(filename)
-                # Fun activity: try to trick the demo app into
-                # displaying contents from another text file without
-                # defeating the hash check!
-        except FileNotFoundError:
-            out = file_not_found_fmt.format(filename)
-        return out
-
     def first_run(self):
-        text = self._get_text_from_file()
+        text_fmt = self._text("help-text-fmt")
+        filename = self._text("help-file-name")
+        text = text_fmt.format(filename)
         txtbuf = self.textar_text.get_buffer()
         txtiter = txtbuf.get_end_iter()
         txtbuf.insert(txtiter, text, len(text))

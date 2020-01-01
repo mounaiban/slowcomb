@@ -1194,6 +1194,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         # TODO: Method to support use as an iterator, with
         # special optimised code path, with minimal function calls
         if self._i >= len(self):
+            self._i = 0
             raise StopIteration
 
         self._path_src.set_digits_from_int(self._i)
@@ -1513,6 +1514,7 @@ class Permutation(PBTreeCombinatorialUnit):
 
     def __next__(self):
         if self._i >= self._len_iter:
+            self._i = 0
             raise StopIteration
 
         path = self._path_src_iter._digits
@@ -1761,6 +1763,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
     def __next__(self):
         if self._i >= self._len_iter:
+            self._i = 0
             raise StopIteration
 
         # NOTE: Experiment with CustomBaseNumber class to generate tree paths
@@ -1995,6 +1998,7 @@ class Combination(CombinatorialUnit):
 
     def __next__(self):
         if self._i >= len(self):
+            self._i = 0
             raise StopIteration
 
         out = self[self._i]

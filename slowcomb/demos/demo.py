@@ -441,7 +441,7 @@ class CUEditorModelSpec(ModelSpec):
         out = '' 
         cu_class_name = self.get_column_data(row, 'editor-model-type')
         cu_class = self.get_class_from_name(cu_class_name)
-        if self.is_supported_compound_cu(cu_class):
+        if self.is_supported_multi_source_cu(cu_class):
             out = self._text('editor-model-cu-marker-other')
         elif self.is_supported_cu(cu_class):
             out = self._text('editor-model-cu-marker-one')
@@ -489,7 +489,7 @@ class CUEditorModelSpec(ModelSpec):
     def get_class_from_name(self, name):
         return self.supported_classes_dict.get(name, None)
 
-    def is_supported_compound_cu(self, cu_class):
+    def is_supported_multi_source_cu(self, cu_class):
         """ Determine if a particular Combainatorial Unit is supported *and*
         uses multiple-sources
 
@@ -770,7 +770,7 @@ class CUEditorControlsPage(ControlsPage):
         new_cu_src_data = self._get_cycling_string(self._new_cu_data)
         cu_spec = self._new_cu_src_spec.copy()
         cu_spec["editor-model-data"] = new_cu_src_data
-        if self.em_spec.is_supported_compound_cu(target_cu_class) is True:
+        if self.em_spec.is_supported_multi_source_cu(target_cu_class) is True:
             # Adding to multi-source CUs
             name_prefix = self.em_spec.get_column_data(
                 target_row, "editor-model-name"
@@ -925,7 +925,7 @@ class CUEditorControlsPage(ControlsPage):
         )
         current_class = self.em_spec.get_class_from_name(current_class_name)
         new_class = self.em_spec.get_class_from_name(text)
-        if self.em_spec.is_supported_compound_cu(current_class) is True:
+        if self.em_spec.is_supported_multi_source_cu(current_class) is True:
             if src_count > 1:
             # Prevent change from multi-source CU to non-multi-source CU
             # if there are multiple attached sources. This is to prevent
@@ -972,7 +972,7 @@ class CUEditorControlsPage(ControlsPage):
         # Add a source to the CU configuration
         row_data = self.em_spec.dict_to_row(row_spec)
         if treeiter is not None:
-            # Automatically add to the containing compound CU
+            # Automatically add to the containing multi-source CU
             # when a sub-CU is selected
             treeiter_parent = None
             if add_mode == 'after':
@@ -1071,7 +1071,7 @@ class CUEditorControlsPage(ControlsPage):
             target_row, 'editor-model-type'
         )
         cu_class = self.em_spec.get_class_from_name(cu_class_name)
-        if self.em_spec.is_supported_compound_cu(cu_class) is False:
+        if self.em_spec.is_supported_multi_source_cu(cu_class) is False:
             if self.em_spec.is_supported_cu(cu_class) is True:
                 if src_count >= 1:
                     self.message(self._text("editor-error-source-add-limit"))
@@ -1454,7 +1454,7 @@ class CUTermViewPage(ControlsPage):
             name = self.em_spec.get_column_data(
                 cu_config_row, "editor-model-name"
             )
-            if self.em_spec.is_supported_compound_cu(iclass) is True:
+            if self.em_spec.is_supported_multi_source_cu(iclass) is True:
                 # Handle Multi-source CU - get CU with all attached sources
                 sources = []
                 treeiter_sub_cu = editor_model.iter_children(treeiter)

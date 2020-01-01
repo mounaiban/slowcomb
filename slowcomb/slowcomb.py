@@ -332,18 +332,15 @@ class CustomBaseNumberP(CustomBaseNumberF):
         iii = self._length-1
         carry = self._digits[iii]+1 >= self._radices[iii]
         while carry is True:
-            try:
-                self._digits[iii] = 0
-                iii -= 1
-                carry = self._digits[iii]+1 >= self._radices[iii]
-            except IndexError:
-                # If iii runs past the right side of self._digits,
+            if iii <= 0:
+                # If iii runs past the left side of self._digits,
                 # it means that the number has overflowed.
                 self.set_zero()
                 return None
-                    # Guard against infinite loops for numbers that 
-                    # just keep overflowing, such as zero-value numbers
-                    # with a radix of all 1's
+            else:
+                self._digits[iii] = 0
+                iii -= 1 
+                carry = self._digits[iii]+1 >= self._radices[iii]
         self._digits[iii] += 1
             
     def set_digits(self, digits):

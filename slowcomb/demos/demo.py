@@ -292,7 +292,6 @@ class ModelSpec:
     # Generic functions
     fn_to_int = lambda self, x, *args: int(x) # Convert to int
     fn_zero = lambda self, x, *args: 0 # Always return zero
-    fn_html_escape = lambda self, x, *args: html.escape(x)
 
     def dict_to_row(self, spec_dict):
         """Create an iter containing appropriately-formatted rows for
@@ -447,7 +446,7 @@ class CUEditorModelSpec(ModelSpec):
         elif self.is_supported_cu(cu_class):
             out = self._text('editor-model-cu-marker-one')
         else:
-            out = html.escape(column_data)
+            out = column_data
         return out
 
     def _get_all_supported_classes(self):

@@ -1477,9 +1477,11 @@ class CUTermViewPage(ControlsPage):
                 data_raw = self.em_spec.get_column_data(
                     cu_config_row, "editor-model-data"
                 )
-                data = html.unescape(data_raw)
-                seq = tuple(data.split(',') )
-                return seq
+                fn_unescape = lambda x: html.unescape(x)
+                seq = data_raw.split(',')
+                m = map(fn_unescape, seq)
+                out = tuple(m)
+                return out
             else:
                 text_fmt = self._text("termview-error-unsupported-source-fmt")
                 self.message(self._text.format(cu_address))

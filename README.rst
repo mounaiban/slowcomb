@@ -7,11 +7,31 @@ What is Slowcomb?
 =================
 Slowcomb is a mini-library of combinatorics classes for the Python programming
 language and platform, implementing two of the most common combinatorics 
-operations: permutations and combinations (and their variations).
+operations: permutations and combinations.
 
-Slowcomb implements its classes as sequences, allowing the results of these
-operations to be recalled instantly with integer indices, as shown in this
-example:  
+Slowcomb implements its classes as sequences (called Combinatorial Units, or
+CUs), allowing the results of these operations to be recalled instantly with
+integer indices.
+
+Why Use It?
+===========
+The expected benefits of using Slowcomb for combinatorial operations include
+reproducibility of results and significantly reduced memory requirements when
+working with very large sets of combinatorial terms.
+
+Slowcomb works best in situations where a very small but random and
+unpredicatble subsample of a very large set of terms are needed at any given
+time.
+
+The Slowcomb project was mainly motivated by the lack of random access to
+terms when using Python's extremely fast combinatorial classes from the
+``itertools`` module. An unpublished game engine that made heavy use of
+combinatorics was found to be using excessive amounts of memory, due to the 
+use of large combinatorial term dumps.
+
+Things You Can Do 
+=================
+Here is a basic example of recalling a single term from a Permutation CU:  
 
 ::
 
@@ -25,11 +45,7 @@ The 12th (or first+11'th) possible way of rearranging the letters
 permutation seen in school mathematics textbooks, that is, considering all 
 possible ways of switching the letters in order, from right to left.
 
-Slowcomb's combinatorial operations work only with qualified sequence types,
-or any container with elements addressable with integer indices, such as 
-tuples and lists.
-
-Slicing on the combinatorial unit is also supported:
+Slicing on combinatorial units is also supported:
 
 ::
 
@@ -37,8 +53,7 @@ Slicing on the combinatorial unit is also supported:
     (('A', 'D', 'C', 'B'), ('B', 'A', 'C', 'D'), ('B', 'A', 'D', 'C'),
     ('B', 'C', 'A', 'D'))
 
-The terms returned in an outer tuple are the sixth, seventh, eighth and ninth
-permutations respectively
+Only the sixth, seventh, eighth and ninth permutations are returned 
 
   PROTIP: first index of a sequence is 0.
 
@@ -52,20 +67,19 @@ You can find out the number of permutations using the ``len()`` function:
 As indicated, there are twenty-four possible ways four elements may be
 arranged.
 
-Where it may be useful, and where the source sequence of the combinatorial
-unit supports it, the index of a combinatorial result can be recalled:
+The index of a combinatorial result can be recalled:
 
 ::
 
     >>> perm_abcd.index( ('D','C','B','A') )
     23
 
-The source sequence used in this example is a tuple, which supports index
-reverse lookups. Some sources may not support this; in such cases, the 
-``index()`` method will not succeed.
+Remember to split the elements of the terms in the exact form they supplied
+to the CU, especially when working on strings.
 
-  PROTIP: When working with strings, remember to separate its characters
-  into individual elements of a tuple (or any other sequence).
+Index reverse lookups are only supported when the source sequence supports
+reverse lookups through a method named ``index()``. Using sources that do
+not fulfill this requirement will disable reverse lookup.
 
 As expected, ``D, C, B, A`` is reported to be the twenty-fourth and last
 permutation of ``A, B, C, D``.
@@ -76,10 +90,20 @@ permutation of ``A, B, C, D``.
 All combinatorial operations in Slowcomb are 'lazy'; results are only
 evaluated when requested.
 
-At time of publication, this way of using permutations and combinations
-are not supported by Python's built-in classes in ``itertools``. The 
-creation of Slowcomb was motivated by the need for such functionality
-in another unpublished game engine project.
+Slowcomb's combinatorial operations work only with container types in which
+elements are addressable with integer indices, such as tuples and lists.
+
+How Do I Get Started Using It?
+==============================
+Please see the ``INSTALL.rst`` file in the repository root directory.
+
+Also check out the ``demos`` folder for usage examples and performance
+benchmarks. To start the Introductory Demo, run
+
+::
+        ``python -m slowcomb.demos.demo``
+
+from a command line while in the same directory as this file.
 
 *Slowcomb is free software, licensed to you under the Terms of the GNU
 General Public License, Version 3 or later. Please view the LICENSE file
@@ -87,147 +111,142 @@ for full terms and conditions.*
 
 Also, I Am Not A Mathematician.
 
-How Do I Get Started Using It?
+Known Strengths and Weaknesses
 ==============================
-Please see the ``INSTALL.rst`` file in the repository root directory.
 
-When To Use It
-==============
-The expected benefits of using Slowcomb for combinatorial operations include
-repeatibility and reproducibility, short access time to specific results,
-and reduced memory requirements.
+Strengths
+*********
+Slowcomb makes it practical to work on small parts of a very large
+combinatorial set (in maths jargon, *large-n, small-p* problems) with reduced
+memory usage and instant access to specific terms and the ability to identify
+specific terms with a single number.  It finds use where it is not feasible or
+necessary to unpack the entire range of combinatorial terms.
 
-Slowcomb is intended for use in applications which make extensive use
-of combinatorics where:
+Example situations where Slowcomb is expected to be of use include:
 
-1. You need to be able to reproduce combinatorial operations (e.g. testing),
+1. Software testing. Test configurations may be difficult to express in their
+   literal forms. When the range of configurations is expressed as a CU,
+   configurations can be easily identified with numerical indices.
 
-2. Your combinatorial results cannot be expressed easily in their literal
-   forms (e.g. design variations),
+2. Graphic or product design. The range of variations on a design can be
+   expressed as a CU, and each specific design can be identified with a
+   numerical index.
 
-3. You need fast access to just a few different combinatorial results at
-   a time from a source with a very large number of elements, yet cannot
-   predict ahead of time which ones you need, or
+3. Procedural synthesis in games or multimedia arts. The range of possible
+   configurations of a synthesis can be expressed as a CU, allowing specific
+   results to be recalled and identified with a numerical index.
 
-4. You are working with combinatorial operations whose results take up 
-   unreasonable amounts of memory, but can be deterministically reproduced
-   in a reasonable amount of time (e.g. some games that feature procedurally-
-   created content).
+In the above situations, there is no need to store a large number of results,
+as they can be quickly or at least predictably and deterministically repeated
+with the use of the index.
 
+Weaknesses
+**********
+Slowcomb also has several identified weaknesses, mostly due to its slow rate of 
+generating successive results (hence its name) and inability to work on
+so-called *non-subscriptable* sources whose elements cannot be individually
+addressed (such as generators, iterators and some data streams).
 
-When Not To Use It
-==================
-Slowcomb has several identified weaknesses, namely its slowness in generating
-successive results (hence its name), lack of proven reliability and performance
-in massively parallel workflows, and inability to work on so-called 
-*non-subscriptable* sources whose elements cannot be individually addressed
-(such as generators and iterators).
+Here are some situations where there is no expected benefit using Slowcomb:
 
-Here are some circumstances where there is no expected benefit using Slowcomb:
+1. Password recovery. Most password recovery operations tend to use large
+   numbers of successive combinatorial results, making other means such as
+   Python's ``itertools`` more useful due to their performance advantage in
+   such operations. Also, passwords are often most conveniently identified by
+   their literal form, making the repeatability of results by using numerical
+   indices irrelevant.
 
-1. The combinatorial results are conveniently represented by their literal
-   form (e.g. generated passwords and brand names). It may be more practical
-   to store the results.
+2. Brand name surveys. When conducting research in order to pick the best
+   variation of a brand name, it is usually best to narrow down the
+   range of brands. Thus, the number of combinatorial terms is highly likely
+   to be too small for Slowcomb to be of any benefit.
 
-2. You need to work with a large number of successive combinatorial results
-   (e.g. first 10 million combinations). Python's ``itertools`` are a lot
-   more adept in this type of operation.
-  
-3. Your workflow involves a large number of combinatorial units working
-   in parallel (e.g. 50,000 simultaneous permutators). Slowcomb was not
-   really tested for use in the inner parts of a massively-parallel
-   workflow. You may need a more specialised library or framework for
-   better performance.
+3. Any situation where combinatorial operations must be performed on a source
+   in which data is not individually and randomly addressable.
 
-4. You work with combinatorial operations that involve small selections
-   from a source with a small number of items. Using tuples or 
-   ``frozensets`` containing precomputed results generated using
-   ``itertools`` may be much faster.
-
-5. You work with combinatorial operations which involve a lot of 
-   repetitions of elements in the source. Slowcomb reconstructs every term
-   from scratch, element-by-element, missing many opportunities for
-   optimisation in this type of operation. Improving performance for such
-   operations is part of the Long Term goals in Slowcomb's development.
-
-6. Your combinatorial results tend to be mostly minor variations of the
-   source sequence. The weaknesses identified in circumstance 5 above,
-   and the plans to address them, also apply.
-
-7. You need to work on sources that do not have a practical way of
-   supporting addressing of its contents by numerical indices.
-
-Other solutions, such as Python's ``itertools`` may be sufficient or even
-superior under these circumstances.
+Other solutions, such as Python's ``itertools`` may be superior or necessary
+under these circumstances.
 
 Caveats
 =======
-The documentation in the code, and this introduction has not been
-thoroughly proof-read, and may contain errors.
+The documentation in the code, and this introduction has not been thoroughly
+proof-read, and may contain errors.
 
-Please report all errors by filing issues. As usual, please be specific
-about bugs, and include detailed steps to reproduce the bug. Unit tests
-would also be nice. For errors in the documentation, please quote the
-line number (and column number if possible) as well as the file where
-you found the error.
+Please report all errors by filing issues. As usual, please be specific about
+bugs, and include detailed steps to reproduce the bug. Unit tests would also be
+nice. For errors in the documentation, please quote the line number (and column
+number if possible) as well as the file where you found the error.
 
 Wishlist
 ========
-While the basic concept is pretty much done, I still think there is
-some more work to be done to make slowcomb much more useful than it is
-right now...
+Slowcomb is largely a labour of love, and very much a learning journal of
+Python programming (and using GTK via PyGObject for the demos).
+The possibility that this library might be useful enough to be used in other
+projects is being explored. Here are some ideas:
 
-Short Term (by 2019-12-25🎄)
-****************************
-These goals aim to make Slowcomb usable for small-scale projects, with a
-codebase clear enough to be used as a teaching aid for beginners to Python
-and object-oriented programming.
+Specific Ideas (toward 1.2)
+***************************
 
-Documentation
-#############
-* Just the maintenance stuff to maintain readability, correct and 
-  consistent terminology use, and sticking with a tenth-year school
-  vocabulary unless bigger words are absolutely necessary, and also
-  *formatting*.
+Express wishlist (can be done by 2020-12-25) 🎄🎅 
+#################################################
+* Consolidate all essential components of Slowcomb into the ``slowcomb``
+  module, and make ``slowseq`` completely optional.
 
-Testing
-#######
-* Create a more user-friendly Test Planner. The current ``plan.py`` isn't
-  exactly *Fit for Public Use*.
+* Fix excess memory usage issue in the term derivation routine in 
+  ``Permutation``, especially when it is used as the root of a compound CU.
 
 
-Long Term (indefinite schedule)
-*******************************
-These goals prepare Slowcomb for deeper involvement in software projects,
-and also aim to make the project easier to work on with others in a
-distributed, collaborative setting.
+Not-so-specific Ideas (toward 2.0)
+**********************************
+These are just ideas which are not specific enough to have a deadline:
 
-Completion of these goals will advance the version number towards **2.0**.
+Code and Documentation Quality
+##############################
+* Further reduce word count and increase clarity in docstrings to the point
+  it becomes a good example for teaching programming to (tenth?) grade school
+  students.
+
+* Improve dependency injection use patterns to make unit testing easier.
 
 Demos
 #####
-There is a current lack of demos to illustrate Slowcomb's potential use cases.
-A few good examples would be nice to have.
+More demos to illustrate Slowcomb's potential use cases would be nice to have.
 
-Combinatorics, Sequences and Supporting Features
-################################################
-* ``CombinationWithExclusion``, which is basically combinations with specific
-  patterns excluded (e.g. Drug A and Drug C should never appear in the same
-  prescription)
- 
-  - This may require a supporting class in the same vein as
-    ``FilteredSNOBSequence``
+* Combinatorial Test Suite - an extended test suite for the Slowcomb library
+  which would take too long to write manually.
 
+* Combinatorial Text Editor - a tool that incorporates combinatorics in 
+  generating text documents, such as configuration files or experimental
+  writing works.
+
+* Demo App Improvements
+
+  - Implement the GTK Application API in the demo app. This allows Ctrl-key
+    shortcuts to be used. The current demo app has nigh exhausted all available
+    Alt-key shortcuts.
+
+  - Implement a more intuitive Editor. The current tabular tree view is
+    somewhat serviceable, but was found to be hard to read at times.
+
+* Test Planner - a user-friendly app that would generate a list of unit tests
+  to be performed, and even keep track of them and generate template code.
+
+Features and Additional CUs
+###########################
 * ``ChainSequence``, addressable version of ``itertools.chain``.
   
   - The ``__add__()`` and ``__sub__()`` (if feasible) methods for runtime
     modification of ``ChainSequences``
- 
-* ``FilteredSNOBSequence``, same number of bits, but with the ability to set
-  specific bits to stay on or off.
 
-* Testing: even more unit tests, detailed performance and exception handling
-  tests.
+* ``CombinationWithExclusion``, which is basically ``Combinations``, but with
+  the ability to exclude specific elements (e.g. Drug A and Drug C should never
+  appear in the same prescription)
+
+* Exception memory to help isolate and diagnose problems in compound CUs. 
+  The unused ``_exceptions`` property in ``CombinatorialUnit`` is reserved
+  for this feature.
+ 
+* Extended unit and integration tests:
 
   - Detailed unit tests, to account for edge cases, corner cases and
     circular recursion errors.
@@ -238,62 +257,44 @@ Combinatorics, Sequences and Supporting Features
   - Exception handling tests, to ensure users get the right error messages,
     and appropriate fallback paths are available.
 
-Management
-##########
-* Inclusion and intersect tests, which can help in consolidating combinatorial
-  sequences.
+* ``FilteredSNOBSequence``, a sequence of numbers with a fixed length and
+  number of active bits, but with the ability to set specific bits to stay
+  on or off.
 
-  - The ``__contains__()`` method, which finds out if a combinatorics sequence
-    is completely covered by another.
+* Management features to help with consolidating or expanding CUs:
+
+  - The ``__contains__()`` method, which finds out if a CU contains all the
+    terms of another.
   
-  - A method to find out which terms are present in both of two
-  ``Combinatorics`` sequences being compared.
+  - A method to find out the indices of terms of one CU *A* in another *B*,
+    if *B* has some or all of *A*'s terms.
 
-* Reporting Tools, Stage 2 and Beyond -- these features are intended to aid
-  with the replication of combinatorial setups, but it remains to be seen if
-  this responsibility is better handled by a separate project or the 
-  application using Slowcomb.
-  
-  * JSON export
+  - A method to find out which terms are present in two CUs.
 
-  * Visualisations
-  
-
-Performance
-###########
+Performance Optimisations
+#########################
 * ``DequeCacheableSequence``, a cache that keeps a fixed number of the most
   recent results.
 
-* Implement ``__sizeof__()`` in combinatorics and sequence classes, to provide
-  accurate feedback on memory consumption
- 
-* Explore optimisations which can speed up combinatorial operations where:
+* Memory usage profiling.
+   
+  - A method to accurately measure the memory footprint of a CU when it is
+    not in use, through ``__sizeof__()``.
 
-  - The resulting terms are similar to the source sequence (e.g. permutations
-    with minor differences).
+* Optimised codepaths for the following types of situations:
 
-  - Results of small-n, big-r operations (e.g. repeats-permitted combinations
-    with large blocks of repeated elements).
+  - Permutations where the terms are just minor variations of the source
+    sequence. Memory access and usage can be minimised by performing as
+    much of the combinatorial process as possible in-place.
 
-* Investigate if using ``__slots__`` improves performance.
+  - High-likelihood repetitions of elements in combinations and permutations.
 
-Even in Slowcomb, speed matters!
+  - Small-n, big-r applications of CUs with repeating elements.
 
-Reliability
-###########
-* Implement Exception memory in combinatorics and supporting sequences, in
-  order to help isolate and diagnose problematic sequences.
- 
-Architecture
-############
-* Refactor the codebase to improve the way dependency injection is used,
-  in order to make unit testing easier, which in turn should make testing
-  and implementation of new ideas and features quicker and easier. 
-
-* Investigate the potential benefits (or lack of thereof) of basing the
-  combinatorial classes on a Set Type instead.
+* Optimisations for potential uses in highly-parallel workflows, especially
+  as a work dispatch system.
 
 Miscellaneous
 #############
-* More easter eggs??
+* Easter eggs??  
 

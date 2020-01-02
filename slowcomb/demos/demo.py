@@ -1495,6 +1495,10 @@ class CUTermViewPage(ControlsPage):
             text_fmt = self._text("termview-error-no-source-fmt")
             self.message(text_fmt.format(cu_address))
             return ()
+        except IndexError:
+            text_fmt = self._text("termview-error-r-fmt")
+            self.message(text_fmt.format(cu_address))
+            return ()
 
     def _get_ranges(self, range_str='', decoder_fn=None):
         # Convert value range strings into a list of tuples containing
@@ -1565,7 +1569,10 @@ class CUTermViewPage(ControlsPage):
         self.model.clear()
         treeiter_ed = self.model_ed.get_iter_first()
         cu = self._editor_model_to_cu(self.model_ed, treeiter_ed)
-        term_count = len(cu)
+        if cu is not None:
+            term_count = len(cu)
+        else:
+            term_count = 0
         limit = self.page_settings.settings["term_limit"]
         ranges = self._get_ranges(
             self.page_settings.settings["output_ranges"]
@@ -1856,7 +1863,8 @@ class MessageArea(ProportionalPaned):
 
         ## Scrollable full message text view
         self._textview = Gtk.TextView(
-            margin=4, editable=False, wrap_mode=Gtk.WrapMode.WORD)
+            margin=4, editable=False, wrap_mode=Gtk.WrapMode.WORD
+        )
         self._textbuffer = self._textview.get_buffer()
         default_text = self._strings["messagearea-default"]
         self._textbuffer.set_text(default_text)
@@ -1887,6 +1895,7 @@ class MainUI(Gtk.Window):
         # is only used during testing
     _str_src_path = None
     _strings = {}
+    _view_page = None
     control_module_class = None
     default_resource_dir = os.path.dirname(argv[0])
     default_str_file_name = 'demo.text-en-au.json'
@@ -1930,7 +1939,8 @@ class MainUI(Gtk.Window):
             self._control_pages[p._message_code_prefix] = p
             p.first_run()
         new_module.init_view_widget.first_run()
-        self.paned_maction.add1(new_module.init_view_widget)
+        self._view_page = new_module.init_view_widget
+        self.paned_maction.add1(self._view_page)
 
     def show_message_area(self):
         self.paned_mouter.show2()

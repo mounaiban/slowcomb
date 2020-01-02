@@ -73,9 +73,10 @@ Configuring CUs
 ^^^^^^^^^^^^^^^
 Each item in the CU tree has five properties:
 
-1. **Address (abbreviated to ``#``)** - A numerical path to show where on the
+1. **Address (abbreviated to #)** - A numerical path to show where on the
    tree a CU or source is located. The *root CU* on top of the tree always
-   has an address of zero (``0``). The terminal source of the third CU source
+   has an address of zero (``0``). An address of ``0:1:0`` points to the
+   source under the second CU of the root CU.
 
 2. **Name** - A friendly name that may be used to help identify the role of
    a CU or sources more clearly.
@@ -145,6 +146,7 @@ will be exported. The following options are available:
    the *first term is term zero*. The format is as follows:
 
    ::
+
        [X0-Y0],[S0],[Xn-Yn],[Sn]...
 
    Where X is the lower bound and Y is the upper bound of a range, and
@@ -170,7 +172,7 @@ will be exported. The following options are available:
 
    * Overlap (e.g. ``80-90,77-101``)
 
-   * Contain non-integer numbers. (e.g. ``0.375-1.0```)
+   * Contain non-integer numbers. (e.g. ``0.375-1.0``)
 
    * Do not match the format specified above.
 

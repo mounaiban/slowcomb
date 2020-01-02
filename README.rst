@@ -209,6 +209,9 @@ Code and Documentation Quality
 
 * Improve dependency injection use patterns to make unit testing easier.
 
+* Spin off lengthy docstrings into separate documents, leaving only an
+  executive summary and essential information (e.g. arguments, exceptions).
+
 Demos
 #####
 More demos to illustrate Slowcomb's potential use cases would be nice to have.

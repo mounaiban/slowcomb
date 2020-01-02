@@ -101,7 +101,8 @@ Also check out the ``demos`` folder for usage examples and performance
 benchmarks. To start the Introductory Demo, run
 
 ::
-        ``python -m slowcomb.demos.demo``
+
+    ``python -m slowcomb.demos.demo``
 
 from a command line while in the same directory as this file.
 

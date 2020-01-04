@@ -206,90 +206,122 @@ class TraverseTreeModelTests(unittest.TestCase):
         self.cm_spec = CUEditorModelSpec()
 
     def test_flat(self):
-        rows_src = (
+        """Verify traversal of a single-level (flat) TreeModel"""
+        # Action - Insert rows into model
+        rows = (
             ['0','alfa','test',4,'A,B,C,D'],
             ['1','bravo','test',4,'E,F,G,H'],
             ['2','charlie','test',4,'I,J,K,L'],
         )
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, rows_src)
-
-        out = get_path_stamped_rows(treestore)
-        self.assertEqual(len(out), len(rows_src))
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, rows)
+        # Assertion
+        out = get_path_stamped_rows(model)
+        self.assertEqual(len(out), len(rows))
         for i in range(len(out)):
             with self.subTest(i=i):
-                self.assertEqual(out[i], rows_src[i])
+                self.assertEqual(out[i], rows[i])
 
     def test_two_levels_no_return(self):
-        rows_src_lvl_0 = (
+        """Verify traversal of a two-level TreeModel where the last row
+        is one level under
+
+        """
+        rows_lvl_0 = (
             ('0','alfa','test',4,'A,B,C,D'),
             ('1','bravo','test',4,'E,F,G,H'),
         )
-        row_src_1_0 = (('1:0','charlie','test',4,'I,J,K,L'),)
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, rows_lvl_0)
+        # Actions - Insert single row under bravo
+        row_1_0 = (('1:0','charlie','test',4,'I,J,K,L'),)
+        insert_into_model(model, row_1_0, parent_path_str='1')
+        # Assertion
         out_expected = (
             ['0','alfa','test',4,'A,B,C,D'],
             ['1','bravo','test',4,'E,F,G,H'],
             ['1:0','charlie','test',4,'I,J,K,L'],
         )
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, rows_src_lvl_0)
-        insert_into_model(treestore, row_src_1_0, parent_path_str='1')
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_two_levels_one_level_return(self):
-        rows_src_lvl_0 = (
+        """Verify traversal of a TreeModel which descends one level in the
+        middle, but returns to the top level by the end of the model
+
+        """
+        rows_lvl_0 = (
             ('0','alfa','test',4,'A,B,C,D'),
             ('1','bravo','test',4,'E,F,G,H'),
         )
-        row_src_0_0 = (('0:0','charlie','test',4,'I,J,K,L'),)
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, rows_lvl_0)
+        # Actions - Insert single row under alfa
+        row_0_0 = (('0:0','charlie','test',4,'I,J,K,L'),)
+        insert_into_model(model, row_0_0, parent_path_str='0')
+        # Assertion
         out_expected = (
             ['0','alfa','test',4,'A,B,C,D'],
             ['0:0','charlie','test',4,'I,J,K,L'],
             ['1','bravo','test',4,'E,F,G,H'],
         )
         out = []
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, rows_src_lvl_0)
-        insert_into_model(treestore, row_src_0_0, parent_path_str='0')
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_four_levels_no_return(self):
-        row_src_0 = ( ('0','alfa','test',4,'A,B,C'), )
-        row_src_0_0 = ( ('0:0','bravo','test',4,'1,2,3'), )
-        row_src_0_0_0 = ( ('0:0:0','charlie','test',4,'do,re,mi'), )
-        row_src_0_0_0_0 = ( ('0:0:0:0','delta','test',4,'u,n,me'), )
+        """Verify traversal of a four-level model where the last row
+        is three levels under
+
+        """
+        row_0 = ( ('0','alfa','test',4,'A,B,C'), )
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, row_0)
+        # Actions - Build deep tree in model
+        row_0_0 = ( ('0:0','bravo','test',4,'1,2,3'), )
+        insert_into_model(model, row_0_0, parent_path_str='0')
+        row_0_0_0 = ( ('0:0:0','charlie','test',4,'do,re,mi'), )
+        insert_into_model(model, row_0_0_0, parent_path_str='0:0')
+        row_0_0_0_0 = ( ('0:0:0:0','delta','test',4,'u,n,me'), )
+        insert_into_model(model, row_0_0_0_0, parent_path_str='0:0:0')
+        # Assertion
         out_expected = (
             ['0','alfa','test',4,'A,B,C'],
             ['0:0','bravo','test',4,'1,2,3'],
             ['0:0:0','charlie','test',4,'do,re,mi'],
             ['0:0:0:0','delta','test',4,'u,n,me'],
         )
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, row_src_0)
-        insert_into_model(treestore, row_src_0_0, parent_path_str='0')
-        insert_into_model(treestore, row_src_0_0_0, parent_path_str='0:0')
-        insert_into_model(treestore, row_src_0_0_0_0, parent_path_str='0:0:0')
-        
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_four_levels_multi_level_return(self):
-        row_src_0 = ( ('0','alfa','test',1,'A'), )
-        row_src_0_0 = ( ('0:0','bravo','test',1,'B'), )
-        row_src_0_0_0 = ( ('0:0:0','charlie','test',1,'C'), )
-        row_src_0_0_0_0 = ( ('0:0:0:0','delta','test',1,'D'), )
-        row_src_1 = ( ('1','echo','test',1,'E'), )
+        """Verify traversal of a four-level TreeModel where the rows descend
+        three levels under before abruptly returning to the top level at
+        the end of the model
+
+        """
+        row_0 = ( ('0','alfa','test',1,'A'), )
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, row_0)
+        # Actions - Build deep tree
+        row_0_0 = ( ('0:0','bravo','test',1,'B'), )
+        insert_into_model(model, row_0_0, parent_path_str='0')
+        row_0_0_0 = ( ('0:0:0','charlie','test',1,'C'), )
+        insert_into_model(model, row_0_0_0, parent_path_str='0:0')
+        row_0_0_0_0 = ( ('0:0:0:0','delta','test',1,'D'), )
+        insert_into_model(model, row_0_0_0_0, parent_path_str='0:0:0')
+        row_1 = ( ('1','echo','test',1,'E'), )
+        insert_into_model(model, row_1)
+        # Assertion
         out_expected = (
             ['0','alfa','test',1,'A'], 
             ['0:0','bravo','test',1,'B'], 
@@ -297,26 +329,34 @@ class TraverseTreeModelTests(unittest.TestCase):
             ['0:0:0:0','delta','test',1,'D'], 
             ['1','echo','test',1,'E'], 
         )
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, row_src_0)
-        insert_into_model(treestore, row_src_0_0, parent_path_str='0')
-        insert_into_model(treestore, row_src_0_0_0, parent_path_str='0:0')
-        insert_into_model(treestore, row_src_0_0_0_0, parent_path_str='0:0:0')
-        insert_into_model(treestore, row_src_1)
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_four_levels_one_level_return(self):
-        row_src_0 = ( ('0','alfa','test',4,'A,B,C'), )
-        row_src_0_0 = ( ('0:0','bravo','test',4,'1,2,3'), )
-        row_src_0_0_0 = ( ('0:0:0','charlie','test',4,'D,E,F'), )
-        row_src_0_0_0_0 = ( ('0:0:0:0','delta','test',4,'iv,v,vi'), )
-        row_src_0_0_1 = ( ('0:0:1','echo','test',4,'G,H,I'), )
-        row_src_0_1 = ( ('0:1','foxtrot','test',4,'7,8,9'), )
-        row_src_1 = ( ('1','golf','test',4,'J,K,L'), )
+        """Test traversal of a four-level TreeModel which descends three
+        levels, then returns one level at a time before the end of the model.
+
+        """
+        row_0 = ( ('0','alfa','test',4,'A,B,C'), )
+        model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(model, row_0)
+        # Action - Build deep tree
+        row_0_0 = ( ('0:0','bravo','test',4,'1,2,3'), )
+        insert_into_model(model, row_0_0, parent_path_str='0')
+        row_0_0_0 = ( ('0:0:0','charlie','test',4,'D,E,F'), )
+        insert_into_model(model, row_0_0_0, parent_path_str='0:0')
+        row_0_0_0_0 = ( ('0:0:0:0','delta','test',4,'iv,v,vi'), )
+        insert_into_model(model, row_0_0_0_0, parent_path_str='0:0:0')
+        row_0_0_1 = ( ('0:0:1','echo','test',4,'G,H,I'), )
+        insert_into_model(model, row_0_0_1, parent_path_str='0:0')
+        row_0_1 = ( ('0:1','foxtrot','test',4,'7,8,9'), )
+        insert_into_model(model, row_0_1, parent_path_str='0')
+        row_1 = ( ('1','golf','test',4,'J,K,L'), )
+        insert_into_model(model, row_1)
+        # Assertion
         out_expected = (
             ['0','alfa','test',4,'A,B,C'], 
             ['0:0','bravo','test',4,'1,2,3'], 
@@ -326,39 +366,33 @@ class TraverseTreeModelTests(unittest.TestCase):
             ['0:1','foxtrot','test',4,'7,8,9'], 
             ['1','golf','test',4,'J,K,L'], 
         )
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(treestore, row_src_0)
-        insert_into_model(treestore, row_src_0_0, parent_path_str='0')
-        insert_into_model(treestore, row_src_0_0_0, parent_path_str='0:0')
-        insert_into_model(treestore, row_src_0_0_0_0, parent_path_str='0:0:0')
-        insert_into_model(treestore, row_src_0_0_1, parent_path_str='0:0')
-        insert_into_model(treestore, row_src_0_1, parent_path_str='0')
-        insert_into_model(treestore, row_src_1)
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
 class TraverseTreeModelWithLimitsTests(unittest.TestCase):
+    """Verify operation of a limited TreeModel traversal
+    """
     format_version = '1.1'
 
     def setUp(self):
         self.cm_spec = CUEditorModelSpec()
-        rows_src_lvl_0 = (
+        rows_lvl_0 = (
             ('0','alfa','test',4,'A,B,C,D'),
             ('1','bravo','test',4,'A,B,C,D'),
             ('2','charlie','test',4,'A,B,C,D'),
             ('3','delta','test',4,'A,B,C,D'),
         )
-        rows_src_0_0 = (
+        rows_0_0 = (
             ('0:0','alfa-0','test',3,'A,A,A'),
             ('0:1','alfa-1','test',3,'A,A,A'),
             ('0:2','alfa-2','test',3,'A,A,A'),
         ) 
-        self.treestore = Gtk.TreeStore(*self.cm_spec.column_types)
-        insert_into_model(self.treestore, rows_src_lvl_0)
-        insert_into_model(self.treestore, rows_src_0_0, parent_path_str='0')
+        self.model = Gtk.TreeStore(*self.cm_spec.column_types)
+        insert_into_model(self.model, rows_lvl_0)
+        insert_into_model(self.model, rows_0_0, parent_path_str='0')
 
     def test_check_test_data(self):
         out_expected = (
@@ -370,7 +404,7 @@ class TraverseTreeModelWithLimitsTests(unittest.TestCase):
             ['2','charlie','test',4,'A,B,C,D'],
             ['3','delta','test',4,'A,B,C,D'],
         )
-        out = get_path_stamped_rows(self.treestore)
+        out = get_path_stamped_rows(self.model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
@@ -378,10 +412,10 @@ class TraverseTreeModelWithLimitsTests(unittest.TestCase):
 
     def test_zero_limit(self):
         path = Gtk.TreePath.new_from_string('0')
-        treeiter = self.treestore.get_iter(path)
+        treeiter = self.model.get_iter(path)
         limits = (0,)
         out_expected = []
-        out = get_path_stamped_rows(self.treestore, limits=limits)
+        out = get_path_stamped_rows(self.model, limits=limits)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):
@@ -389,7 +423,7 @@ class TraverseTreeModelWithLimitsTests(unittest.TestCase):
 
     def test_one_top_level_deep_row(self):
         path = Gtk.TreePath.new_from_string('0')
-        treeiter = self.treestore.get_iter(path)
+        treeiter = self.model.get_iter(path)
         limits = (1,)
         out_expected = (
             ['0','alfa','test',4,'A,B,C,D'],
@@ -397,7 +431,7 @@ class TraverseTreeModelWithLimitsTests(unittest.TestCase):
             ['0:1','alfa-1','test',3,'A,A,A'],
             ['0:2','alfa-2','test',3,'A,A,A'],
         )
-        out = get_path_stamped_rows(self.treestore, limits=limits)
+        out = get_path_stamped_rows(self.model, limits=limits)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out_expected)):
             with self.subTest(i=i):

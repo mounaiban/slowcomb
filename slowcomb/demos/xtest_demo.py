@@ -53,70 +53,83 @@ except ModuleNotFoundError:
 class CSVToModelTests(unittest.TestCase):
     """Verifies the operation of the CSV-to-GTK TreeModel data import routine
     csv_to_model()
+
     """
     format_version = '1.1'
 
     def setUp(self):
         self.cm_spec = CUEditorModelSpec()
         self.fn_dummy = lambda tm,ti: 0
-        self.src_single = '"0","zulu","test",1,"Z"'
-        self.src_flat =  \
+        self.csv_str_single = '"0","zulu","test",1,"Z"'
+        self.csv_str_flat =  \
             '"0","whiskey","test",1,"W"\n'\
             '"1","yankee","test",1,"Y"\n'\
             '"2","zulu","test",1,"Z"\n'     
             # PROTIP: 'a' 'b' == 'ab'
-        self.src_deep_multi_lvl_return = \
+        self.csv_str_deep_multi_lvl_return = \
             '"0","whiskey","test",1,"W"\n'\
             '"0:0","x-ray","test",1,"X"\n'\
             '"0:0:0","yankee","test",1,"Y"\n'\
             '"1","zulu","test",1,"Z"\n'    
-        self.src_deep_single_lvl_return = \
+        self.csv_str_deep_single_lvl_return = \
             '"0","whiskey","test",1,"W"\n'\
             '"0:0","x-ray","test",1,"X"\n'\
             '"1","yankee","test",1,"Y"\n'\
             '"2","zulu","test",1,"Z"\n'   
-        self.src_deep_no_return = \
+        self.csv_str_deep_no_return = \
             '"0","whiskey","test",1,"W"\n'\
             '"0:0","x-ray","test",1,"X"\n'\
             '"0:0:0","yankee","test",1,"Y"\n'
-        self.src_init = \
+        self.csv_str_init = \
             '"0","alfa","test","1","A"\n'\
             '"0:0","bravo","test","1","B"\n'\
             '"1","charlie","test","1","C"\n'\
             '"2","delta","test","1","D"\n'  
 
     def _str_to_csv_reader(self, string):
+        # Creates a CSV reader from a CSV-formatted string.
+        # This function expects columns to be comma-separated,
+        # values to be in either single or double quotes ONLY,
+        # and rows to be terminated with any sequence, as long
+        # it is the only one in use in the string.
         rows_raw = string.split('\n')
         dialect = csv.Sniffer().sniff(rows_raw[0])
         reader = csv.reader(rows_raw, dialect)
         return reader
 
     def test_self_test(self):
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types) 
-        csvr_init = self._str_to_csv_reader(self.src_init)
-        csv_to_model(csvr_init, treestore, self.cm_spec)
+        """Verify that test data is correct. Test results from this
+        test case shall only be accepted if this test passes.
+
+        """
+        model = Gtk.TreeStore(*self.cm_spec.column_types) 
+        csvr_init = self._str_to_csv_reader(self.csv_str_init)
+        csv_to_model(csvr_init, model, self.cm_spec)
         out_expected = (
             ['0','alfa','test',1,'A'],
             ['0:0','bravo','test',1,'B'],
             ['1','charlie','test',1,'C'],
             ['2','delta','test',1,'D'],
         )
-        # PROTIP: The reference rows in out_expected are in lists, to match
-        # the format which TreeModel rows are returned.
-        out = get_path_stamped_rows(treestore)
+            # PROTIP: The reference rows in out_expected are in lists, to
+            # match the format which TreeModel rows are returned.
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_deep_no_return_top_level_mid_insert(self):
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types) 
-        csvr_init = self._str_to_csv_reader(self.src_init)
-        csvr_dnr = self._str_to_csv_reader(self.src_deep_no_return)
-        csv_to_model(csvr_init, treestore, self.cm_spec)
+        model = Gtk.TreeStore(*self.cm_spec.column_types) 
+        # Arrangement - Start with the default test model
+        csvr_init = self._str_to_csv_reader(self.csv_str_init)
+        csv_to_model(csvr_init, model, self.cm_spec)
+        # Actions - Insert multiple rows after charlie at top level
         path = Gtk.TreePath.new_from_string('1')
-        treeiter_1 = treestore.get_iter(path)
-        csv_to_model(csvr_dnr, treestore, self.cm_spec, treeiter=treeiter_1)
+        treeiter_1 = model.get_iter(path)
+        csvr_dnr = self._str_to_csv_reader(self.csv_str_deep_no_return)
+        csv_to_model(csvr_dnr, model, self.cm_spec, treeiter=treeiter_1)
+        # Assertion
         out_expected = (
             ['0','alfa','test',1,'A'],
             ['0:0','bravo','test',1,'B'],
@@ -126,18 +139,21 @@ class CSVToModelTests(unittest.TestCase):
             ['2:0:0','yankee','test',1,'Y'],
             ['3','delta','test',1,'D'],
         )
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
     
     def test_single_top_level_top_insert(self):
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types) 
-        csvr_init = self._str_to_csv_reader(self.src_init)
-        csvr_single = self._str_to_csv_reader(self.src_single)
-        csv_to_model(csvr_init, treestore, self.cm_spec)
-        csv_to_model(csvr_single, treestore, self.cm_spec, mode='before')
+        model = Gtk.TreeStore(*self.cm_spec.column_types) 
+        # Arrangement - Start with the default test model
+        csvr_init = self._str_to_csv_reader(self.csv_str_init)
+        csv_to_model(csvr_init, model, self.cm_spec)
+        # Actions = Insert single row at start of top level
+        csvr_single = self._str_to_csv_reader(self.csv_str_single)
+        csv_to_model(csvr_single, model, self.cm_spec, mode='before')
+        # Assertion
         out_expected = (
             ['0','zulu','test',1,'Z'],
             ['1','alfa','test',1,'A'],
@@ -145,20 +161,23 @@ class CSVToModelTests(unittest.TestCase):
             ['2','charlie','test',1,'C'],
             ['3','delta','test',1,'D'],
         )
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out)):
             with self.subTest(i=i):
                 self.assertEqual(out[i], out_expected[i])
 
     def test_single_top_level_mid_insert(self):
-        treestore = Gtk.TreeStore(*self.cm_spec.column_types) 
-        csvr_init = self._str_to_csv_reader(self.src_init)
-        csvr_single = self._str_to_csv_reader(self.src_single)
-        csv_to_model(csvr_init, treestore, self.cm_spec)
+        model = Gtk.TreeStore(*self.cm_spec.column_types) 
+        # Arrangement - Start with default test model
+        csvr_init = self._str_to_csv_reader(self.csv_str_init)
+        csv_to_model(csvr_init, model, self.cm_spec)
+        # Actions - Insert single row after charlie
+        csvr_single = self._str_to_csv_reader(self.csv_str_single)
         path = Gtk.TreePath.new_from_string('1')
-        treeiter_1 = treestore.get_iter(path)
-        csv_to_model(csvr_single, treestore, self.cm_spec, treeiter=treeiter_1)
+        treeiter_1 = model.get_iter(path)
+        csv_to_model(csvr_single, model, self.cm_spec, treeiter=treeiter_1)
+        # Assertion
         out_expected = (
             ['0','alfa','test',1,'A'],
             ['0:0','bravo','test',1,'B'],
@@ -166,7 +185,7 @@ class CSVToModelTests(unittest.TestCase):
             ['2','zulu','test',1,'Z'],
             ['3','delta','test',1,'D'],
         )
-        out = get_path_stamped_rows(treestore)
+        out = get_path_stamped_rows(model)
         self.assertEqual(len(out), len(out_expected))
         for i in range(len(out)):
             with self.subTest(i=i):

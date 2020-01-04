@@ -1525,7 +1525,7 @@ class CUTermViewPage(ControlsPage):
         ranges = []
         ranges_invalid = []
         range_strs = range_str.split(',')
-        i_highest = 0
+        i_highest = -1
         for s in range_strs:
             try:
                 range_strs_L2 = s.split('-')

@@ -22,8 +22,56 @@ Slow Addressable Combinatorics Library main module.
 #
 
 from math import factorial
-from slowcomb.slowseq import int_ncr, int_npr,\
-    AccumulateSequence, NumberSequence, CacheableSequence, SNOBSequence
+from slowcomb.slowseq import AccumulateSequence, NumberSequence,\
+    CacheableSequence, SNOBSequence
+
+# Functions
+#
+def int_ncr(n,r):
+    """
+    Evaluate nCr, the number of possible combinations given r selections
+    from a set of n members.
+
+    The nCr function is commonly written as:
+
+      n! / ( r! * (n-r)! )
+
+    Where ! means factorial, the product of an integer and all smaller
+    positive integers.
+    
+    Arguments
+    ---------
+    * n - Number of items in the set. Accepts int.
+
+    * r - Number of selections from the set. Accepts int.
+
+    """
+    return int(factorial(n)//( factorial(r)*factorial(n-r) ))
+
+def int_npr(n,r):
+    """
+    Evaluate nPr, the number of possible permutations given r selections
+    from a set of n members, with each element selected just once.
+
+    The nPr function determines the number of outcomes for a partial
+    permutation, when taking r items from a set of n items, and taking
+    each item exactly once. It is usually written like:
+
+        n! / (n-r)!
+    
+    Where ! means factorial, the product of an integer and all smaller
+    positive integers.
+
+    Arguments
+    ---------
+    * n - Number of items in the set. Accepts int.
+
+    * r - Number of selections from the set. Accepts int.
+
+    """
+    return int(factorial(n)//factorial(n-r))
+
+
 
 # Classes
 #

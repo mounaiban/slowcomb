@@ -1,6 +1,5 @@
 """
-General Unit tests for slowcomb.slowcomb (Slow Cominatorics Library
-Main Module)
+Unit tests for Slowcomb Main Module Helper Classes
 
 """
 

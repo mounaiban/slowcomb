@@ -23,6 +23,7 @@ Unit tests for Slowcomb Main Module Helper Classes
 
 import unittest
 from slowcomb.slowcomb import CustomBaseNumberF, CustomBaseNumberP
+from slowcomb.slowcomb import SNOBNumber
 
 """
 NOTE: As seen on many other tests in this project, the results of
@@ -569,4 +570,21 @@ class CustomBaseNumberPTests(unittest.TestCase):
             with self.subTest(length=length):
                 with self.assertRaises(OverflowError):
                     cbn.set_digits_from_int(test_int)
+
+
+class SNOBNumberTests(unittest.TestCase):
+
+    def test_four_bit_two_active(self):
+        # TODO: a preliminary test with a four-bit number with two bits high
+        snob_number = SNOBNumber(4,2)
+
+        # TODO: There are six such numbers
+        out_expected_int = (12, 10, 9, 6, 5, 3)
+        out_expected_str = ('1100', '1010', '1001', '0110', '0101', '0011')
+        for i in range(6):
+            with self.subTest(i=i):
+                bits_str = snob_number.get_bits_str(i)
+                bits_int = snob_number.get_bits(i)
+                self.assertEqual(bits_str, out_expected_str[i])
+                self.assertEqual(bits_int, out_expected_int[i])
 

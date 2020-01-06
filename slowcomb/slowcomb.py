@@ -22,8 +22,6 @@ Slow Addressable Combinatorics Library main module.
 #
 
 from math import factorial
-from slowcomb.slowseq import AccumulateSequence, NumberSequence,\
-    CacheableSequence, SNOBSequence
 
 # Functions
 #
@@ -448,6 +446,201 @@ class CustomBaseNumberP(CustomBaseNumberF):
             self.set_zero()
         else:
             self.set_digits(digits)
+
+class SNOBNumber(object):
+    """Compact version of SNOBSequence (from slowseq), an object which
+    returns numbers which can be expressed as a binary value of a fixed
+    length with a predefined number of bits set.
+
+    This implementation does not require NumberSequences, and lacks features
+    in SNOBSequence that are not used by any of the Combinatorial Units.
+    
+    """
+    # Slots
+    #
+    __slots__ = ('_n', '_r', '_value')
+
+    # Methods
+    #
+    def index(self, bits_as_int):
+        """
+        Look up the index of a number (ordinality minus one) if it is of
+        the same number of bits (SNOB) in length, with the same number of
+        bits set.
+        
+        Arguments
+        ---------
+        * bits_as_int - SNOB number in decimal form. Accepts int, x > 0
+
+        Exceptions
+        ----------
+        * ValueError - when the number cannot be expressed as a binary
+          number with the same number of bits in length and in set/unset
+          state.
+
+        Notes
+        -----
+        This method uses a binary search technique that selectively
+        generates numbers until it matches the input. This hack is made
+        possible by the fact that there is a 1-to-1 relationship between
+        SNOB numbers and their indices, and the numbers only decrease in
+        value as the index value increases.
+        """
+        i_last = int_ncr(self._n, self._r)
+
+        # Reject out-of-range bitmaps
+        if bits_as_int.bit_length() > self._n:
+            msg_fmt = 'number {0} has too many bits'
+            msg = msg_fmt.format(bits_as_int)
+            raise ValueError(msg)
+        
+        # Perform a binary search for the bitmap
+        i_peg_a = 0
+        i_peg_b = i_last
+        while i_peg_b - i_peg_a > 1:
+            i_target = (i_peg_b + i_peg_a)//2
+            val = self.get_bits(i_target)
+            if val < bits_as_int:
+                i_peg_b = i_target
+            elif val > bits_as_int:
+                i_peg_a = i_target
+            elif val == bits_as_int:
+                return i_target
+        
+        # FIXME: This is a workaround for a problem with the binary
+        #  search algorithm above in which it routinely misses the
+        #  bitmaps at the very beginning (i == 0) or end (i == len(self)-1).
+        #  The pegs are sometimes unable to close in and become the same
+        #  value to allow i_target to lock onto the bitmap being sought.
+        #
+        #  The current (hopefully temporary) fix is to perform a linear
+        #  search on the space between the two pegs before calling off 
+        #  the search.
+        for iii in range(i_peg_a, i_peg_b+1):
+            if self.get_bits(iii) == bits_as_int:
+                return iii
+
+        # Finally call off the search when all attempts fail
+        msg = 'bitmap {0} not in sequence'.format(bits_as_int)
+        raise ValueError(msg)
+
+    def get_bits_str(self, i):
+        """Gets the string representation of an n-bit number with r bits
+        set, of index i.
+
+        Argument
+        --------
+        * i - the index of the number, i >= 0
+
+        Examples
+        --------
+        Given a four-bit number with two bits set:
+        >>> snob4b2h = SNOBNumber(4,2)
+
+        The third number (index 2) is 1010 in binary (9 in decimal)
+        >>> snob4b2h.get_bits(2)
+        '1010' 
+
+        Note
+        ----
+        Please see slowseq.SNOBSequence._get_bits() for a detailed
+        expanantion of how the underlying algorithm works.
+
+        """
+        out_format_a = "{{:0{}b}}".format(self._n)
+        out = out_format_a.format(self.get_bits(i))
+        return out
+
+    def get_bits(self, i):
+        """
+        Gets an n-bit number with r bits set, of index i.
+
+        Examples
+        --------
+        Given a four-bit number with two bits set:
+        >>> snob4b2h = SNOBNumber(4,2)
+
+        The third number (index 2) is 1010 in binary (9 in decimal)
+        >>> snob4b2h.get_bits(2)
+        9
+        
+        Note
+        ----
+        Please see slowseq.SNOBSequence._get_bits() for a detailed
+        expanantion of how the underlying algorithm works.
+
+        """
+        if self._r > self._n:
+            raise ValueError('n must be greater than or equal to r')
+        out_bin = 0
+        temp_i = i + 1 
+            # The algorithm herein only works with integers from 1 onwards
+        temp_n = self._n
+        temp_r = self._r
+        # Add the first and middle bits
+        #  Start from the highest bit of the given number
+        while (temp_n != temp_r) & (temp_r > 0):
+            ## PROTIP: zs stands for Zero Seeker
+            zs_ord = temp_i
+            zs_n = temp_n - 1
+            zs_r = temp_r - 1 
+            zeroes = 0
+            zs_ncr = int_ncr(zs_n, zs_r) 
+            while(zs_ord > zs_ncr):
+                zeroes += 1
+                zs_n -= 1
+                zs_ord -= zs_ncr
+                zs_ncr = int_ncr(zs_n, zs_r)
+            if zeroes > 0:
+                # Add zeroes 
+                out_bin <<= zeroes
+                # Repeat this operation with the next raised bit
+                #  after the run of zeroes
+                temp_n -= zeroes
+                temp_i = zs_ord
+            else:
+                # Add raised bit 
+                out_bin <<= 1
+                out_bin |= 1
+                # Repeat this operation with the next bit
+                temp_n -= 1
+                temp_r -= 1
+
+        # Add the final bits
+        if temp_n == temp_r:
+            # This happens with numbers with a single or several
+            # contiguous raised bits at the lower end
+            for b in range(temp_n):
+                out_bin <<= 1
+                out_bin |= 1
+        else:
+            for b in range(temp_n):
+                out_bin <<= 1
+        return out_bin
+
+    def __repr__(self):
+        """
+        Attempt to rebuild a probable equivalent of the arguments
+        used in constructing this sequence
+
+        """
+        re_arg_fmt = "{}(n={}, r={})"
+        re_args = re_arg_fmt.format(self.__class__.__name__, self._n, self._r)
+        return re_args
+    
+    def __init__(self, n, r, value=0):
+        """
+        This is the constructor for creating an instance of the
+        SNOBSequence class. For details on how to use this class,
+        please refer to the class-scope documentation of SNOBSequence.
+
+        """
+        # Instance Attributes
+        if r > n:
+            raise ValueError('n must be ≥ r')
+        self._n = n
+        self._r = r
+        self._value = value
 
 class CombinatorialUnit(object):
     """
@@ -2024,7 +2217,7 @@ class Combination(CombinatorialUnit):
 
         """
         out = []
-        bitmap = (self._bitmap_src[ii])
+        bitmap = self._bitmap_src.get_bits(ii)
             # The ii'th bitmap from the bitmap source should
             #  contain the correct bitmap to derive the
             #  first+ii'th combination
@@ -2039,7 +2232,7 @@ class Combination(CombinatorialUnit):
         return int_ncr(len(self._seq_src), self._r)
 
     def _set_bitmap_src(self):
-        self._bitmap_src = SNOBSequence(len(self._seq_src), self._r)
+        self._bitmap_src = SNOBNumber(len(self._seq_src), self._r)
         
     def __iter__(self):
         return self
@@ -2234,7 +2427,7 @@ class CombinationWithRepeats(Combination):
         out = []
         iii_seq = 0
         mask_width = len(self._seq_src)-1 + self._r
-        bitmap = self._bitmap_src[ii]
+        bitmap = self._bitmap_src.get_bits(ii)
         probe = 1 << mask_width - 1
         while (probe > 0):
             if probe & bitmap == 0:
@@ -2256,7 +2449,7 @@ class CombinationWithRepeats(Combination):
 
         """
         seq_len = len(self._seq_src)
-        self._bitmap_src = SNOBSequence(seq_len-1 + self._r, self._r)
+        self._bitmap_src = SNOBNumber(seq_len-1 + self._r, self._r)
 
     def __init__(self, seq, r, name=None):
         """

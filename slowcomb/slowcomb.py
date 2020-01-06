@@ -1444,7 +1444,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         for iii in range(self._r):
             out.append(self._seq_src[iii][path[iii]])
         self._i += 1
-        yield tuple(out)
+        return tuple(out)
 
     def __init__(self, seqs, r, name=None):
         """

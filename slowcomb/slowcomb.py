@@ -1665,11 +1665,25 @@ class Permutation(PBTreeCombinatorialUnit):
         The root node is not used, and is ignored by the path
         construction algorithm.
 
-        The elements of the tree path is then used as indices to a
-        temporary copy of _seq_src. Every item referenced in this
-        copy is moved from this temporary copy to a final output
-        sequence, out, which it then returned to the caller.
+        However, permutation involves elimination of elements as the
+        final output is constructed, due to the fact that permutation
+        is a re-arrangement of elements. Thus, the value of the path
+        is the index or ordinality of *unread* elements.
 
+        The elimination of elements is simulated by the use of a history
+        which keeps track of elements that have been used. Any attempt
+        to access a previously-read element will be redirected to the
+        next unread one.
+
+        By accessing unread elements in the order prescribed by the path,
+        the term may be constructed.
+
+        This method of deriving terms indirectly was intended to avoid
+        copying the entire contents of the source sequence, which may
+        contain large elements or have a large number of elements. The
+        minimum additional memory expenditure to derive a term will be
+        limited to twice of self._r, assuming only object references were
+        involved.
 
         Example
         =======
@@ -1709,32 +1723,29 @@ class Permutation(PBTreeCombinatorialUnit):
         With the address at hand, let's derive the permutation!
 
         Tree path is (2, 2, 0, 0) throughout the process.
-        Temporary seq. 'temp' is ('heads', 'shoulders', 'knees', 'toes')
+        History is empty.
 
-        Element zero in path: 2
-        Curr. temp: ('heads', 'shoulders', 'knees', 'toes')
-        Pop temp[2] to end of out
+        Path element zero is 2
+        Unread elements are: 'heads', 'shoulders', 'knees', 'toes'
+        Copy unread element two to end of out, and mark it as read
         Current out: ['knees',]
 
-        Element one in path: 2
-        Curr. temp: ('heads', 'shoulders', 'toes')
-        Pop temp[3] to end of out
+        Path element one is 2
+        Unread elements are: 'heads', 'shoulders', 'toes'
+        Copy unread element two to end of out, mark it as read
         Current out: ['knees', 'toes']
 
-        Element two in path: 0
-        Curr. temp: ('heads', 'shoulders')
-        Pop temp[0] to end of out
+        Path element two is 0
+        Unread elements are: 'heads', 'shoulders'
+        Copy unread element zero to end of out, mark it as read
         Current out: ['knees', 'toes', 'heads']
 
-        Element three in path: 0
-        Curr. temp: ('shoulders',)
-        Pop temp[0] to end of out
+        Path element three is 0
+        Remaining unread element is 'shoulders'.
+        Copy it to end of out.
 
         Final out: ['knees', 'toes', 'heads', 'shoulders']
  
-        The sequence out may now be converted to a tuple and returned
-        to the method or function that requested it.
-        
         """
         if self._r is None:
             raise NotImplementedError('r=None no longer supported')
@@ -1742,12 +1753,32 @@ class Permutation(PBTreeCombinatorialUnit):
         path = self._path_src.digits()
 
         # Build the actual term
+        history = []
         temp = []
-        temp.extend(self._seq_src)
-        out = []
-        for i in tuple(path):
-            out.append(temp.pop(i))
-        return tuple(out)
+        i_base = 0
+        for i in path:
+            if i == 0:
+                temp.append(self._seq_src[i_base])
+                history.append(i_base)
+                while i_base in history:
+                    i_base += 1
+            elif i >= 1:
+                # Find i'th unread element after base
+                skip = i
+                target = i_base + 1
+                while skip > 0:
+                    if target in history:
+                        target += 1
+                    else:
+                        skip -= 1
+                        if skip > 0:
+                            target += 1
+                temp.append(self._seq_src[target])
+                history.append(target)
+            else:
+                msg = 'invalid path requested element past end of source'
+                raise IndexError(msg)
+        return tuple(temp)
 
     def get_term_count(self):
         n = len(self._seq_src)
@@ -1758,14 +1789,8 @@ class Permutation(PBTreeCombinatorialUnit):
             self._i = 0
             raise StopIteration
 
-        path = self._path_src_iter._digits
-        temp = []
-        temp.extend(self._seq_src)
-        out = []
-        for i in path:
-            out.append(temp.pop(i))
+        out = self._get_term(self._i)
         self._i += 1
-        self._path_src_iter.incr()
         return tuple(out)
             
 

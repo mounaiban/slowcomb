@@ -185,18 +185,6 @@ Python programming (and using GTK via PyGObject for the demos).
 The possibility that this library might be useful enough to be used in other
 projects is being explored. Here are some ideas:
 
-Specific Ideas (toward 1.2)
-***************************
-
-Express wishlist (can be done by 2020-12-25) 🎄🎅 
-#################################################
-* Consolidate all essential components of Slowcomb into the ``slowcomb``
-  module, and make ``slowseq`` completely optional.
-
-* Fix excess memory usage issue in the term derivation routine in 
-  ``Permutation``, especially when it is used as the root of a compound CU.
-
-
 Not-so-specific Ideas (toward 2.0)
 **********************************
 These are just ideas which are not specific enough to have a deadline:

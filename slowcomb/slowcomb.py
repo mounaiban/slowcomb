@@ -36,7 +36,12 @@ def int_ncr(n,r):
 
     Where ! means factorial, the product of an integer and all smaller
     positive integers.
-    
+
+    This function performs a simplified version of the above equation
+    when r is smaller or equal than half of n. In such a case, the
+    multiplicands of n! in the numerator and (n-r)! in the denominator are
+    cancelled out before any operation takes place.
+
     Arguments
     ---------
     * n - Number of items in the set. Accepts int.
@@ -44,7 +49,21 @@ def int_ncr(n,r):
     * r - Number of selections from the set. Accepts int.
 
     """
-    return int(factorial(n)//( factorial(r)*factorial(n-r) ))
+    # TODO: Verify by formal proof that this function is identical to
+    # the full nCr equation
+
+    if n < r:
+        raise ValueError("r exceeds max of {}".format(n))
+    elif r > n//2:
+        return factorial(n) // (factorial(r) * factorial(n-r))
+    else:
+        a = 1
+        b = n - r
+        i = n
+        while i > b:
+            a *= i
+            i -= 1
+        return a // int(factorial(r))
 
 def int_npr(n,r):
     """
@@ -60,6 +79,11 @@ def int_npr(n,r):
     Where ! means factorial, the product of an integer and all smaller
     positive integers.
 
+    This function performs a simplified version of the above equation
+    when r is smaller or equal than half of n. In such a case, the
+    multiplicands of n! in the numerator and (n-r)! in the denominator are
+    cancelled out before any operation takes place.
+
     Arguments
     ---------
     * n - Number of items in the set. Accepts int.
@@ -67,9 +91,21 @@ def int_npr(n,r):
     * r - Number of selections from the set. Accepts int.
 
     """
-    return int(factorial(n)//factorial(n-r))
+    # TODO: Verify by formal proof that this function is identical to
+    # the full nCr equation
 
-
+    if n < r:
+        raise ValueError("r exceeds max of {}".format(n))
+    elif r > n//2:
+        return factorial(n) // factorial(n-r)
+    else:
+        a = 1
+        b = n - r
+        i = n
+        while i > b:
+            a *= i
+            i -= 1
+        return a
 
 # Classes
 #

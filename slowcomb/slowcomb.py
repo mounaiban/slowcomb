@@ -37,10 +37,13 @@ def int_ncr(n,r):
     Where ! means factorial, the product of an integer and all smaller
     positive integers.
 
-    This function performs a simplified version of the above equation
-    when r is smaller or equal than half of n. In such a case, the
-    multiplicands of n! in the numerator and (n-r)! in the denominator are
-    cancelled out before any operation takes place.
+    This function performs a simplified version of the above equation.
+    The multiplicands of n! in the numerator are cancelled out with either
+    (n-r)! or r!, whichever is found to be larger.
+
+    When r is too close to half of n, or n is not large enough, the function
+    falls back to using Python's math.factorial(), which is found to be
+    faster in such cases.
 
     Arguments
     ---------
@@ -54,16 +57,28 @@ def int_ncr(n,r):
 
     if n < r:
         raise ValueError("r exceeds max of {}".format(n))
-    elif r > n//2:
-        return factorial(n) // (factorial(r) * factorial(n-r))
     else:
         a = 1
-        b = n - r
         i = n
-        while i > b:
-            a *= i
-            i -= 1
-        return a // int(factorial(r))
+        rtf = r / (n+1)
+        if n <= 10:
+            # Fallback to math.factorial() below
+            pass
+        elif rtf <= 0.4:
+            # cancel with (n-r)!
+            b = n - r
+            while i > b:
+                a *= i
+                i -= 1
+            return a // factorial(r)
+        elif rtf > 0.6:
+            # cancel with r!
+            b = n - (n-r)
+            while i > b:
+                a *= i
+                i -= 1
+            return a // factorial(n-r)
+        return factorial(n) // (factorial(r) * factorial(n-r))
 
 def int_npr(n,r):
     """
@@ -75,12 +90,12 @@ def int_npr(n,r):
     each item exactly once. It is usually written like:
 
         n! / (n-r)!
-    
+
     Where ! means factorial, the product of an integer and all smaller
     positive integers.
 
-    This function performs a simplified version of the above equation
-    when r is smaller or equal than half of n. In such a case, the
+    This function performs a simplified version of the above equation when
+    n is large and r is smaller than half of n. In such a case, the
     multiplicands of n! in the numerator and (n-r)! in the denominator are
     cancelled out before any operation takes place.
 
@@ -96,7 +111,7 @@ def int_npr(n,r):
 
     if n < r:
         raise ValueError("r exceeds max of {}".format(n))
-    elif r > n//2:
+    elif n <= 10 or r >= n//2:
         return factorial(n) // factorial(n-r)
     else:
         a = 1
@@ -121,10 +136,10 @@ class CustomBaseNumberF(object):
     Required Arguments
     ------------------
     * length - the length of the number. Accepts int, where length >= 0.
-    
+
     * func_radix - function to determine the radix of a digit. Lambdas
       and methods are accepted. The definition should be like:
-    
+
       ::
 
       func(i)
@@ -136,7 +151,7 @@ class CustomBaseNumberF(object):
     ------------------
     * digits - the digits of the number, if the number is to have an
       initial state.
-    
+
     Exceptions
     ----------
     * TypeError is raised when an attempt is made to specify the length
@@ -144,7 +159,7 @@ class CustomBaseNumberF(object):
 
     * ValueError is raised when a negative integer is specified as the
       length of the number.
-      
+
 
     Notes
     -----
@@ -154,7 +169,7 @@ class CustomBaseNumberF(object):
     performance penalty. For the time being, the use of this class is only
     recommended for problems where it is unreasonable to specify the radices
     of the digits ahead of time.
- 
+
     """
     # TODO: Tests for supporting zero-length numbers
     __slots__ = ('_digits', '_length', '_func_radix')
@@ -208,7 +223,7 @@ class CustomBaseNumberF(object):
                     # method on zero-value numbers of radix 1.
         self._digits[iii] += 1
         return None
-            
+
     def set_digits(self, digits):
         """
         Sets the digits of this number directly.
@@ -316,13 +331,13 @@ class CustomBaseNumberF(object):
 
         """
         return self._length
-   
+
     def __init__(self, length, func_radix, digits=None, **kwargs):
         """
         Constructor method to support the creation of the Custom
         Base Number. Please refer to the class documentation on how
         to use this class.
-        
+
         """
         if isinstance(length, int) is False:
             raise TypeError("Please specify length using int only")
@@ -424,7 +439,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
                 iii -= 1 
                 carry = self._digits[iii]+1 >= self._radices[iii]
         self._digits[iii] += 1
-            
+
     def set_digits(self, digits):
         # Verify input first
         if digits is None:
@@ -490,7 +505,7 @@ class SNOBNumber(object):
 
     This implementation does not require NumberSequences, and lacks features
     in SNOBSequence that are not used by any of the Combinatorial Units.
-    
+
     """
     # Slots
     #
@@ -503,7 +518,7 @@ class SNOBNumber(object):
         Look up the index of a number (ordinality minus one) if it is of
         the same number of bits (SNOB) in length, with the same number of
         bits set.
-        
+
         Arguments
         ---------
         * bits_as_int - SNOB number in decimal form. Accepts int, x > 0
@@ -529,7 +544,7 @@ class SNOBNumber(object):
             msg_fmt = 'number {0} has too many bits'
             msg = msg_fmt.format(bits_as_int)
             raise ValueError(msg)
-        
+
         # Perform a binary search for the bitmap
         i_peg_a = 0
         i_peg_b = i_last
@@ -542,7 +557,7 @@ class SNOBNumber(object):
                 i_peg_a = i_target
             elif val == bits_as_int:
                 return i_target
-        
+
         # FIXME: This is a workaround for a problem with the binary
         #  search algorithm above in which it routinely misses the
         #  bitmaps at the very beginning (i == 0) or end (i == len(self)-1).
@@ -599,7 +614,7 @@ class SNOBNumber(object):
         The third number (index 2) is 1010 in binary (9 in decimal)
         >>> snob4b2h.get_bits(2)
         9
-        
+
         Note
         ----
         Please see slowseq.SNOBSequence._get_bits() for a detailed
@@ -663,7 +678,7 @@ class SNOBNumber(object):
         re_arg_fmt = "{}(n={}, r={})"
         re_args = re_arg_fmt.format(self.__class__.__name__, self._n, self._r)
         return re_args
-    
+
     def __init__(self, n, r, value=0):
         """
         This is the constructor for creating an instance of the
@@ -688,7 +703,7 @@ class CombinatorialUnit(object):
     Required Arguments
     ------------------
     A combinatorial unit class should have the following:
-    
+
     * seq - a sequence to be the data source from which to derive
       combinatorial terms. If seq supports a reverse-lookup method
       named index(), the CU becomes capable of finding out the index
@@ -725,7 +740,7 @@ class CombinatorialUnit(object):
 
         This method merely initiates the reverse lookup process, and
         rejects invalid search terms.
-        
+
         The actual lookup process is defined in _get_index() of the
         CombinatorialUnit subclass.
 
@@ -761,7 +776,7 @@ class CombinatorialUnit(object):
     def is_valid(self):
         """
         Check if a Combinatorial Unit is ready to return any results.
-        
+
         Returns True if ready, False otherwise.
 
         If the Combinatorial Unit is not ready, it should return
@@ -959,12 +974,12 @@ class CombinatorialUnit(object):
             seq_src_out = self._seq_src
         out = out_fmt.format(class_name, seq_src_out, self._r, self.name)
         return out
-            
+
     def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
-        
+
         For details on creating the CU, consult the documentation of
         the combinatorial unit class.
 
@@ -1004,14 +1019,14 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     figured out algorithmically for each and every node. The content,
     or more accurately, content referenced by the nodes is predictably
     repeated across the tree.
-    
+
     Required Arguements
     -------------------
     * seq - a sequence to be set as the data source from which to derive
       combinatorial terms. If seq supports a reverse-lookup method
       named index(), the CU becomes capable of finding out the index
       from raw combinatorial results.
-      
+
       - The simplest examples are strings, but any sequence, including
         database connections may be used.
 
@@ -1028,7 +1043,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     * path_src - the path source, or any object which is able to derive
       paths to navigate the combinatorial tree of the CU. The path is a
       representation of a possible output of the CU.
-      
+
       - The PBTree Combinatorial Unit assumes that a CustomBaseNumber
         is used to derive paths. However, any other object of a class
         that implements CustomBaseNumber methods may also work.
@@ -1132,7 +1147,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     terms of the same length. A combinatorial unit can be set up for
     returning terms of a set length by constraining the CU to selecting
     nodes of a particular level.
-    
+
     For example, a CU with a source of ten items has a ten-level
     combinatorial tree. Limiting the path to a length of three restricts
     access to the first three levels of the tree, creating a CU that
@@ -1158,7 +1173,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         """
         This is the special constructor method which supports 
         creation of combinatorial units. 
-        
+
         For details on creating the CU, consult the documentation of
         the combinatorial unit class.
 
@@ -1245,7 +1260,7 @@ class CatCombination(PBTreeCombinatorialUnit):
     The resulting combinatorial tree can be visualised as:
 
     ::
-                    
+
       su.  sp.  sc.              su.  sp.  sc.
         \___|___/                  \___|___/
              \                        /
@@ -1256,7 +1271,7 @@ class CatCombination(PBTreeCombinatorialUnit):
                          I
                          |
                          0
-    
+
         legend: su.-sugar, sp.-spice, sc.-scissors
 
 
@@ -1390,7 +1405,7 @@ class CatCombination(PBTreeCombinatorialUnit):
             i += 1
         self._path_src.set_digits(path)
         return self._path_src.get_int_from_digits()
-        
+
 
     def _get_args(self):
         """
@@ -1435,7 +1450,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         And its tree:
 
         ::
-                        
+
           su.  sp.  sc.              su.  sp.  sc.
             \___|___/                  \___|___/
                  \                        /
@@ -1446,7 +1461,7 @@ class CatCombination(PBTreeCombinatorialUnit):
                              I
                              |
                              0
-        
+
             legend: su.-sugar, sp.-spice, sc.-scissors
 
         Let's recall term 4 from the CU:
@@ -1486,7 +1501,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         """
         This is the special constructor method which supports 
         the creation of a CatCombination combinatorial unit. 
-        
+
         For details on how to do this, please consult the documentation
         for the CatCombination class.
 
@@ -1572,11 +1587,11 @@ class Permutation(PBTreeCombinatorialUnit):
 
     >>> perm[23]
     ('toes', 'knees', 'shoulders', 'heads')
-    
+
     The full combintorial tree may be visualised as:
 
     ::
-        
+
         t k  t s  k s  t k  t h  k h  t s  t h  s h  k s  k h  s h
         | |  | |  | |  | |  | |  | |  | |  | |  | |  | |  | |  | |
         k t  s t  s k  k t  h t  h k  s t  h t  h s  s k  h k  h s
@@ -1691,7 +1706,7 @@ class Permutation(PBTreeCombinatorialUnit):
         the read order of the source sequence, _seq_src. The path is,
         for the purposes of this method, equivalent to non-uniform
         base number in which:
-        
+
         1. The highest digit has a radix equal to the number of
            elements in _seq_src.
 
@@ -1723,7 +1738,7 @@ class Permutation(PBTreeCombinatorialUnit):
         ::
 
           Permutation(('heads', 'shoulders', 'knees', 'toes'), r=4)
-        
+
         In maths textbook-ese, this is a 4P4 permutation.
 
         And here's a reprint of the permutation tree:
@@ -1820,13 +1835,12 @@ class Permutation(PBTreeCombinatorialUnit):
         out = self._get_term(self._i)
         self._i += 1
         return tuple(out)
-            
 
     def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a Permutation combinatorial unit. 
-        
+
         For details on creating the CU, consult the documentation
         for the Permutation class.
 
@@ -1835,7 +1849,7 @@ class Permutation(PBTreeCombinatorialUnit):
         func_radix = lambda x:len(self._seq_src)-x
         path_src = CustomBaseNumberF(r, func_radix)
         super().__init__(seq, r, path_src, name=name)
-        
+
         # Instance Attributes
         # TODO: Iterator access stuff
         radices = tuple([x for x in range(len(seq), len(seq)-r, -1)])
@@ -1847,7 +1861,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
     A Repeats-Permitted Permutator, or a sequence of all possible
     uses of elements from a source sequence, given a set fixed number
     of elements, while allowing for multiple uses of the same element.
-    
+
     Arguments
     ---------
     * seq - sequence source to derive permutations from.
@@ -1901,11 +1915,11 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
     ('🍉', '🍉', '🍇')
     ('🍉', '🍉', '🍈')
     ('🍉', '🍉', '🍉')
-        
+
     The resulting combinatorics tree can be visualised as:
 
     ::
-      
+
        g h w  g h w  g h w  g h w  g h w  g h w  g h w  g h w  g h w
        ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥
          |      |      |      |      |      |      |      |      |
@@ -1918,7 +1932,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
                                      0
 
         legend: g.-grapes🍇, h.-honeydew🍈, w.-watermelon🍉
-    
+
     The PermutatorWithRepeats combinatorial unit is capable of terms
     where r (far) exceeds n.
 
@@ -2005,7 +2019,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         Example
         =======
         Referring to our example permutator:
-        
+
         >>> permwr = PermutationWithRepeats(('🍇', '🍈', '🍉'),r=3)
 
         The combinatorial tree can be visualised as:
@@ -2067,12 +2081,12 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
         self._path_iter.incr()
         self._i += 1
         return tuple(self._out_iter)
-            
+
     def __init__(self, seq, r, name=None):
         """
         This is the special constructor method which supports 
         creation of a PermutationWithRepeats combinatorial unit. 
-        
+
         For details on creating the CU, consult the documentation for 
         the PermutationWithRepeats class.
 
@@ -2092,10 +2106,10 @@ class Combination(CombinatorialUnit):
     A sequence of all possible selections of items from another source
     sequence. Selections of the same elements in a different order are
     regarded as the same selection. Elements may only be selected once.
-    
+
     This class can be regarded as a subscriptable analogue Python's
     itertools.combinations class.
-        
+
     Arguments
     ---------
     * seq - The source sequence to derive combinations from.
@@ -2106,17 +2120,17 @@ class Combination(CombinatorialUnit):
     Example
     -------
     The combinatorial unit may be created like this:
-    
+
     >>> from slowcomb.slowcomb import Combination
     >>> comb = Combination('ABCDEF',r=6)
 
     The full list of combinations may be dumped by using the CU it as
     an iterator:
-    
+
     >>> for d in comb:
     ...     print(d)
     ('A', 'B', 'C', 'D', 'E', 'F')
-    
+
     Surprise! There is only one distinct way to select all elements
     from a sequence.
 
@@ -2203,7 +2217,7 @@ class Combination(CombinatorialUnit):
                     # of rejecting combinations in which the items
                     # are in a different order from the source
                     # sequence.
-                
+
             except ValueError:
                 # Expected exception when item is not found in source
                 # sequence
@@ -2286,7 +2300,7 @@ class Combination(CombinatorialUnit):
 
     def _set_bitmap_src(self):
         self._bitmap_src = SNOBNumber(len(self._seq_src), self._r)
-        
+
     def __iter__(self):
         return self
 
@@ -2303,7 +2317,7 @@ class Combination(CombinatorialUnit):
         """
         This is the special constructor method which supports 
         creation of a Combination combinatorial unit. 
-        
+
         For details on creating the CU, consult the documentation for
         the Combination class.
 
@@ -2329,11 +2343,11 @@ class CombinationWithRepeats(Combination):
 
     * r - The number of items to select from seq. Accepts int,
       0 ≤ r ≤ len(seq).
-        
+
     Example
     -------
     The combinatorial unit may be created like this:
-    
+
     >>> from slowcomb.slowcomb import CombinationWithRepeats
     >>> combr = CombinationWithRepeats('ABC',r=3)
 
@@ -2402,7 +2416,7 @@ class CombinationWithRepeats(Combination):
                 # type found
                 bitmap <<= 1
                 bitmap |= 1
-                
+
             except ValueError:
                 # Exception expected when an element in x is not found
                 # in the source sequence
@@ -2413,7 +2427,6 @@ class CombinationWithRepeats(Combination):
             # Add remaining zero bits if there are no items in x
             # of the same type as the last element in the source
         return self._bitmap_src.index(bitmap)
- 
 
     def _get_term(self, ii):
         """
@@ -2508,7 +2521,7 @@ class CombinationWithRepeats(Combination):
         """
         This is the special constructor method which supports 
         creation of a CombinationWithRepeats combinatorial unit. 
-        
+
         For details on creating the CU, consult the documentation for
         the CombinationWithRepeats class.
 

@@ -21,106 +21,7 @@ Slow Addressable Combinatorics Library main module.
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from math import factorial
-
-# Functions
-#
-def int_ncr(n,r):
-    """
-    Evaluate nCr, the number of possible combinations given r selections
-    from a set of n members.
-
-    The nCr function is commonly written as:
-
-      n! / ( r! * (n-r)! )
-
-    Where ! means factorial, the product of an integer and all smaller
-    positive integers.
-
-    This function performs a simplified version of the above equation.
-    The multiplicands of n! in the numerator are cancelled out with either
-    (n-r)! or r!, whichever is found to be larger.
-
-    When r is too close to half of n, or n is not large enough, the function
-    falls back to using Python's math.factorial(), which is found to be
-    faster in such cases.
-
-    Arguments
-    ---------
-    * n - Number of items in the set. Accepts int.
-
-    * r - Number of selections from the set. Accepts int.
-
-    """
-    # TODO: Verify by formal proof that this function is identical to
-    # the full nCr equation
-
-    if n < r:
-        raise ValueError("r exceeds max of {}".format(n))
-    else:
-        a = 1
-        i = n
-        rtf = r / (n+1)
-        if n <= 10:
-            # Fallback to math.factorial() below
-            pass
-        elif rtf <= 0.4:
-            # cancel with (n-r)!
-            b = n - r
-            while i > b:
-                a *= i
-                i -= 1
-            return a // factorial(r)
-        elif rtf > 0.6:
-            # cancel with r!
-            b = n - (n-r)
-            while i > b:
-                a *= i
-                i -= 1
-            return a // factorial(n-r)
-        return factorial(n) // (factorial(r) * factorial(n-r))
-
-def int_npr(n,r):
-    """
-    Evaluate nPr, the number of possible permutations given r selections
-    from a set of n members, with each element selected just once.
-
-    The nPr function determines the number of outcomes for a partial
-    permutation, when taking r items from a set of n items, and taking
-    each item exactly once. It is usually written like:
-
-        n! / (n-r)!
-
-    Where ! means factorial, the product of an integer and all smaller
-    positive integers.
-
-    This function performs a simplified version of the above equation when
-    n is large and r is smaller than half of n. In such a case, the
-    multiplicands of n! in the numerator and (n-r)! in the denominator are
-    cancelled out before any operation takes place.
-
-    Arguments
-    ---------
-    * n - Number of items in the set. Accepts int.
-
-    * r - Number of selections from the set. Accepts int.
-
-    """
-    # TODO: Verify by formal proof that this function is identical to
-    # the full nCr equation
-
-    if n < r:
-        raise ValueError("r exceeds max of {}".format(n))
-    elif n <= 10 or r >= n//2:
-        return factorial(n) // factorial(n-r)
-    else:
-        a = 1
-        b = n - r
-        i = n
-        while i > b:
-            a *= i
-            i -= 1
-        return a
+from math import comb, factorial, perm
 
 # Classes
 #
@@ -537,7 +438,7 @@ class SNOBNumber(object):
         SNOB numbers and their indices, and the numbers only decrease in
         value as the index value increases.
         """
-        i_last = int_ncr(self._n, self._r)
+        i_last = comb(self._n, self._r)
 
         # Reject out-of-range bitmaps
         if bits_as_int.bit_length() > self._n:
@@ -636,12 +537,12 @@ class SNOBNumber(object):
             zs_n = temp_n - 1
             zs_r = temp_r - 1 
             zeroes = 0
-            zs_ncr = int_ncr(zs_n, zs_r) 
+            zs_ncr = comb(zs_n, zs_r) 
             while(zs_ord > zs_ncr):
                 zeroes += 1
                 zs_n -= 1
                 zs_ord -= zs_ncr
-                zs_ncr = int_ncr(zs_n, zs_r)
+                zs_ncr = comb(zs_n, zs_r)
             if zeroes > 0:
                 # Add zeroes 
                 out_bin <<= zeroes
@@ -1825,7 +1726,7 @@ class Permutation(PBTreeCombinatorialUnit):
 
     def get_term_count(self):
         n = len(self._seq_src)
-        return int_npr(n, self._r)
+        return perm(n, self._r)
 
     def __next__(self):
         if self._i >= self._len_iter:
@@ -1854,7 +1755,7 @@ class Permutation(PBTreeCombinatorialUnit):
         # TODO: Iterator access stuff
         radices = tuple([x for x in range(len(seq), len(seq)-r, -1)])
         self._path_src_iter = CustomBaseNumberP(radices)
-        self._len_iter = int_npr(len(self._seq_src), self._r)
+        self._len_iter = perm(len(self._seq_src), self._r)
 
 class PermutationWithRepeats(PBTreeCombinatorialUnit):
     """
@@ -2296,7 +2197,7 @@ class Combination(CombinatorialUnit):
         return tuple(out)
 
     def get_term_count(self):
-        return int_ncr(len(self._seq_src), self._r)
+        return comb(len(self._seq_src), self._r)
 
     def _set_bitmap_src(self):
         self._bitmap_src = SNOBNumber(len(self._seq_src), self._r)
@@ -2505,7 +2406,7 @@ class CombinationWithRepeats(Combination):
 
     def get_term_count(self):
         seq_len = len(self._seq_src)
-        return int_ncr(seq_len-1 + self._r, self._r)
+        return comb(seq_len-1 + self._r, self._r)
 
     def _set_bitmap_src(self):
         """

@@ -1,9 +1,9 @@
 """
-Slow Addressable Combinatorics Library main module. 
+Slow Addressable Combinatorics Library main module.
 
 """
 
-# Copyright © 2019 Moses Chong
+# Copyright © 2021 Moses Chong
 #
 # This file is part of the Slow Addressable Combinatorics Library (slowcomb)
 #
@@ -110,7 +110,7 @@ class CustomBaseNumberF(object):
             return None
         iii = self._length-1 # Start from right hand side of number
         carry = self._digits[iii]+1 >= self._func_radix(iii)
-        while carry is True:
+        while carry:
             try:
                 self._digits[iii] = 0
                 iii -= 1
@@ -161,7 +161,7 @@ class CustomBaseNumberF(object):
             raise ValueError("Number of digits does not match length")
         for i in range(len(digits)):
             if self._func_radix(i) < 0:
-                # Reject negative radices 
+                # Reject negative radices
                 msg_format = "Digit {0} from left has negative radix"
                 msg = msg_format.format(i)
                 raise ValueError(msg)
@@ -240,7 +240,7 @@ class CustomBaseNumberF(object):
         to use this class.
 
         """
-        if isinstance(length, int) is False:
+        if not isinstance(length, int):
             raise TypeError("Please specify length using int only")
         if length < 0:
             raise ValueError("Length of number cannot be negative")
@@ -265,7 +265,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
     * radices - A sequence of integers declaring the radix of each
       digit of this non-uniform base number. The length of this
       sequence determines the length of the number, or len(self).
-      For example, a sexagesimal number representing a 24-hour clock 
+      For example, a sexagesimal number representing a 24-hour clock
       with a visible hour, minute and second signal could be represented
       by (24, 60, 60, 60).
       Accepts any sequence of integers.
@@ -291,8 +291,8 @@ class CustomBaseNumberP(CustomBaseNumberF):
 
       - A number with a digits that exceed the radix of the number
         or a particular digit. For example, Mayan number (uniform
-        base-20) cannot be (11, 8, 20, 12) because valid digits 
-        are from 0 to 19. Likewise, a non-uniform base number of 
+        base-20) cannot be (11, 8, 20, 12) because valid digits
+        are from 0 to 19. Likewise, a non-uniform base number of
         base (10, 9, 8, 7) cannot take (11, 10, 9, 8) as an input.
 
       - Any digit is negative.
@@ -329,7 +329,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
         iii = self._length-1 # Start from right hand side of number
         iii = self._length-1
         carry = self._digits[iii]+1 >= self._radices[iii]
-        while carry is True:
+        while carry:
             if iii <= 0:
                 # If iii runs past the left side of self._digits,
                 # it means that the number has overflowed.
@@ -337,7 +337,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
                 return None
             else:
                 self._digits[iii] = 0
-                iii -= 1 
+                iii -= 1
                 carry = self._digits[iii]+1 >= self._radices[iii]
         self._digits[iii] += 1
 
@@ -351,7 +351,7 @@ class CustomBaseNumberP(CustomBaseNumberF):
             msg = msg_format.format(len(self))
             raise ValueError(msg)
         for iii in range(len(digits)):
-            if isinstance(digits[iii], int) is True:
+            if isinstance(digits[iii], int):
                 # Accept only integers
                 if digits[iii] < 0:
                 # Validate each digit
@@ -466,7 +466,7 @@ class SNOBNumber(object):
         #  value to allow i_target to lock onto the bitmap being sought.
         #
         #  The current (hopefully temporary) fix is to perform a linear
-        #  search on the space between the two pegs before calling off 
+        #  search on the space between the two pegs before calling off
         #  the search.
         for iii in range(i_peg_a, i_peg_b+1):
             if self.get_bits(iii) == bits_as_int:
@@ -491,7 +491,7 @@ class SNOBNumber(object):
 
         The third number (index 2) is 1010 in binary (9 in decimal)
         >>> snob4b2h.get_bits(2)
-        '1010' 
+        '1010'
 
         Note
         ----
@@ -525,7 +525,7 @@ class SNOBNumber(object):
         if self._r > self._n:
             raise ValueError('n must be greater than or equal to r')
         out_bin = 0
-        temp_i = i + 1 
+        temp_i = i + 1
             # The algorithm herein only works with integers from 1 onwards
         temp_n = self._n
         temp_r = self._r
@@ -535,23 +535,23 @@ class SNOBNumber(object):
             ## PROTIP: zs stands for Zero Seeker
             zs_ord = temp_i
             zs_n = temp_n - 1
-            zs_r = temp_r - 1 
+            zs_r = temp_r - 1
             zeroes = 0
-            zs_ncr = comb(zs_n, zs_r) 
+            zs_ncr = comb(zs_n, zs_r)
             while(zs_ord > zs_ncr):
                 zeroes += 1
                 zs_n -= 1
                 zs_ord -= zs_ncr
                 zs_ncr = comb(zs_n, zs_r)
             if zeroes > 0:
-                # Add zeroes 
+                # Add zeroes
                 out_bin <<= zeroes
                 # Repeat this operation with the next raised bit
                 #  after the run of zeroes
                 temp_n -= zeroes
                 temp_i = zs_ord
             else:
-                # Add raised bit 
+                # Add raised bit
                 out_bin <<= 1
                 out_bin |= 1
                 # Repeat this operation with the next bit
@@ -600,7 +600,7 @@ class CombinatorialUnit(object):
     the Slow Combinatorics Library. These Combinatorial Units, or
     CUs are sequences of combinatorial terms that are lazily evaluate
     combinatorial terms as they are requested.
- 
+
     Required Arguments
     ------------------
     A combinatorial unit class should have the following:
@@ -618,7 +618,7 @@ class CombinatorialUnit(object):
       of a combinatorial term which is a different size from the
       set being worked on (i.e. nPr, nCr), by way of the r-values in
       Python's combinatorial itertools classes.
- 
+
     Examples
     --------
     See Combination, CombinationWithRepeats, CatCombination,
@@ -649,7 +649,7 @@ class CombinatorialUnit(object):
 
         Arguments
         ---------
-        * x - A sequence matching an output of the combinatorial unit 
+        * x - A sequence matching an output of the combinatorial unit
           to be looked up.
 
         """
@@ -657,7 +657,7 @@ class CombinatorialUnit(object):
         # TODO: Document use of CUs as Iterators
 
         # Reject obviously invalid terms
-        if self.is_valid() is False:
+        if not self.is_valid():
             if x == self._default:
                 return 0
         elif x is None:
@@ -673,7 +673,7 @@ class CombinatorialUnit(object):
                 msg = "term must have a length of {0}".format(self._r)
                 raise ValueError(msg)
         return self._get_index(x)
- 
+
     def is_valid(self):
         """
         Check if a Combinatorial Unit is ready to return any results.
@@ -686,7 +686,7 @@ class CombinatorialUnit(object):
 
         This mechanism is intended to prevent a problematic sequence
         from interfering with the operation of complex combinatorial
-        unit setups, particularly with source sequences that are 
+        unit setups, particularly with source sequences that are
         liable to becoming unavailable at runtime, such as external
         databases.
 
@@ -728,7 +728,7 @@ class CombinatorialUnit(object):
         ----------
         * RecursionError is raised if a recursion loop is detected or
           suspected. Recursion loops occur when any nested CU attempts
-          to use any CU above it as a source sequence. This prevents any 
+          to use any CU above it as a source sequence. This prevents any
           navigation of the CU chain from terminating, causing a never-
           ending loop.
 
@@ -746,7 +746,7 @@ class CombinatorialUnit(object):
         """
         cu_path = kwargs.get('cu_path', [])
             # Path from the top level CU to the lowest level CU
-            # used for detecting recursion loops. 
+            # used for detecting recursion loops.
         if self in cu_path:
             # Abort operation if this CU is already in the path,
             # as it means there is a recursion loop. Report this
@@ -757,7 +757,7 @@ class CombinatorialUnit(object):
             out = out_format.format(i_depth, i_self)
             raise RecursionError(out)
 
-        if isinstance(self._seq_src, CombinatorialUnit) is True:
+        if isinstance(self._seq_src, CombinatorialUnit):
             # Register self into the path
             cu_path.append(self)
             # Descend into nested _seq_src if it is also another CU
@@ -788,7 +788,7 @@ class CombinatorialUnit(object):
         used in initialising this sequence
 
         """
-        if isinstance(self._seq_src, str) is True:
+        if isinstance(self._seq_src, str):
             # Add quotes back to str's used as sequences, so that the
             # repr string is actually accurate
             seq_shown = "'{0}'".format(self._seq_src)
@@ -797,10 +797,10 @@ class CombinatorialUnit(object):
         re_arg_fmt = "seq={0}, r={1}"
         re_args = re_arg_fmt.format(seq_shown, self._r)
         return re_args
- 
+
     def _get_index(self):
         """
-        Return the first index of a term, if it is a possible output 
+        Return the first index of a term, if it is a possible output
         of this Combinatorial Unit. For details on usage, please refer
         to a subclass of this class.
 
@@ -823,12 +823,12 @@ class CombinatorialUnit(object):
         Both int and slice inputs are accepted as keys.
 
         """
-        if self.is_valid() is False:
+        if not self.is_valid():
             return self._default
-        elif isinstance(key, int) is True:
+        elif isinstance(key, int):
             # Single term lookup using integer index
             return self._get_term(key)
-        elif isinstance(key, slice) is True:
+        elif isinstance(key, slice):
             # Multiple term lookup using slice
             out = []
             for iii in range(s.start, s.stop, s.step):
@@ -843,8 +843,8 @@ class CombinatorialUnit(object):
         unit. Returns int.
 
         """
-        if self.is_valid() is True:
-            # The threshold of the last level is also the 
+        if self.is_valid():
+            # The threshold of the last level is also the
             # node count
             return self.get_term_count()
         else:
@@ -868,7 +868,7 @@ class CombinatorialUnit(object):
         """
         class_name = self.__class__.__name__
         out_fmt = "{0}({1}, {2}, name={3})"
-        if isinstance(self._seq_src, str) is True:
+        if isinstance(self._seq_src, str):
             # Output strings as tuples of characters
             seq_src_out = tuple(self._seq_src)
         else:
@@ -878,14 +878,14 @@ class CombinatorialUnit(object):
 
     def __init__(self, seq, r, name=None):
         """
-        This is the special constructor method which supports 
-        creation of combinatorial units. 
+        This is the special constructor method which supports
+        creation of combinatorial units.
 
         For details on creating the CU, consult the documentation of
         the combinatorial unit class.
 
         """
-        # Validate Arguments 
+        # Validate Arguments
         if r is not None:
             if(r < 0):
                 raise ValueError('r, if present, must be zero or more')
@@ -907,7 +907,7 @@ class CombinatorialUnit(object):
         #
         self._exceptions = None
             # Reserved attribute
-            # To be set if exceptions have been encountered during 
+            # To be set if exceptions have been encountered during
             # the operation of this Combinator
 
 class PBTreeCombinatorialUnit(CombinatorialUnit):
@@ -916,7 +916,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
     units that make use of Perfectly-Balanced Trees (PBTrees).
 
     PBTrees are B-Trees, so the number of child nodes for every node
-    on the same level are the same. The node counts thus can be 
+    on the same level are the same. The node counts thus can be
     figured out algorithmically for each and every node. The content,
     or more accurately, content referenced by the nodes is predictably
     repeated across the tree.
@@ -931,7 +931,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
       - The simplest examples are strings, but any sequence, including
         database connections may be used.
 
-      - Other CU's may be used as a source as well. CUs support reverse 
+      - Other CU's may be used as a source as well. CUs support reverse
         index lookup using index() only if the CU's source sequence also
         fully supports index().
 
@@ -986,12 +986,12 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
       10 11 12 13 14 15  16 17 18 19 20 21
         \_|   \_|  \_|   |_/   |_/   |_/
            \    |    |   |     |    /
-            4   5    6   7     8   9  
+            4   5    6   7     8   9
              \__|    \___/    /___/
                  \     |     /
                   1    2    3
                    \___|___/
-                       | 
+                       |
                        0
 
 
@@ -1056,10 +1056,10 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
 
     Setting the r-value to zero causes the combinatorial unit to return
     empty terms.
- 
+
     See Also
     --------
-    CatCombination, Permutation, PermutationWithRepeats 
+    CatCombination, Permutation, PermutationWithRepeats
 
     """
     # Slots
@@ -1072,8 +1072,8 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
 
     def __init__(self, seq, r, path_src, name=None):
         """
-        This is the special constructor method which supports 
-        creation of combinatorial units. 
+        This is the special constructor method which supports
+        creation of combinatorial units.
 
         For details on creating the CU, consult the documentation of
         the combinatorial unit class.
@@ -1081,7 +1081,7 @@ class PBTreeCombinatorialUnit(CombinatorialUnit):
         """
         super().__init__(seq, r, name=name)
         self._path_src = path_src
- 
+
 
 class CatCombination(PBTreeCombinatorialUnit):
     """
@@ -1092,7 +1092,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
     Required Arguments
     ------------------
-    * seqs - Sequence source to derive combinations from. Accepts a 
+    * seqs - Sequence source to derive combinations from. Accepts a
       sequence of sub-sequences.
 
     * r - The length of the terms derived from the combinatorial
@@ -1115,7 +1115,7 @@ class CatCombination(PBTreeCombinatorialUnit):
     Word 1  Word 2  Word 3
     ======  ======  ========
     I       need    sugar
-            want    spice 
+            want    spice
                     scissors
 
     This can be done the more beginner-friendly way:
@@ -1123,7 +1123,7 @@ class CatCombination(PBTreeCombinatorialUnit):
     >>> from slowcomb.slowcomb import CatCombination
     >>> s_a = ('I',)
     >>> s_b = ('need','want')
-    >>> s_c = ('sugar','spice','scissors') 
+    >>> s_c = ('sugar','spice','scissors')
     >>> seqs = (s_a, s_b, s_c)
     >>> catcomb = CatCombination(seqs, r=3)
 
@@ -1205,7 +1205,7 @@ class CatCombination(PBTreeCombinatorialUnit):
         ----------
         * RecursionError is raised if a recursion loop is detected or
           suspected. Recursion loops occur when any nested CU attempts
-          to use any CU above it as a source sequence. This prevents any 
+          to use any CU above it as a source sequence. This prevents any
           navigation of the CU chain from terminating, causing a never-
           ending loop.
 
@@ -1221,7 +1221,7 @@ class CatCombination(PBTreeCombinatorialUnit):
              sequence is already using the level 1 CU as a source sequence.
 
         """
-        # NOTE: This method is an overridden version of 
+        # NOTE: This method is an overridden version of
         # CombinatorialUnit.supports_index() to handle CatCombination's
         # slightly different _seq_src format.
 
@@ -1245,11 +1245,11 @@ class CatCombination(PBTreeCombinatorialUnit):
 
         for s in self._seq_src:
             # Use breadth-first recursive check to search CUs.
-            # Return False if at least one CU has a _seq_src 
+            # Return False if at least one CU has a _seq_src
             # with no index() method.
-            if isinstance(s, CombinatorialUnit) is True:
+            if isinstance(s, CombinatorialUnit):
                 cu_path.append(self) # Register self into the path
-                if s.supports_index(cu_path=cu_path) is False:
+                if not s.supports_index(cu_path=cu_path):
                     # Descend into nested CUs in _seq_src, bringing
                     # along the tree path.
                     return False
@@ -1263,7 +1263,7 @@ class CatCombination(PBTreeCombinatorialUnit):
                     last_term = s[comb_count-1]
                     first_index_works = (s.index(first_term) == 0)
                     last_index_works = (s.index(last_term) == comb_count-1)
-                    if (first_index_works & last_index_works) is False:
+                    if not (first_index_works & last_index_works):
                         return False
                 except AttributeError:
                     # If there is an AttributeError raised when index()
@@ -1277,7 +1277,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
 
     def get_term_count(self):
-        if self.is_valid() is True:
+        if self.is_valid():
             count = 1
             for iii in range(self._r):
                 count *= len(self._seq_src[iii])
@@ -1285,7 +1285,7 @@ class CatCombination(PBTreeCombinatorialUnit):
 
     def _get_index(self, x):
         """
-        Return the first index of a term, if it is a possible output 
+        Return the first index of a term, if it is a possible output
         of this Combinatorial Unit.
 
         Arguments
@@ -1332,9 +1332,9 @@ class CatCombination(PBTreeCombinatorialUnit):
         ---------------------------------------------------
         This CU uses the virtual tree in the PBTreeCombinatorics class
         to build its terms. Terms are represented by paths to nodes on
-        the tree, and the path to each node is created using 
+        the tree, and the path to each node is created using
         PBTreeCombinatronics._get_comb_tree_path(). Each element on the
-        tree path is regarded a direct index of an element of a 
+        tree path is regarded a direct index of an element of a
         corresponding sub-sequence of _seq_src.
 
         The i'th element of the path references an item on the i'th
@@ -1400,8 +1400,8 @@ class CatCombination(PBTreeCombinatorialUnit):
 
     def __init__(self, seqs, r, name=None):
         """
-        This is the special constructor method which supports 
-        the creation of a CatCombination combinatorial unit. 
+        This is the special constructor method which supports
+        the creation of a CatCombination combinatorial unit.
 
         For details on how to do this, please consult the documentation
         for the CatCombination class.
@@ -1434,7 +1434,7 @@ class Permutation(PBTreeCombinatorialUnit):
     ------------------
     * r - The length of the terms derived from the combinatorial
       unit. Setting r smaller than the number of elements in seq
-      in causes the combinatorial unit to return so-called 
+      in causes the combinatorial unit to return so-called
       'partial permutations'. Accepts int, 0 ≤ r < len(seqs).
 
     Examples
@@ -1506,7 +1506,7 @@ class Permutation(PBTreeCombinatorialUnit):
                                      |
                                      0
 
-        legend: h.-heads, s.-shoulders, k.-knees, t.-toes 
+        legend: h.-heads, s.-shoulders, k.-knees, t.-toes
 
         Nodes indices start from zero, and on the left.
 
@@ -1550,7 +1550,7 @@ class Permutation(PBTreeCombinatorialUnit):
                                      |
                                      0
 
-        legend: h.-heads, s.-shoulders, k.-knees, t.-toes 
+        legend: h.-heads, s.-shoulders, k.-knees, t.-toes
 
     """
 
@@ -1561,7 +1561,7 @@ class Permutation(PBTreeCombinatorialUnit):
 
         Arguments
         ---------
-        * x - The term whose index is being sought after. Accepts any 
+        * x - The term whose index is being sought after. Accepts any
           Python iterator type.
 
         Exceptions
@@ -1590,7 +1590,6 @@ class Permutation(PBTreeCombinatorialUnit):
 
         """
         self._seq_src=tuple(seq)
-        self._set_thresholds()
 
     def _get_term(self, ii):
         """
@@ -1598,7 +1597,7 @@ class Permutation(PBTreeCombinatorialUnit):
 
         Arguments
         ---------
-        * ii - Internal Index of the permutation. Accepts int, 
+        * ii - Internal Index of the permutation. Accepts int,
           0 ≤ i < self._ii_stop
 
         Term Construction Process for the Permutation CU
@@ -1630,7 +1629,7 @@ class Permutation(PBTreeCombinatorialUnit):
         forward, and when.
 
         This method of generating terms involves only one copy of the
-        source sequence during the generation process. 
+        source sequence during the generation process.
 
         Example
         =======
@@ -1645,7 +1644,7 @@ class Permutation(PBTreeCombinatorialUnit):
         And here's a reprint of the permutation tree:
 
         ::
-                                                 * 
+                                                 *
          t k  t s  k s  t k  t h  k h  t s  t h  s h  k s  k h  s h
          | |  | |  | |  | |  | |  | |  | |  | |  | |  | |  | |  | |
          k t  s t  s k  k t  h t  h k  s t  h t  h s  s k  h k  h s
@@ -1739,8 +1738,8 @@ class Permutation(PBTreeCombinatorialUnit):
 
     def __init__(self, seq, r, name=None):
         """
-        This is the special constructor method which supports 
-        creation of a Permutation combinatorial unit. 
+        This is the special constructor method which supports
+        creation of a Permutation combinatorial unit.
 
         For details on creating the CU, consult the documentation
         for the Permutation class.
@@ -1878,7 +1877,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
         Arguments
         ---------
-        * x - The term whose index is being sought after. Accepts any 
+        * x - The term whose index is being sought after. Accepts any
           Python iterator type.
 
         Exceptions
@@ -1902,7 +1901,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
         Arguments
         ---------
-        * ii - Internal Index of the permutation. Accepts int, 
+        * ii - Internal Index of the permutation. Accepts int,
           0 ≤ i < self._ii_stop
 
         Term Construction Process for the PermutationWithRepeats CU
@@ -1930,7 +1929,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
            0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2  0 1 2
            ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥  ⸤_|_⸥
              |      |      |      |      |      |      |      |      |
-             0      1      2      0      1      2      0      1      2 
+             0      1      2      0      1      2      0      1      2
              ⸤______|______⸥      ⸤______|______⸥      ⸤______|______⸥
                     |                    |                    |
                     0                    1                    2
@@ -1981,10 +1980,10 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
     def __init__(self, seq, r, name=None):
         """
-        This is the special constructor method which supports 
-        creation of a PermutationWithRepeats combinatorial unit. 
+        This is the special constructor method which supports
+        creation of a PermutationWithRepeats combinatorial unit.
 
-        For details on creating the CU, consult the documentation for 
+        For details on creating the CU, consult the documentation for
         the PermutationWithRepeats class.
 
         """
@@ -2080,7 +2079,7 @@ class Combination(CombinatorialUnit):
 
         Arguments
         ---------
-        * x - The term whose index is being sought after. Accepts any 
+        * x - The term whose index is being sought after. Accepts any
           Python iterator type.
 
         Exceptions
@@ -2125,7 +2124,7 @@ class Combination(CombinatorialUnit):
             # Pad the bitmap with zeroes if combination does not include
             # the last item in the source sequence
         return self._bitmap_src.index(bitmap)
- 
+
     def _get_term(self, ii):
         """
         Return the first+ii'th term of the Combination sequence.
@@ -2153,7 +2152,7 @@ class Combination(CombinatorialUnit):
 
         Example
         -------
-        Here's a list of all the possible 4-element selections 
+        Here's a list of all the possible 4-element selections
         from the six-element source ('A','B','C','D','E','F'),
         right next to their bitmaps:
 
@@ -2189,7 +2188,7 @@ class Combination(CombinatorialUnit):
         for i in range(len(self._seq_src)):
             if probe & bitmap != 0:
                 out.append(self._seq_src[i])
-            probe >>= 1 
+            probe >>= 1
         return tuple(out)
 
     def get_term_count(self):
@@ -2212,8 +2211,8 @@ class Combination(CombinatorialUnit):
 
     def __init__(self, seq, r, name=None):
         """
-        This is the special constructor method which supports 
-        creation of a Combination combinatorial unit. 
+        This is the special constructor method which supports
+        creation of a Combination combinatorial unit.
 
         For details on creating the CU, consult the documentation for
         the Combination class.
@@ -2287,7 +2286,7 @@ class CombinationWithRepeats(Combination):
 
         Arguments
         ---------
-        * x - The term whose index is being sought after. Accepts any 
+        * x - The term whose index is being sought after. Accepts any
           Python iterator type.
 
         Exceptions
@@ -2362,7 +2361,7 @@ class CombinationWithRepeats(Combination):
 
         Example
         -------
-        Here's a list of all the possible 3-element selections 
+        Here's a list of all the possible 3-element selections
         from the six-element source ('A','B','C'), right next to
         their bitmaps:
 
@@ -2397,7 +2396,7 @@ class CombinationWithRepeats(Combination):
                 iii_seq += 1
             else:
                 out.append(self._seq_src[iii_seq])
-            probe >>= 1 
+            probe >>= 1
         return tuple(out)
 
     def get_term_count(self):
@@ -2416,8 +2415,8 @@ class CombinationWithRepeats(Combination):
 
     def __init__(self, seq, r, name=None):
         """
-        This is the special constructor method which supports 
-        creation of a CombinationWithRepeats combinatorial unit. 
+        This is the special constructor method which supports
+        creation of a CombinationWithRepeats combinatorial unit.
 
         For details on creating the CU, consult the documentation for
         the CombinationWithRepeats class.

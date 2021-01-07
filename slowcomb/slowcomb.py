@@ -1417,6 +1417,39 @@ class CatCombination(PBTreeCombinatorialUnit):
             # to right
         super().__init__(seq_src, r, path_src, name=name)
 
+class PermutationPath(object):
+    # Experimental stand-alone version of the generators created by
+    # Permutation._path_iter(). Not 100% compatible with _path_iter()
+    # and is known to trigger errors.
+    #
+    __slots__ = ('_i', '_value', '_vt', '_r', '_n')
+
+    def __init__(self, value, n, r):
+        self._value = value # original value
+        self._vt = value    # temp value
+        self._i = r
+        self._n = n
+        self._r = r
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._i <= 0:
+            self._i = self._r
+            self._vt = self._value
+            raise StopIteration
+        pv = 1 # place value (accumulator)
+        for m in range(self._n - (self._n - self._i), 0, -1):
+            pv *= m
+        out = self._vt // pv
+        self._vt %= pv
+        self._i -= 1
+        return out
+
+    def set_value(self, v):
+        self._vt = self._value = v
+        self._i = self._n - self._r
 
 class Permutation(PBTreeCombinatorialUnit):
     """
@@ -1592,6 +1625,30 @@ class Permutation(PBTreeCombinatorialUnit):
         self._seq_src=tuple(seq)
         self._set_thresholds()
 
+    def _path_iter(self, ii):
+        """
+        Returns a generator which yields tree paths, one element at a time.
+
+        """
+        # TODO: This generator was written in an attempt to speed up
+        # the term derivation process, but benchmarks seem to suggest
+        # that it is slower than CustomBaseNumber.
+        #
+        # On the other hand, the path generators eliminate the need for
+        # path lists, reducing memory usage especially on longer terms.
+        #
+
+        vt = ii # initial value
+        rv = len(self._seq_src)
+        for k in range(self._r, 0, -1):
+            pv = 1 # digit place value (accumulator)
+            for m in range(rv-1, rv-k, -1): # TODO: Why does this work?
+                pv *= m
+            out = vt // pv
+            vt %= pv
+            rv -= 1
+            yield out
+
     def _get_term(self, ii):
         """
         Return the results of the permutation of internal index ii.
@@ -1702,21 +1759,20 @@ class Permutation(PBTreeCombinatorialUnit):
         """
         if self._r is None:
             raise NotImplementedError('r=None no longer supported')
-        self._path_src.set_digits_from_int(ii)
-        path = self._path_src.digits()
 
         # Build the actual term
         # First, copy the source sequence
         temp = list(self._seq_src)
+        sl = len(self._seq_src)
 
         # Next, swap the elements to perform the permutation
         i = 0
-        for ii in path:
+        for jj in self._path_iter(ii):
             if ii == 0:
                 pass
             else:
-                iii = i + ii
-                if iii > len(self._seq_src):
+                iii = i + jj
+                if iii > sl:
                     msg = 'invalid path requested element past end of source'
                     raise IndexError(msg)
                 else:

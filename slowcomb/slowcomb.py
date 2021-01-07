@@ -1961,10 +1961,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
         """
         self._path_src.set_digits_from_int(ii)
-        path = self._path_src._digits
-        out = [self._seq_src[0],] * self._r
-        for iii in range(self._r):
-            out[iii] = self._seq_src[path[iii]]
+        out = [self._seq_src[e] for e in self._path_src._digits]
         return tuple(out)
 
     def get_term_count(self):
@@ -1977,8 +1974,7 @@ class PermutationWithRepeats(PBTreeCombinatorialUnit):
 
         # NOTE: Experiment with CustomBaseNumber class to generate tree paths
         path = self._path_iter._digits
-        for iii in range(self._r):
-            self._out_iter[iii] = self._seq_src[path[iii]]
+        self._out_iter = [self._seq_src[e] for e in path]
         self._path_iter.incr()
         self._i += 1
         return tuple(self._out_iter)

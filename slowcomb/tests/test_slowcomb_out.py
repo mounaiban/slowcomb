@@ -23,7 +23,7 @@ Combinatiorial Unit Output Test Module
 
 
 import itertools, unittest
-from slowcomb.slowcomb import CatCombination, Combination, \
+from slowcomb.slowcomb import CatProduct, Combination, \
     CombinationWithRepeats, Permutation, PermutationWithRepeats
 from slowcomb.tests import examples
 
@@ -72,39 +72,27 @@ class IterComparativeTest(unittest.TestCase):
         self.verify_output_as_iter(cand_seq, ref_iter)
         self.verify_output_as_seq(cand_seq, ref_iter)
 
-class CatCombinationOutputTests(unittest.TestCase):
+class CatProductOutputTests(unittest.TestCase):
     """
-    Verifies the output of the CatCombination combinatorial unit.
-
-    This test case verifies results explicitly; it uses manually
-    prepared, hard-coded data seen below as an indication of correct
-    operation
-
+    Verifies the output of the CatProduct combinatorial unit,
+    using itertools.product as the authoritative reference
     """
     seq = examples.src_colonel
         # See examples.py for exact content of this source 
 
     def setUp(self):
-        self.comb_min_r = CatCombination(self.seq,1)
-        self.comb_median_r = CatCombination(self.seq,2)
-        self.comb_max_r = CatCombination(self.seq,3)
+        self.comb_min_r = CatProduct(self.seq,1)
+        self.comb_median_r = CatProduct(self.seq,2)
+        self.comb_max_r = CatProduct(self.seq,3)
 
         # Expected Results
-        self.expected_addr_min_r = ((0,),(0,),(0,))
-
-        self.expected_data_min_r = (('I',),)
-        self.expected_data_median_r =(
-            ('I','need'),
-            ('I','want'),
-        )
-        self.expected_data_max_r = (
-            ('I','need','sugar'),
-            ('I','need','spice'),
-            ('I','need','scissors'),
-            ('I','want','sugar'),
-            ('I','want','spice'),
-            ('I','want','scissors'),
-        )
+        self.ref_iter_compre = [t for t in itertools.product(*self.seq)]
+        self.ref_iter_compre_median_r = [
+            t for t in itertools.product(*self.seq[:2])
+        ]
+        self.ref_iter_compre_min_r= [
+            t for t in itertools.product(*self.seq[:1])
+        ]
 
     def test_iter_max_r(self):
         # r=4, i.e. Full sentences only
@@ -112,7 +100,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         i = 0
         for d in self.comb_max_r:
             with self.subTest(i=i):
-                self.assertEqual(d, self.expected_data_max_r[i])
+                self.assertEqual(d, self.ref_iter_compre[i])
                 i += 1
 
     def test_getitem_max_r(self):
@@ -120,8 +108,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         # Access as sequence
         for i in range(len(self.comb_max_r) - 1):
             with self.subTest(i=i):
-                self.assertEqual(self.comb_max_r[i],
-                    self.expected_data_max_r[i])
+                self.assertEqual(self.comb_max_r[i], self.ref_iter_compre[i])
     
     def test_getitem_median_r(self):
         # r=2, i.e. First two words only
@@ -129,7 +116,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         for i in range(len(self.comb_median_r) - 1):
             with self.subTest(i=i):
                 self.assertEqual(self.comb_median_r[i],
-                    self.expected_data_median_r[i]
+                    self.ref_iter_compre_median_r[i]
                 )
 
     def test_iter_median_r(self):
@@ -138,7 +125,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         i = 0
         for d in self.comb_median_r:
             with self.subTest(i=i):
-                self.assertEqual(d, self.expected_data_median_r[i])
+                self.assertEqual(d, self.ref_iter_compre_median_r[i])
                 i += 1
 
     def test_iter_min_r(self):
@@ -147,7 +134,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         i = 0
         for d in self.comb_min_r:
             with self.subTest(i=i):
-                self.assertEqual(d, self.expected_data_min_r[i])
+                self.assertEqual(d, self.ref_iter_compre_min_r[i])
                 i += 1
 
     def test_getitem_min_r(self):
@@ -156,7 +143,7 @@ class CatCombinationOutputTests(unittest.TestCase):
         for i in range(len(self.comb_min_r)):
             with self.subTest(i=i):
                 self.assertEqual(self.comb_min_r[i], 
-                    self.expected_data_min_r[i]) 
+                    self.ref_iter_compre_min_r[i])
 
 class CombinationOutputTests(IterComparativeTest):
     """

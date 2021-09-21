@@ -1417,6 +1417,13 @@ class CatCombination(PBTreeCombinatorialUnit):
             # to right
         super().__init__(seq_src, r, path_src, name=name)
 
+class CatProduct(CatCombination):
+    """
+    An improvised alias to acknowledge the fact that the CatCombination
+    class is a Cartesian Product combinatorial unit.
+
+    """
+    pass
 
 class Permutation(PBTreeCombinatorialUnit):
     """
